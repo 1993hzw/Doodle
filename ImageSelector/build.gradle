@@ -1,11 +1,10 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    buildToolsVersion "23.0.3"
 
     defaultConfig {
-        applicationId "cn.hzw.graffitidemo"
         minSdkVersion 9
         targetSdkVersion 23
         versionCode 1
@@ -22,6 +21,7 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile project(':GraffitiLib')
-    compile project(':ImageSelector')
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile files('libs/xUtils-2.6.14.jar')
+    compile project(':AndroidsLib-release')
 }

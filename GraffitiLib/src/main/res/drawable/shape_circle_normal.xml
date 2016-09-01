@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:shape="oval"
+    android:useLevel="false">
+        <solid android:color="#ffffff" /> <!-- 定义填充的颜色值 -->  
+        <!--<gradient android:startColor="#dfeeeeee"-->
+             <!--android:endColor="#dfcccccc" -->
+                     <!--android:angle="270"-->
+             <!--android:gradientRadius="90"/>-->
+</shape>

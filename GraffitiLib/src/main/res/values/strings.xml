@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Graffiti</string>
+
+    <string name="moving_pic">单指移动、双指缩放</string>
+    <string name="clear_screen">清屏</string>
+    <string name="cant_undo_after_clearing">清屏后不可撤销</string>
+    <string name="saving_picture">保存图片</string>
+    <string name="enter">确定</string>
+    <string name="cancel">取消</string>
+    <string name="successed">成功</string>
+    <string name="failed">失败</string>
 </resources>
