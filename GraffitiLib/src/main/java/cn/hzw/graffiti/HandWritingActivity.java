@@ -41,6 +41,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import cn.forward.androids.utils.ImageUtils;
+import cn.forward.androids.utils.Util;
+
 
 public class HandWritingActivity extends Activity implements View.OnClickListener {
 
@@ -179,6 +182,9 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * 隐藏画板
+     */
     private void hidePanel() {
         View view = findViewById(R.id.title_bar_btn01);
         view.setSelected(!view.isSelected());
@@ -189,6 +195,10 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         }
     }
 
+    /**
+     * 撤销
+     * @param v
+     */
     public void undo(View v) {
         handWrite.undo();
     }
@@ -196,6 +206,10 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
     private boolean isScaling = false, isMovingPic = false;
     private final int timeSpan = 80, maxSacle = 3;
 
+    /**
+     * 缩放
+     * @param v
+     */
     public void scalePic(View v) {
         if (isScaling)
             return;
@@ -244,6 +258,10 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         handWrite.invalidate();
     }
 
+    /**
+     * 移动图片
+     * @param v
+     */
     public void movePic(View v) {
         isMovingPic = !isMovingPic;
         v.setSelected(!v.isSelected());
@@ -252,6 +270,10 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         }
     }
 
+    /**
+     * 居中图片
+     * @param v
+     */
     public void centrePic(View v) {
         isScaling = true;
         if (scale > 1) {
@@ -554,6 +576,8 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         private Paint locationPaint, redPaint, bluePaint;
         private MyLocation myLocation;
         // private Path mPath;// 画笔路径
+
+        // 保存涂鸦操作，便于撤销
         private CopyOnWriteArrayList<MyPath> pathStack = new CopyOnWriteArrayList<MyPath>();
         private CopyOnWriteArrayList<MyPath> pathStackBackup = new CopyOnWriteArrayList<MyPath>();
 
@@ -698,7 +722,7 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
             dstRect = new RectF(srcRect.left + x, srcRect.top + y,
                     srcRect.right + x, srcRect.bottom + y);
 
-            arrowLineSize = Util.dip2px(context, 5);
+            arrowLineSize = Util.dp2px(context, 5);
         }
 
         public void move(float spanX, float spanY) {
@@ -708,8 +732,11 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
             invalidate();
         }
 
+        /**
+         * 调整图片位置
+         */
         public void judgePic() {
-            if (scale > 1) {
+            if (scale > 1) { // 当图片放大时，图片偏移的位置不能超过屏幕边缘
                 if (transX > 0)
                     transX = 0;
                 else if (transX + width * scale < width)
@@ -718,7 +745,7 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
                     transY = 0;
                 else if (transY + height * scale < height)
                     transY = height - height * scale;
-            } else {
+            } else { // 当图片缩小时，图片只能在屏幕可见范围内移动
                 if (transX + galleryBitmap.getWidth() * n * scale > width)// scale<1是preview.width不用乘scale
                     transX = width - galleryBitmap.getWidth() * n * scale;
                 else if (transX < 0)
@@ -747,12 +774,15 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
                 width = (int) (w * n);
                 height = previewLayout.getHeight();
             }
-            // 是图片居�?
+            // 使图片居中
             centreX = (previewLayout.getWidth() - width) / 2f;
             centreY = (previewLayout.getHeight() - height) / 2f;
             invalidate();
         }
 
+        /**
+         * 清屏
+         */
         public void clear() {
             pathStack.clear();
             pathStackBackup.clear();
@@ -1229,7 +1259,7 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         }
 
         public void save() {
-            final String savePath = Util.getFilePath(picPath, "涂鸦");
+            final String savePath = getFilePath(picPath, "涂鸦");
             FileOutputStream outputStream = null;
             try {
                 originalBitmap.recycle();
@@ -1353,6 +1383,22 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
             return true;
         }
     }
+
+    public static String getFilePath(String originPath, String suffix) {
+        int i = originPath.lastIndexOf(".");
+        String name = originPath.substring(0, i) + " " + suffix + originPath.substring(i);
+        if (!new File(name).exists()) {//不存在
+            return name;
+        } else {
+            int n = 1;
+            do {
+                n++;
+                name = originPath.substring(0, i) + " " + suffix + n + originPath.substring(i);
+            } while (new File(name).exists());
+        }
+        return name;
+    }
+
 
 }
 

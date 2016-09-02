@@ -14,6 +14,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import cn.forward.androids.utils.Util;
+
 public class ColorPickerDialog extends Dialog {
     private final boolean debug = true;
     private final String TAG = "ColorPicker";
@@ -93,7 +95,7 @@ public class ColorPickerDialog extends Dialog {
             mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             mPaint.setShader(s);
             mPaint.setStyle(Paint.Style.STROKE);
-            mPaint.setStrokeWidth(Util.dip2px(context, 30));//圆环大小
+            mPaint.setStrokeWidth(Util.dp2px(context, 30));//圆环大小
             r = width / 2 * 0.7f - mPaint.getStrokeWidth() * 0.5f;
 
             //中心圆参数   
@@ -110,12 +112,12 @@ public class ColorPickerDialog extends Dialog {
             //黑白渐变参数   
             mRectColors = new int[]{0xFF000000, mCenterPaint.getColor(), 0xFFFFFFFF};
             mRectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            mRectPaint.setStrokeWidth(Util.dip2px(context, 5));
+            mRectPaint.setStrokeWidth(Util.dp2px(context, 5));
             rectLeft = -r - mPaint.getStrokeWidth() * 0.5f;
             rectTop = r + mPaint.getStrokeWidth() * 0.5f +
                     mLinePaint.getStrokeMiter() * 0.5f + 15;
             rectRight = r + mPaint.getStrokeWidth() * 0.5f;
-            rectBottom = rectTop + Util.dip2px(context, 30);
+            rectBottom = rectTop + Util.dp2px(context, 30);
         }
 
         @Override
@@ -347,8 +349,8 @@ public class ColorPickerDialog extends Dialog {
     @Override
     public void show() {
         super.show();
-        int height = Util.dip2px(context, 220);
-        int width = Util.dip2px(context, 200);
+        int height = Util.dp2px(context, 220);
+        int width = Util.dp2px(context, 200);
         ColorPickerView myView = new ColorPickerView(context, height, width);
         setContentView(myView);
         myView.setBackgroundColor(0);

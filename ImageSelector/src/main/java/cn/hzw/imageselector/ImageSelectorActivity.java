@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 
 /**
+ * 图片选择
  * Created by huangziwei on 16-3-14.
  */
 public class ImageSelectorActivity extends Activity implements View.OnClickListener {
@@ -31,7 +32,7 @@ public class ImageSelectorActivity extends Activity implements View.OnClickListe
     public static final String KEY_MAX_COUNT = "key_max_count";
 
     private GridView mGridView;
-    private int mCursorPosition = -1; // 当前在数据库的查到的位置
+    private int mCursorPosition = -1; // 当前在数据库查找位置
     private static final int CURSOR_COUNT = 100; //每次查询数据库的数量
     private ArrayList<String> mPathList;
     private Handler mHandler;
@@ -97,6 +98,7 @@ public class ImageSelectorActivity extends Activity implements View.OnClickListe
             }
         };
 
+        // 监听滚动状态
         mGridView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -116,6 +118,7 @@ public class ImageSelectorActivity extends Activity implements View.OnClickListe
         scanImageData();
     }
 
+    // 扫描系统数据库中的图片
     private synchronized void scanImageData() {
 
         if (mIsFinishSearchImage || mIsScanning) {
@@ -141,9 +144,9 @@ public class ImageSelectorActivity extends Activity implements View.OnClickListe
                         MediaStore.Images.Media.MIME_TYPE + "=? or "
                                 + MediaStore.Images.Media.MIME_TYPE + "=?",
                         new String[]{"image/jpeg", "image/png"},
-                        MediaStore.Images.Media.DATE_MODIFIED);
+                        MediaStore.Images.Media.DATE_MODIFIED + " DESC"); // 日期降序排序
 
-                mCursor.moveToPosition(mCursorPosition);
+                mCursor.moveToPosition(mCursorPosition); // 从上一次的扫描位置继续扫描
                 int i = 0;
                 String path;
                 while (mCursor.moveToNext() && i < CURSOR_COUNT) {
@@ -168,7 +171,7 @@ public class ImageSelectorActivity extends Activity implements View.OnClickListe
     public void onClick(View v) {
         if (v.getId() == R.id.btn_back) {
             this.finish();
-        } else if (v.getId() == R.id.btn_enter) {
+        } else if (v.getId() == R.id.btn_enter) { // 确认选择
             if (mAdapter.getSelectedSet().size() > 0) {
                 Intent intent = new Intent();
                 ArrayList<String> list = new ArrayList<String>();
