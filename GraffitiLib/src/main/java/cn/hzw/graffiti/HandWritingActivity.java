@@ -23,11 +23,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.View;
+import android.view.*;
 import android.view.View.OnTouchListener;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -43,6 +40,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.Util;
+
+import static cn.hzw.graffiti.HandWrite.MODE_COPY;
 
 
 public class HandWritingActivity extends Activity implements View.OnClickListener {
@@ -64,7 +63,7 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
 
 
     private View btnAmplify, btnReduce;
-    private final int WHAT_PAINT = 1, WHAT_RESIZE = 0;
+    private final int WHAT_PAINT = 1;
     private View btnSetColor;
     private TextView mSeekBarProgress;
 
@@ -83,13 +82,6 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
             switch (msg.what) {
                 case WHAT_PAINT:
                     handWrite.invalidate();
-                    break;
-                case WHAT_RESIZE:
-                    if (previewLayout.getWidth() * previewLayout.getHeight() != 0) {
-                        handWrite.setBG();
-                    } else {
-                        myHandler.sendEmptyMessageDelayed(0, 250);
-                    }
                     break;
             }
         }
@@ -118,8 +110,18 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
 
         previewLayout = (FrameLayout) findViewById(R.id.handwriting_preview);
         paneLayout = (RelativeLayout) findViewById(R.id.panel);
-        handWrite = new HandWrite(this);
-        previewLayout.addView(handWrite);
+        handWrite = new HandWrite(this, galleryBitmap, new HandWrite.GraffitiListener() {
+            @Override
+            public void onSaved(Bitmap bitmap) {
+
+            }
+
+            @Override
+            public void onError(int i, String msg) {
+
+            }
+        });
+        previewLayout.addView(handWrite, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         seekBar = (SeekBar) findViewById(R.id.paint_size);
         btnAmplify = findViewById(R.id.btn_amplifer);
         btnReduce = findViewById(R.id.btn_reduce);
@@ -166,7 +168,6 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         barShapeMode = findViewById(R.id.bar_shape_mode);
         choosePaintMode(btnPaintMode);
         choosePanit(btnPainter);
-        myHandler.sendEmptyMessageDelayed(WHAT_RESIZE, 250);
 
         findViewById(R.id.btn_back).setOnClickListener(this);
         findViewById(R.id.title_bar_btn01).setOnClickListener(this);
@@ -197,14 +198,19 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
 
     /**
      * 撤销
+     *
      * @param v
      */
     public void undo(View v) {
         handWrite.undo();
     }
 
+    private float scale, maxSacle = 3;
+    private final int timeSpan = 80;
+
     /**
      * 缩放
+     *
      * @param v
      */
     public void scalePic(View v) {
@@ -257,18 +263,20 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
 
     /**
      * 移动图片
+     *
      * @param v
      */
     public void movePic(View v) {
-        isMovingPic = !isMovingPic;
-        v.setSelected(!v.isSelected());
-        if (isMovingPic) {
+        handWrite.setMovingPic(!handWrite.isMovingPic());
+        v.setSelected(handWrite.isMovingPic());
+        if (handWrite.isMovingPic()) {
             showToast(R.string.moving_pic);
         }
     }
 
     /**
      * 居中图片
+     *
      * @param v
      */
     public void centrePic(View v) {
@@ -318,7 +326,6 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
     }
 
 
-
     public void choosePaintMode(View v) {
         if (v.isSelected())
             return;
@@ -327,11 +334,11 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         barShapeMode.setVisibility(View.GONE);
         btnShapeMode.setSelected(!v.isSelected());
         btnEarer.setSelected(!v.isSelected());
-        switch (lastPaintMode) {
+        switch (handWrite.getMode()) {
             case MODE_COPY:
                 chooseCopy(null);
                 break;
-            case Mode_PAINTER:
+            case HandWrite.Mode_PAINTER:
             default:
                 choosePanit(null);
                 break;
@@ -346,7 +353,7 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         barShapeMode.setVisibility(View.VISIBLE);
         btnEarer.setSelected(!v.isSelected());
         btnPaintMode.setSelected(!v.isSelected());
-        if (lastShapeMode == -1) {
+        if (handWrite.getShape() == -1) {
             chooseShape(btnArrow);
         }
         handWrite.setHasArrow(true);
@@ -355,42 +362,42 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
     public void chooseShape(View v) {
         v.setSelected(true);
         if (v.getId() == R.id.btn_arrow) {
-            lastShapeMode = MODE_ARROW;
+            handWrite.setShape(HandWrite.MODE_ARROW);
             btnFillCircle.setSelected(false);
             btnHollCircle.setSelected(false);
             btnFillRect.setSelected(false);
             btnHollRect.setSelected(false);
             btnLine.setSelected(false);
         } else if (v.getId() == R.id.btn_fill_circle) {
-            lastShapeMode = MODE_FILL_CIRCLE;
+            handWrite.setShape(HandWrite.MODE_FILL_CIRCLE);
             btnArrow.setSelected(false);
             btnHollCircle.setSelected(false);
             btnFillRect.setSelected(false);
             btnHollRect.setSelected(false);
             btnLine.setSelected(false);
         } else if (v.getId() == R.id.btn_holl_circle) {
-            lastShapeMode = MODE_HOLL_CIRCLE;
+            handWrite.setShape(HandWrite.MODE_HOLL_CIRCLE);
             btnFillCircle.setSelected(false);
             btnArrow.setSelected(false);
             btnFillRect.setSelected(false);
             btnHollRect.setSelected(false);
             btnLine.setSelected(false);
         } else if (v.getId() == R.id.btn_fill_rect) {
-            lastShapeMode = MODE_FILL_RECT;
+            handWrite.setShape(HandWrite.MODE_FILL_RECT);
             btnFillCircle.setSelected(false);
             btnHollCircle.setSelected(false);
             btnArrow.setSelected(false);
             btnHollRect.setSelected(false);
             btnLine.setSelected(false);
         } else if (v.getId() == R.id.btn_holl_rect) {
-            lastShapeMode = MODE_HOLL_RECT;
+            handWrite.setShape(HandWrite.MODE_HOLL_RECT);
             btnFillCircle.setSelected(false);
             btnHollCircle.setSelected(false);
             btnFillRect.setSelected(false);
             btnArrow.setSelected(false);
             btnLine.setSelected(false);
         } else if (v.getId() == R.id.btn_line) {
-            lastShapeMode = MODE_LINE;
+            handWrite.setShape(HandWrite.MODE_LINE);
             btnFillCircle.setSelected(false);
             btnHollCircle.setSelected(false);
             btnFillRect.setSelected(false);
@@ -403,14 +410,14 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         btnCopy.setSelected(true);
         handWrite.setHasCopy(true);
         btnPainter.setSelected(false);
-        lastPaintMode = MODE_COPY;
+        handWrite.setMode(HandWrite.MODE_COPY);
     }
 
     public void choosePanit(View v) {
         btnPainter.setSelected(true);
         handWrite.setHasPaint(true);
         btnCopy.setSelected(false);
-        lastPaintMode = Mode_PAINTER;
+        handWrite.setMode(HandWrite.Mode_PAINTER);
     }
 
     public void chooseEarer(View v) {
@@ -453,8 +460,7 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
     }
 
     private void back() {
-        if (!handWrite.hasModified) {
-            handWrite.originalBitmap.recycle();
+        if (!handWrite.isModified()) {
             this.finish();
             return;
         }
@@ -471,7 +477,7 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
                 .setNegativeButton(R.string.cancel, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
-                        handWrite.originalBitmap.recycle();
+//                        handWrite.originalBitmap.recycle();
                         HandWritingActivity.this.finish();
                     }
                 }).show();
@@ -488,10 +494,10 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
     @Override
     protected void onStop() {
         super.onStop();
-        Editor editor = mSharedPreferences.edit();
+        /*Editor editor = mSharedPreferences.edit();
         editor.putInt(KEY_PAINTER_SIZE, handWrite.radius);
         editor.putInt(KEY_PAINTER_COLOR, handWrite.curColor);
-        editor.commit();
+        editor.commit();*/
     }
 
     @Override
@@ -508,12 +514,7 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (handWrite != null)
-            handWrite.originalBitmap.recycle();
     }
-
-
-
 
 
     private class TitleOnTouchListener implements OnTouchListener {
@@ -521,13 +522,13 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction() & MotionEvent.ACTION_MASK) {
                 case MotionEvent.ACTION_DOWN:
-                    isJustDrawOriginal = true;
+                    handWrite.setJustDrawOriginal(true);
                     v.setSelected(true);
                     handWrite.invalidate();
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
-                    isJustDrawOriginal = false;
+                    handWrite.setJustDrawOriginal(false);
                     v.setSelected(false);
                     handWrite.invalidate();
                     break;
@@ -536,6 +537,7 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         }
     }
 
+    private boolean isScaling = false;
 
     private class MyOnTouchListener implements OnTouchListener {
         @Override

@@ -1,35 +1,22 @@
 package cn.hzw.graffiti;
 
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PointF;
-import android.graphics.Rect;
-import android.graphics.RectF;
+import android.graphics.*;
 import android.view.MotionEvent;
 import android.view.View;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.LogUtil;
 import cn.forward.androids.utils.Util;
+
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by huangziwei on 16-9-2.
  */
 public class HandWrite extends View {
 
-    public static final int ERROR_INIT = 1;
+    public static final int ERROR_INIT = -1;
+    public static final int ERROR_SAVE = -2;
 
-    private boolean hasModified = false;
     private Paint paint = null;
     private Bitmap originalBitmap = null;
     private float clickX = 0, clickY = 0;
@@ -58,16 +45,25 @@ public class HandWrite extends View {
 
     private GraffitiListener mGraffitiListener;
 
-    private float scale;
+    private float scale =1, maxSacle = 3;
     private float transX = 0, transY = 0;
     int lastPaintMode = -1;
     int lastShapeMode = -1;
-    final int Mode_PAINTER = 1, MODE_COPY = 2, MODE_ARROW = 3,
+    public static final int Mode_PAINTER = 1, MODE_COPY = 2, MODE_ARROW = 3,
             MODE_FILL_CIRCLE = 4, MODE_HOLL_CIRCLE = 5, MODE_FILL_RECT = 6,
             MODE_HOLL_RECT = 7, MODE_LINE = 8;
     private boolean isJustDrawOriginal; // 是否只绘制原图
-    private boolean isScaling = false, isMovingPic = false;
-    private final int timeSpan = 80, maxSacle = 3;
+    private boolean isMovingPic = false;
+
+    /**
+     * 涂鸦模式
+     */
+    public enum Mode{
+        Paint, // 画笔
+        Shape, //
+        Eraser;
+    }
+
 
     public HandWrite(Context context, Bitmap bitmap, GraffitiListener listener) {
         super(context);
@@ -81,6 +77,12 @@ public class HandWrite extends View {
             throw new RuntimeException("Bitmap is null!!!");
         }
         init();
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        setBG();
     }
 
     public void setColor(int c) {
@@ -181,6 +183,11 @@ public class HandWrite extends View {
         isMovingCopy = false;
     }
 
+    public void setJustDrawOriginal(boolean justDrawOriginal) {
+        this.isJustDrawOriginal = justDrawOriginal;
+    }
+
+
     public void init() {
         try {
             originalBitmap = Bitmap.createBitmap(galleryBitmap.getWidth(),
@@ -190,8 +197,8 @@ public class HandWrite extends View {
             mGraffitiListener.onError(ERROR_INIT, "init error");
             return;
         }
+        scale =1;
         myCanvas = new Canvas(originalBitmap);
-        hasModified = false;
 
         setColor(color);
         // earer = new Path();
@@ -252,23 +259,23 @@ public class HandWrite extends View {
     private int height, width;// 包揽图片的框大小 并非为preview的大�?
     private float centreX, centreY;// 是图片居�?
 
-    public void setBG() {// 不用resize preview
+    private void setBG() {// 不用resize preview
         int w = galleryBitmap.getWidth();
         int h = galleryBitmap.getHeight();
-        float nw = w * 1f / previewLayout.getWidth();
-        float nh = h * 1f / previewLayout.getHeight();
+        float nw = w * 1f / getWidth();
+        float nh = h * 1f / getHeight();
         if (nw > nh) {
             n = 1 / nw;
-            width = previewLayout.getWidth();
+            width = getWidth();
             height = (int) (h * n);
         } else {
             n = 1 / nh;
             width = (int) (w * n);
-            height = previewLayout.getHeight();
+            height = getHeight();
         }
         // 使图片居中
-        centreX = (previewLayout.getWidth() - width) / 2f;
-        centreY = (previewLayout.getHeight() - height) / 2f;
+        centreX = (getWidth() - width) / 2f;
+        centreY = (getHeight() - height) / 2f;
         invalidate();
     }
 
@@ -278,7 +285,6 @@ public class HandWrite extends View {
     public void clear() {
         pathStack.clear();
         pathStackBackup.clear();
-        hasModified = false;
         originalBitmap.recycle();
         originalBitmap = Bitmap.createBitmap(galleryBitmap.getWidth(),
                 galleryBitmap.getHeight(), Bitmap.Config.ARGB_8888);
@@ -304,6 +310,34 @@ public class HandWrite extends View {
             drawItself(pathStackBackup);
             invalidate();
         }
+    }
+
+    public boolean isModified() {
+        return pathStack.size() != 0 || pathStackBackup.size() != 0;
+    }
+
+    public int getShape() {
+        return lastShapeMode;
+    }
+
+    public void setShape(int shape) {
+        lastShapeMode = shape;
+    }
+
+    public int getMode() {
+        return lastPaintMode;
+    }
+
+    public void setMode(int mode) {
+        lastPaintMode = mode;
+    }
+
+    public void setMovingPic(boolean moving) {
+        isMovingPic = moving;
+    }
+
+    public boolean isMovingPic() {
+        return isMovingPic;
     }
 
     @Override
@@ -422,16 +456,14 @@ public class HandWrite extends View {
             return;
 
         if (!isMovingCopy && !isMovingPic) {
-            if (hasModified) {
-                if (isEarering || isPainting || isCopying || isShapping) {
-                    if (isPainting && isJustClickOnce) {
-                        isJustClickOnce = false;
-                        paintPath.quadTo(clickX / (n * scale), clickY
-                                / (n * scale), (clickX + radius / 22 + 1)
-                                / (n * scale), clickY / (n * scale));
-                    }
-                    drawItself(pathStack);
+            if (isEarering || isPainting || isCopying || isShapping) {
+                if (isPainting && isJustClickOnce) {
+                    isJustClickOnce = false;
+                    paintPath.quadTo(clickX / (n * scale), clickY
+                            / (n * scale), (clickX + radius / 22 + 1)
+                            / (n * scale), clickY / (n * scale));
                 }
+                drawItself(pathStack);
             }
         }
         canvas.scale(n * scale, n * scale);
@@ -512,8 +544,6 @@ public class HandWrite extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (isScaling)
-            return true;
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 isCopying = isEarering = isPainting = isShapping = false;
@@ -556,7 +586,6 @@ public class HandWrite extends View {
                                 srcRect.right + x, srcRect.bottom + y);
                         oldScale = scale;
 
-                        hasModified = true;
                         clickX = event.getX() - transX - centreX;
                         clickY = event.getY() - transY - centreY;
                         earer = new Path();
@@ -570,7 +599,6 @@ public class HandWrite extends View {
                         lastMoveX = event.getX();// 不用减trans
                         lastMoveY = event.getY();
                     } else {
-                        hasModified = true;
                         clickX = event.getX() - transX - centreX;
                         clickY = event.getY() - transY - centreY;
                         // mPath.reset();
@@ -631,7 +659,7 @@ public class HandWrite extends View {
                     clickX = clickY = 0;
                     clickTimes = 1;// 标记已经选择好盖章位�?
                     isMovingCopy = false;
-                } else if (isShapping && !isMovingPic && !isScaling) {
+                } else if (isShapping && !isMovingPic) {
                     PointF dstPoint = new PointF(
                             (event.getX() - transX - centreX) / (n * scale),
                             (event.getY() - transY - centreY) / (n * scale));
@@ -683,7 +711,6 @@ public class HandWrite extends View {
                     } else {
                         if (hasCopy && clickTimes < 2)
                             return true;
-                        hasModified = true;
                         if (isPainting) {
                             paintPath.quadTo(clickX / (n * scale), clickY
                                     / (n * scale), (event.getX() - transX
@@ -751,52 +778,26 @@ public class HandWrite extends View {
     }
 
     public void save() {
-        final String savePath = getFilePath(picPath, "涂鸦");
-        FileOutputStream outputStream = null;
         try {
             originalBitmap.recycle();
             try {
                 originalBitmap = galleryBitmap.copy(Bitmap.Config.RGB_565, true);
 //				   originalBitmap = galleryBitmap;//这样会报错，因为gallertBitmap时Immutable，不可修改的
             } catch (OutOfMemoryError error) {
-                int screenW = Util.getScreenWidth(context);
-                int screenH = Util.getScreenHeight(context);
-                galleryBitmap.recycle();
-                galleryBitmap = ImageUtils.createBitmapFromPath(picPath, context,
-                        (int) (screenW * 1.4f), (int) (screenH * 1.4f));//�?大占用内存改为挽救前的一�?
-                originalBitmap = galleryBitmap.copy(Bitmap.Config.RGB_565, true);
+                mGraffitiListener.onError(ERROR_SAVE, "save error");
             }
             myCanvas = new Canvas(originalBitmap);
             drawItself(pathStackBackup);
             drawItself(pathStack);
-            outputStream = new FileOutputStream(new File(savePath));
-            if (!originalBitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream)) {
-                outputStream.close();
-                originalBitmap.recycle();
-                galleryBitmap.recycle();
-                setResult(FAIL, null);
-                return;
-            }
-            outputStream.close();
             // 释放图片
-            originalBitmap.recycle();
-            galleryBitmap.recycle();
+           /* originalBitmap.recycle();
+            galleryBitmap.recycle();*/
         } catch (Throwable e) {//异常 �? error
             e.printStackTrace();
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                } catch (IOException e1) {
-                }
-            }
-            new File(savePath).delete();
-            setResult(FAIL, null);
+            mGraffitiListener.onError(ERROR_SAVE, "save error");
             return;
         }
-        Intent data = new Intent();
-        data.putExtra(KEY_IMAGE_PATH, savePath);
-        setResult(FINISH, data);
-        ImageUtils.addImage(getContentResolver(), savePath);
+        mGraffitiListener.onSaved(originalBitmap);
     }
 
     private class MyLocation {
@@ -816,8 +817,8 @@ public class HandWrite extends View {
         }
 
         public void draw(Canvas c, float tx, float ty) {
-            if (!isMovingPic && !isScaling && (isCopying || isMovingCopy))
-                updateLocation();
+//            if (!isMovingPic && !isScaling && (isCopying || isMovingCopy))
+            updateLocation();
             c.drawCircle(x + tx, y + ty, radius / 2, locationPaint);
             if (isReLocate)
                 c.drawCircle(x + tx, y + ty, radius / 4, redPaint);
