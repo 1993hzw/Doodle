@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import cn.hzw.graffiti.GraffitiActivity;
 import cn.hzw.graffiti.HandWritingActivity;
 import cn.hzw.imageselector.ImageLoader;
 import cn.hzw.imageselector.ImageSelectorActivity;
@@ -42,8 +43,8 @@ public class MainActivity extends Activity {
             }
             ArrayList<String> list = data.getStringArrayListExtra(ImageSelectorActivity.KEY_PATH_LIST);
             if (list != null && list.size() > 0) {
-                Intent intent = new Intent(getApplicationContext(), HandWritingActivity.class);
-                intent.putExtra(HandWritingActivity.KEY_IMAGE_PATH, list.get(0));
+                Intent intent = new Intent(getApplicationContext(), GraffitiActivity.class);
+                intent.putExtra(GraffitiActivity.KEY_IMAGE_PATH, list.get(0));
                 startActivityForResult(intent, REQ_CODE_GRAFFITI);
             }
         } else if (requestCode == REQ_CODE_GRAFFITI) {

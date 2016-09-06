@@ -55,14 +55,6 @@ public class HandWrite extends View {
     private boolean isJustDrawOriginal; // 是否只绘制原图
     private boolean isMovingPic = false;
 
-    /**
-     * 涂鸦模式
-     */
-    public enum Mode{
-        Paint, // 画笔
-        Shape, //
-        Eraser;
-    }
 
 
     public HandWrite(Context context, Bitmap bitmap, GraffitiListener listener) {

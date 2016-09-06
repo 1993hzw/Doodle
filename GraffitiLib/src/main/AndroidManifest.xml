@@ -6,8 +6,9 @@
     <!-- 往SDCard写入数据权限 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <application
-        >
+            >
         <activity android:name=".HandWritingActivity"/>
+        <activity android:name=".GraffitiActivity"/>
     </application>
 
 </manifest>
