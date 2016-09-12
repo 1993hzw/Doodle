@@ -9,6 +9,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Shader;
+import android.os.Build;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -95,6 +96,10 @@ public class GraffitiView extends View {
         if (galleryBitmap == null) {
             throw new RuntimeException("Bitmap is null!!!");
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
         init();
     }
 
@@ -142,6 +147,11 @@ public class GraffitiView extends View {
                 mTouchY = event.getY();
                 // 把操作记录到加入的堆栈中
                 if (mShape == Shape.HAND_WRITE) { // 手写
+                    mCurrPath.quadTo(
+                            toX(mLastTouchX),
+                            toY(mLastTouchY),
+                            toX((mTouchX + mLastTouchX) / 2),
+                            toY((mTouchY + mLastTouchY) / 2));
                     mPathStack.add(GraffitiPath.toPath(mPen, radius, color, mCurrPath));
                 } else {  // 画图形
                     // 加0.001f是为了仅点击时也能出现绘图
@@ -167,10 +177,10 @@ public class GraffitiView extends View {
                     mTouchY = event.getY();
                     if (mShape == Shape.HAND_WRITE) { // 手写
                         mCurrPath.quadTo(
+                                toX(mLastTouchX),
+                                toY(mLastTouchY),
                                 toX((mTouchX + mLastTouchX) / 2),
-                                toY((mTouchY + mLastTouchY) / 2),
-                                toX(mTouchX),
-                                toY(mTouchY));
+                                toY((mTouchY + mLastTouchY) / 2));
                     } else { // 画图形
 
                     }
@@ -207,7 +217,7 @@ public class GraffitiView extends View {
         mBitmapPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
 
         mPen = Pen.HAND;
-        mShape = Shape.HOLLOW_RECT;
+        mShape = Shape.HAND_WRITE;
 
         this.mBitmapShader = new BitmapShader(this.galleryBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
         mShaderMatrix = new Matrix();
@@ -234,12 +244,12 @@ public class GraffitiView extends View {
         initCanvas();
         resetCanvas();
 
+        centrePic();
         invalidate();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        super.onDraw(canvas);
         if (galleryBitmap.isRecycled() || originalBitmap.isRecycled()) {
             return;
         }
@@ -254,7 +264,6 @@ public class GraffitiView extends View {
         canvas.drawBitmap(originalBitmap, (centreX + transX) / (n * scale), (centreY + transY) / (n * scale), null);
 
         if (mIsPainting) {
-            LogUtil.i("hzw", "draw");
             // 画触摸的路径
             mBitmapPaint.setStrokeWidth(radius);
             mBitmapPaint.setColor(color);
@@ -312,11 +321,26 @@ public class GraffitiView extends View {
             case FILL_RECT:
                 paint.setStyle(Paint.Style.FILL);
             case HOLLOW_RECT:
-                DrawUtil.drawRect(
-                        canvas, sx, sy, dx, dy, paint);
+                if (sx < dx) {
+                    if (sy < dy) {
+                        DrawUtil.drawRect(
+                                canvas, sx, sy, dx, dy, paint);
+                    } else {
+                        DrawUtil.drawRect(
+                                canvas, sx, dy, dx, sy, paint);
+                    }
+                } else {
+                    if (sy < dy) {
+                        DrawUtil.drawRect(
+                                canvas, dx, sy, sx, dy, paint);
+                    } else {
+                        DrawUtil.drawRect(
+                                canvas, dx, dy, sx, sy, paint);
+                    }
+                }
                 break;
             default:
-                LogUtil.i("hzw","unknown shape");
+                LogUtil.i("hzw", "unknown shape");
         }
     }
 
@@ -498,10 +522,8 @@ public class GraffitiView extends View {
 
     /**
      * 居中图片
-     *
-     * @param v
      */
-    public void centrePic(View v) {
+    public void centrePic() {
         if (scale > 1) {
             new Thread(new Runnable() {
                 boolean isScaling = true;

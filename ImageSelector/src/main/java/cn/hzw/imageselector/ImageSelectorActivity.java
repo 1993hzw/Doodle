@@ -17,6 +17,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 
 
@@ -131,7 +132,6 @@ public class ImageSelectorActivity extends Activity implements View.OnClickListe
             showToast("暂无外部存储");
             return;
         }
-
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -153,7 +153,9 @@ public class ImageSelectorActivity extends Activity implements View.OnClickListe
                     i++;
                     // 获取图片的路径
                     path = mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DATA));
-                    mPathList.add(path);
+                    if (new File(path).exists()) {
+                        mPathList.add(path);
+                    }
                 }
                 mCursor.close();
                 mCursorPosition += i;
