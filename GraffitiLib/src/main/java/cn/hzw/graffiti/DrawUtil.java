@@ -10,7 +10,7 @@ import android.graphics.Path;
 public class DrawUtil {
 
     public static void drawArrow(Canvas canvas, float sx, float sy, float ex,
-                          float ey, Paint paint) {
+                                 float ey, Paint paint) {
         float arrowSize = paint.getStrokeWidth();
         double H = arrowSize; // 箭头高度
         double L = arrowSize / 2; // 底边的一�?
@@ -51,7 +51,7 @@ public class DrawUtil {
 
     // 计算 向量（px,py�? 旋转ang角度后的新长�?
     public static double[] rotateVec(float px, float py, double ang,
-                              boolean isChLen, double newLen) {
+                                     boolean isChLen, double newLen) {
         double mathstr[] = new double[2];
         // 矢量旋转函数，参数含义分别是x分量、y分量、旋转角、是否改变长度�?�新长度
         double vx = px * Math.cos(ang) - py * Math.sin(ang);
@@ -66,13 +66,29 @@ public class DrawUtil {
         return mathstr;
     }
 
-    public static void drawLine(Canvas canvas,float sx,float sy,float dx,float dy,Paint paint){
-        canvas.drawLine(sx,sy,dx,dy,paint);
+    public static void drawLine(Canvas canvas, float sx, float sy, float dx, float dy, Paint paint) {
+        canvas.drawLine(sx, sy, dx, dy, paint);
     }
-    public static void drawCircle(Canvas canvas,float cx,float cy,float radius,Paint paint){
-        canvas.drawCircle(cx,cy,radius,paint);
+
+    public static void drawCircle(Canvas canvas, float cx, float cy, float radius, Paint paint) {
+        canvas.drawCircle(cx, cy, radius, paint);
     }
-    public static void drawRect(Canvas canvas,float sx,float sy,float dx,float dy,Paint paint){
-        canvas.drawRect(sx,sy,dx,dy,paint);
+
+    public static void drawRect(Canvas canvas, float sx, float sy, float dx, float dy, Paint paint) {
+
+        // 保证　左上角　与　右下角　的对应关系
+        if (sx < dx) {
+            if (sy < dy) {
+                canvas.drawRect(sx, sy, dx, dy, paint);
+            } else {
+                canvas.drawRect(sx, dy, dx, sy, paint);
+            }
+        } else {
+            if (sy < dy) {
+                canvas.drawRect(dx, sy, sx, dy, paint);
+            } else {
+                canvas.drawRect(dx, dy, sx, sy, paint);
+            }
+        }
     }
 }
