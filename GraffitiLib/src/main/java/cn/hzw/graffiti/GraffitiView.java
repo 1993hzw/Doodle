@@ -40,7 +40,8 @@ public class GraffitiView extends View {
     private float centreX, centreY;// 是图片居�?
 
     private Paint mBitmapPaint;
-    private BitmapShader mBitmapShader;
+    private BitmapShader mBitmapShader; // 用于涂鸦的图片上
+    private BitmapShader mBitmapShader4C; // 用于view的画布上
     private float transX = 0, transY = 0;
 
     private int mode;
@@ -53,6 +54,8 @@ public class GraffitiView extends View {
     private boolean mIsPainting = false; // 是否正在绘制
 
     private boolean isJustDrawOriginal; // 是否只绘制原图
+
+    private CopyLocation mCopyLocation;
 
     // 保存涂鸦操作，便于撤销
     private CopyOnWriteArrayList<GraffitiPath> mPathStack = new CopyOnWriteArrayList<GraffitiPath>();
@@ -122,23 +125,35 @@ public class GraffitiView extends View {
                     mPathStack.clear();
                 }
 
-                if (mShape == Shape.HAND_WRITE) { // 手写
-                    mCurrPath = new Path();
-                    mCurrPath.moveTo(toX(mTouchDownX), toY(mTouchDownY));
-                    mCanvasPath.reset();
-                    mCanvasPath.moveTo(toX4C(mTouchDownX), toY4C(mTouchDownY));
+                if (mPen == Pen.COPY && mCopyLocation.isInIt(toX4C(mTouchX), toY4C(mTouchY))) { // 点击copy
+                    mCopyLocation.isRelocating = true;
+                    mCopyLocation.isCopying = false;
+                } else {
+                    if (mPen == Pen.COPY) {
+                        if (!mCopyLocation.isCopying) {
+                            mCopyLocation.setStartPosition(toX4C(mTouchX), toY4C(mTouchY));
+                            resetMatrix();
+                        }
+                        mCopyLocation.isCopying = true;
+                    }
+                    mCopyLocation.isRelocating = false;
+                    if (mShape == Shape.HAND_WRITE) { // 手写
+                        mCurrPath = new Path();
+                        mCurrPath.moveTo(toX(mTouchDownX), toY(mTouchDownY));
+                        mCanvasPath.reset();
+                        mCanvasPath.moveTo(toX4C(mTouchDownX), toY4C(mTouchDownY));
 
-                    // 为了仅点击时也能出现绘图，必须移动path
-                    mCanvasPath.quadTo(
-                            toX4C(mLastTouchX),
-                            toY4C(mLastTouchY),
-                            toX4C((mTouchX + mLastTouchX) / 2),
-                            toY4C((mTouchY + mLastTouchY) / 2));
-                } else {  // 画图形
+                        // 为了仅点击时也能出现绘图，必须移动path
+                        mCanvasPath.quadTo(
+                                toX4C(mLastTouchX),
+                                toY4C(mLastTouchY),
+                                toX4C((mTouchX + mLastTouchX) / 2),
+                                toY4C((mTouchY + mLastTouchY) / 2));
+                    } else {  // 画图形
 
+                    }
+                    mIsPainting = true;
                 }
-
-                mIsPainting = true;
                 invalidate();
                 return true;
             case MotionEvent.ACTION_UP:
@@ -148,21 +163,36 @@ public class GraffitiView extends View {
                 mLastTouchY = mTouchY;
                 mTouchX = event.getX();
                 mTouchY = event.getY();
-                // 把操作记录到加入的堆栈中
-                if (mShape == Shape.HAND_WRITE) { // 手写
-                    mCurrPath.quadTo(
-                            toX(mLastTouchX),
-                            toY(mLastTouchY),
-                            toX((mTouchX + mLastTouchX) / 2),
-                            toY((mTouchY + mLastTouchY) / 2));
-                    mPathStack.add(GraffitiPath.toPath(mPen, radius, color, mCurrPath));
-                } else {  // 画图形
-                    mPathStack.add(GraffitiPath.toShape(mPen, mShape, radius, color,
-                            toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX), toY(mTouchY)));
-                }
-                draw(myCanvas, mPathStack); // 保存到图片中
 
-                mIsPainting = false;
+                if (mCopyLocation.isRelocating) { // 正在定位location
+                    mCopyLocation.updateLocation(toX4C(mTouchX), toY4C(mTouchY));
+                    mCopyLocation.isRelocating = false;
+                } else {
+                    if (mIsPainting) {
+
+                        if (mPen == Pen.COPY) {
+                            mCopyLocation.updateLocation(mCopyLocation.mCopyStartX + toX4C(mTouchX) - mCopyLocation.mTouchStartX,
+                                    mCopyLocation.mCopyStartY + toY4C(mTouchY) - mCopyLocation.mTouchStartY);
+                        }
+
+                        // 把操作记录到加入的堆栈中
+                        if (mShape == Shape.HAND_WRITE) { // 手写
+                            mCurrPath.quadTo(
+                                    toX(mLastTouchX),
+                                    toY(mLastTouchY),
+                                    toX((mTouchX + mLastTouchX) / 2),
+                                    toY((mTouchY + mLastTouchY) / 2));
+                            mPathStack.add(GraffitiPath.toPath(mPen, radius, color, mCurrPath, mPen == Pen.COPY ? new Matrix(mShaderMatrix) : null));
+                        } else {  // 画图形
+                            mPathStack.add(GraffitiPath.toShape(mPen, mShape, radius, color,
+                                    toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX), toY(mTouchY),
+                                    mPen == Pen.COPY ? new Matrix(mShaderMatrix) : null));
+                        }
+                        draw(myCanvas, mPathStack, false); // 保存到图片中
+                        mIsPainting = false;
+                    }
+                }
+
                 invalidate();
                 return true;
             case MotionEvent.ACTION_MOVE:
@@ -171,19 +201,28 @@ public class GraffitiView extends View {
                     mLastTouchY = mTouchY;
                     mTouchX = event.getX();
                     mTouchY = event.getY();
-                    if (mShape == Shape.HAND_WRITE) { // 手写
-                        mCurrPath.quadTo(
-                                toX(mLastTouchX),
-                                toY(mLastTouchY),
-                                toX((mTouchX + mLastTouchX) / 2),
-                                toY((mTouchY + mLastTouchY) / 2));
-                        mCanvasPath.quadTo(
-                                toX4C(mLastTouchX),
-                                toY4C(mLastTouchY),
-                                toX4C((mTouchX + mLastTouchX) / 2),
-                                toY4C((mTouchY + mLastTouchY) / 2));
-                    } else { // 画图形
 
+                    if (mCopyLocation.isRelocating) { // 正在定位location
+                        mCopyLocation.updateLocation(toX4C(mTouchX), toY4C(mTouchY));
+                    } else {
+                        if (mPen == Pen.COPY) {
+                            mCopyLocation.updateLocation(mCopyLocation.mCopyStartX + toX4C(mTouchX) - mCopyLocation.mTouchStartX,
+                                    mCopyLocation.mCopyStartY + toY4C(mTouchY) - mCopyLocation.mTouchStartY);
+                        }
+                        if (mShape == Shape.HAND_WRITE) { // 手写
+                            mCurrPath.quadTo(
+                                    toX(mLastTouchX),
+                                    toY(mLastTouchY),
+                                    toX((mTouchX + mLastTouchX) / 2),
+                                    toY((mTouchY + mLastTouchY) / 2));
+                            mCanvasPath.quadTo(
+                                    toX4C(mLastTouchX),
+                                    toY4C(mLastTouchY),
+                                    toX4C((mTouchX + mLastTouchX) / 2),
+                                    toY4C((mTouchY + mLastTouchY) / 2));
+                        } else { // 画图形
+
+                        }
                     }
                 } else { // 多点
 
@@ -208,7 +247,7 @@ public class GraffitiView extends View {
     public void init() {
 
         scale = 0.7f;
-        radius = 30;
+        radius = 70;
         color = Color.RED;
         mBitmapPaint = new Paint();
         mBitmapPaint.setStrokeWidth(radius);
@@ -217,13 +256,15 @@ public class GraffitiView extends View {
         mBitmapPaint.setStrokeJoin(Paint.Join.ROUND);
         mBitmapPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
 
-        mPen = Pen.HAND;
-        mShape = Shape.HOLLOW_RECT;
+        mPen = Pen.COPY;
+        mShape = Shape.HAND_WRITE;
 
         this.mBitmapShader = new BitmapShader(this.galleryBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-        mShaderMatrix = new Matrix();
+        this.mBitmapShader4C = new BitmapShader(this.galleryBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
 
+        mShaderMatrix = new Matrix();
         mCanvasPath = new Path();
+        mCopyLocation = new CopyLocation(150, 150);
     }
 
     private void setBG() {// 不用resize preview
@@ -264,34 +305,40 @@ public class GraffitiView extends View {
         // 绘制涂鸦
         canvas.drawBitmap(originalBitmap, (centreX + transX) / (n * scale), (centreY + transY) / (n * scale), null);
 
-        if (mIsPainting) {
+        if (mIsPainting) {  //画在view的画布上
             // 画触摸的路径
             mBitmapPaint.setStrokeWidth(radius);
             mBitmapPaint.setColor(color);
             if (mShape == Shape.HAND_WRITE) { // 手写
-                draw(canvas, mPen, mBitmapPaint, mCanvasPath);
+                draw(canvas, mPen, mBitmapPaint, mCanvasPath, null, true);
             } else {  // 画图形
                 draw(canvas, mPen, mShape, mBitmapPaint,
-                        toX4C(mTouchDownX), toY4C(mTouchDownY), toX4C(mTouchX), toY4C(mTouchY));
+                        toX4C(mTouchDownX), toY4C(mTouchDownY), toX4C(mTouchX), toY4C(mTouchY), null, true);
             }
+        }
+
+        if (mPen == Pen.COPY) {
+            mCopyLocation.drawItSelf(canvas);
         }
 
     }
 
-    private void draw(Canvas canvas, Pen pen, Paint paint, Path path) {
-        resetPaint(pen, paint);
+    private void draw(Canvas canvas, Pen pen, Paint paint, Path path, Matrix matrix, boolean is4Canvas) {
+        resetPaint(pen, paint, is4Canvas, matrix);
 
         paint.setStyle(Paint.Style.STROKE);
         canvas.drawPath(path, paint);
 
     }
 
-    private void draw(Canvas canvas, Pen pen, Shape shape, Paint paint, float sx, float sy, float dx, float dy) {
-        resetPaint(pen, paint);
+    private void draw(Canvas canvas, Pen pen, Shape shape, Paint paint, float sx, float sy, float dx, float dy, Matrix matrix, boolean is4Canvas) {
+        resetPaint(pen, paint, is4Canvas, matrix);
 
         paint.setStyle(Paint.Style.STROKE);
+
         switch (shape) { // 绘制图形
             case ARROW:
+                paint.setStyle(Paint.Style.FILL);
                 DrawUtil.drawArrow(canvas, sx, sy, dx, dy, paint);
                 break;
             case LINE:
@@ -314,30 +361,40 @@ public class GraffitiView extends View {
     }
 
 
-    private void draw(Canvas canvas, CopyOnWriteArrayList<GraffitiPath> pathStack) {
+    private void draw(Canvas canvas, CopyOnWriteArrayList<GraffitiPath> pathStack, boolean is4Canvas) {
         // 还原堆栈中的记录的操作
         for (GraffitiPath path : pathStack) {
             mBitmapPaint.setStrokeWidth(path.mStrokeWidth);
             mBitmapPaint.setColor(path.mColor);
             if (mShape == Shape.HAND_WRITE) { // 手写
-                draw(canvas, path.mPen, mBitmapPaint, path.mPath);
+                draw(canvas, path.mPen, mBitmapPaint, path.mPath, path.mMatrix, is4Canvas);
             } else { // 画图形
                 draw(canvas, path.mPen, path.mShape, mBitmapPaint,
-                        path.mSx, path.mSy, path.mDx, path.mDy);
+                        path.mSx, path.mSy, path.mDx, path.mDy, path.mMatrix, is4Canvas);
             }
         }
     }
 
-    private void resetPaint(Pen pen, Paint paint) {
+    private void resetPaint(Pen pen, Paint paint, boolean is4Canvas, Matrix matrix) {
         switch (pen) { // 设置画笔
             case HAND:
                 paint.setShader(null);
                 break;
             case COPY:
-                paint.setShader(this.mBitmapShader);
+                if (is4Canvas) { // 画在view的画布上
+                    paint.setShader(this.mBitmapShader4C);
+                } else { // 调整copy图片位置
+                    mBitmapShader.setLocalMatrix(matrix);
+                    paint.setShader(this.mBitmapShader);
+                }
                 break;
             case ERASER:
-                paint.setShader(this.mBitmapShader);
+                if (is4Canvas) {
+                    paint.setShader(this.mBitmapShader4C);
+                } else {
+                    mBitmapShader.setLocalMatrix(null);
+                    paint.setShader(this.mBitmapShader);
+                }
                 break;
         }
     }
@@ -378,9 +435,10 @@ public class GraffitiView extends View {
         int mColor;
         Path mPath;
         float mSx, mSy, mDx, mDy;
+        Matrix mMatrix;
 
         static GraffitiPath toShape(Pen pen, Shape shape, float width, int color,
-                                    float sx, float sy, float dx, float dy) {
+                                    float sx, float sy, float dx, float dy, Matrix matrix) {
             GraffitiPath path = new GraffitiPath();
             path.mPen = pen;
             path.mShape = shape;
@@ -390,15 +448,17 @@ public class GraffitiView extends View {
             path.mSy = sy;
             path.mDx = dx;
             path.mDy = dy;
+            path.mMatrix = matrix;
             return path;
         }
 
-        static GraffitiPath toPath(Pen pen, float width, int color, Path p) {
+        static GraffitiPath toPath(Pen pen, float width, int color, Path p, Matrix matrix) {
             GraffitiPath path = new GraffitiPath();
             path.mPen = pen;
             path.mStrokeWidth = width;
             path.mColor = color;
             path.mPath = p;
+            path.mMatrix = matrix;
             return path;
         }
     }
@@ -412,9 +472,27 @@ public class GraffitiView extends View {
     }
 
     private void resetMatrix() {
-        this.mShaderMatrix.set(null);
-        this.mShaderMatrix.postTranslate((centreX + transX) / (n * scale), (centreY + transY) / (n * scale));
-        this.mBitmapShader.setLocalMatrix(this.mShaderMatrix);
+        if (mPen == Pen.COPY) { // 仿制，加上mCopyLocation记录的偏移
+
+            this.mShaderMatrix.set(null);
+            this.mShaderMatrix.postTranslate((centreX + transX) / (n * scale) + mCopyLocation.mTouchStartX - mCopyLocation.mCopyStartX,
+                    (centreY + transY) / (n * scale) + mCopyLocation.mTouchStartY - mCopyLocation.mCopyStartY);
+            this.mBitmapShader4C.setLocalMatrix(this.mShaderMatrix);
+
+            this.mShaderMatrix.set(null);
+            this.mShaderMatrix.postTranslate(mCopyLocation.mTouchStartX - mCopyLocation.mCopyStartX, mCopyLocation.mTouchStartY - mCopyLocation.mCopyStartY);
+            this.mBitmapShader.setLocalMatrix(this.mShaderMatrix);
+
+        } else {
+            this.mShaderMatrix.set(null);
+            this.mShaderMatrix.postTranslate((centreX + transX) / (n * scale), (centreY + transY) / (n * scale));
+            this.mBitmapShader4C.setLocalMatrix(this.mShaderMatrix);
+
+            this.mShaderMatrix.set(null);
+            this.mBitmapShader.setLocalMatrix(this.mShaderMatrix);
+        }
+
+
     }
 
     /**
@@ -458,14 +536,81 @@ public class GraffitiView extends View {
         }
     }
 
+    private class CopyLocation {
+
+        private float mCopyStartX, mCopyStartY; // 仿制的坐标
+        private float mTouchStartX, mTouchStartY; // 仿制的坐标
+        private float mX, mY;
+
+        private Paint mPaint;
+
+        private boolean isRelocating = true;
+        private boolean isCopying = false;
+
+        public CopyLocation(float x, float y) {
+            mX = x;
+            mY = y;
+            mTouchStartX = x;
+            mTouchStartY = y;
+            mPaint = new Paint();
+            mPaint.setAntiAlias(true);
+            mPaint.setStrokeWidth(radius);
+            mPaint.setStyle(Paint.Style.FILL);
+            mPaint.setStrokeJoin(Paint.Join.ROUND);
+        }
+
+
+        public void updateLocation(float x, float y) {
+            mX = x;
+            mY = y;
+        }
+
+
+        public void setStartPosition(float x, float y) {
+            mCopyStartX = mX;
+            mCopyStartY = mY;
+            mTouchStartX = x;
+            mTouchStartY = y;
+        }
+
+        public void drawItSelf(Canvas canvas) {
+            mPaint.setStrokeWidth(radius / 4);
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setColor(0xaa666666); // 灰色
+            DrawUtil.drawCircle(canvas, mX, mY, radius / 2 + radius / 8, mPaint);
+
+            mPaint.setStrokeWidth(radius / 16);
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setColor(0xaaffffff); // 白色
+            DrawUtil.drawCircle(canvas, mX, mY, radius / 2 + radius / 32, mPaint);
+
+            mPaint.setStyle(Paint.Style.FILL);
+            if (!isCopying) {
+                mPaint.setColor(0x44ff0000); // 红色
+                DrawUtil.drawCircle(canvas, mX, mY, radius / 2, mPaint);
+            } else {
+                mPaint.setColor(0x44000088); // 蓝色
+                DrawUtil.drawCircle(canvas, mX, mY, radius / 2, mPaint);
+            }
+        }
+
+        public boolean isInIt(float x, float y) {
+            if ((mX - x) * (mX - x) + (mY - y) * (mY - y) <= radius * radius) {
+                return true;
+            }
+            return false;
+        }
+
+    }
+
 
     // ===================== api ==============
 
     public void save() {
         try {
             initCanvas();
-            draw(myCanvas, pathStackBackup);
-            draw(myCanvas, mPathStack);
+            draw(myCanvas, pathStackBackup, false);
+            draw(myCanvas, mPathStack, false);
             mGraffitiListener.onSaved(originalBitmap);
             // 释放图片
            /* originalBitmap.recycle();
@@ -495,12 +640,12 @@ public class GraffitiView extends View {
         if (mPathStack.size() > 0) {
             mPathStack.remove(mPathStack.size() - 1);
             initCanvas();
-            draw(myCanvas, pathStackBackup);
+            draw(myCanvas, pathStackBackup, false);
             invalidate();
         } else if (pathStackBackup.size() > 0) {
             pathStackBackup.remove(pathStackBackup.size() - 1);
             initCanvas();
-            draw(myCanvas, pathStackBackup);
+            draw(myCanvas, pathStackBackup, false);
             invalidate();
         }
     }
