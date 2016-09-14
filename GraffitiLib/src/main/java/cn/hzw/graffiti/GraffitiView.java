@@ -107,6 +107,7 @@ public class GraffitiView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         setBG();
+        mCopyLocation.updateLocation(toX4C(w / 2), toY4C(h / 2));
     }
 
     @Override
@@ -246,8 +247,8 @@ public class GraffitiView extends View {
 
     public void init() {
 
-        scale = 0.7f;
-        radius = 70;
+        scale = 1f;
+        radius = 30;
         color = Color.RED;
         mBitmapPaint = new Paint();
         mBitmapPaint.setStrokeWidth(radius);
@@ -539,13 +540,13 @@ public class GraffitiView extends View {
     private class CopyLocation {
 
         private float mCopyStartX, mCopyStartY; // 仿制的坐标
-        private float mTouchStartX, mTouchStartY; // 仿制的坐标
-        private float mX, mY;
+        private float mTouchStartX, mTouchStartY; // 开始触摸的坐标
+        private float mX, mY; // 当前位置
 
         private Paint mPaint;
 
-        private boolean isRelocating = true;
-        private boolean isCopying = false;
+        private boolean isRelocating = true; // 正在定位中
+        private boolean isCopying = false; // 正在仿制绘图中
 
         public CopyLocation(float x, float y) {
             mX = x;
@@ -564,7 +565,6 @@ public class GraffitiView extends View {
             mX = x;
             mY = y;
         }
-
 
         public void setStartPosition(float x, float y) {
             mCopyStartX = mX;
@@ -594,6 +594,9 @@ public class GraffitiView extends View {
             }
         }
 
+        /**
+         * 判断是否点中
+         */
         public boolean isInIt(float x, float y) {
             if ((mX - x) * (mX - x) + (mY - y) * (mY - y) <= radius * radius) {
                 return true;
