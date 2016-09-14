@@ -644,6 +644,7 @@ public class GraffitiView extends View {
             mPathStack.remove(mPathStack.size() - 1);
             initCanvas();
             draw(myCanvas, pathStackBackup, false);
+            draw(myCanvas, mPathStack, false);
             invalidate();
         } else if (pathStackBackup.size() > 0) {
             pathStackBackup.remove(pathStackBackup.size() - 1);
@@ -745,6 +746,7 @@ public class GraffitiView extends View {
 
     public void setPen(Pen pen) {
         mPen = pen;
+        invalidate();
     }
 
     public Pen getPen() {
@@ -753,6 +755,7 @@ public class GraffitiView extends View {
 
     public void setShape(Shape shape) {
         mShape = shape;
+        invalidate();
     }
 
     public Shape getShape() {
