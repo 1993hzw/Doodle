@@ -14,8 +14,6 @@ import android.view.View;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import cn.forward.androids.utils.LogUtil;
-
 /**
  * Created by Administrator on 2016/9/3.
  */
@@ -41,7 +39,7 @@ public class GraffitiView extends View {
 
     private Paint mBitmapPaint;
     private BitmapShader mBitmapShader; // 用于涂鸦的图片上
-    private BitmapShader mBitmapShader4C; // 用于view的画布上
+    private BitmapShader mBitmapShader4C;
     private float transX = 0, transY = 0;
 
     private int mode;
@@ -101,6 +99,29 @@ public class GraffitiView extends View {
         }
 
         init();
+    }
+
+    public void init() {
+
+        scale = 1f;
+        radius = 30;
+        color = Color.RED;
+        mBitmapPaint = new Paint();
+        mBitmapPaint.setStrokeWidth(radius);
+        mBitmapPaint.setColor(color);
+        mBitmapPaint.setAntiAlias(true);
+        mBitmapPaint.setStrokeJoin(Paint.Join.ROUND);
+        mBitmapPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
+
+        mPen = Pen.COPY;
+        mShape = Shape.HAND_WRITE;
+
+        this.mBitmapShader = new BitmapShader(this.galleryBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        this.mBitmapShader4C = new BitmapShader(this.galleryBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+
+        mShaderMatrix = new Matrix();
+        mCanvasPath = new Path();
+        mCopyLocation = new CopyLocation(150, 150);
     }
 
     @Override
@@ -183,7 +204,7 @@ public class GraffitiView extends View {
                                     toY(mLastTouchY),
                                     toX((mTouchX + mLastTouchX) / 2),
                                     toY((mTouchY + mLastTouchY) / 2));
-                            mPathStack.add(GraffitiPath.toPath(mPen, radius, color, mCurrPath, mPen == Pen.COPY ? new Matrix(mShaderMatrix) : null));
+                            mPathStack.add(GraffitiPath.toPath(mPen, mShape, radius, color, mCurrPath, mPen == Pen.COPY ? new Matrix(mShaderMatrix) : null));
                         } else {  // 画图形
                             mPathStack.add(GraffitiPath.toShape(mPen, mShape, radius, color,
                                     toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX), toY(mTouchY),
@@ -245,28 +266,6 @@ public class GraffitiView extends View {
         return super.onTouchEvent(event);
     }
 
-    public void init() {
-
-        scale = 1f;
-        radius = 30;
-        color = Color.RED;
-        mBitmapPaint = new Paint();
-        mBitmapPaint.setStrokeWidth(radius);
-        mBitmapPaint.setColor(color);
-        mBitmapPaint.setAntiAlias(true);
-        mBitmapPaint.setStrokeJoin(Paint.Join.ROUND);
-        mBitmapPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
-
-        mPen = Pen.COPY;
-        mShape = Shape.HAND_WRITE;
-
-        this.mBitmapShader = new BitmapShader(this.galleryBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-        this.mBitmapShader4C = new BitmapShader(this.galleryBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-
-        mShaderMatrix = new Matrix();
-        mCanvasPath = new Path();
-        mCopyLocation = new CopyLocation(150, 150);
-    }
 
     private void setBG() {// 不用resize preview
         int w = galleryBitmap.getWidth();
@@ -357,7 +356,7 @@ public class GraffitiView extends View {
                 DrawUtil.drawRect(canvas, sx, sy, dx, dy, paint);
                 break;
             default:
-                LogUtil.i("hzw", "unknown shape");
+                throw new RuntimeException("unknown shape:" + shape);
         }
     }
 
@@ -367,7 +366,7 @@ public class GraffitiView extends View {
         for (GraffitiPath path : pathStack) {
             mBitmapPaint.setStrokeWidth(path.mStrokeWidth);
             mBitmapPaint.setColor(path.mColor);
-            if (mShape == Shape.HAND_WRITE) { // 手写
+            if (path.mShape == Shape.HAND_WRITE) { // 手写
                 draw(canvas, path.mPen, mBitmapPaint, path.mPath, path.mMatrix, is4Canvas);
             } else { // 画图形
                 draw(canvas, path.mPen, path.mShape, mBitmapPaint,
@@ -453,9 +452,10 @@ public class GraffitiView extends View {
             return path;
         }
 
-        static GraffitiPath toPath(Pen pen, float width, int color, Path p, Matrix matrix) {
+        static GraffitiPath toPath(Pen pen, Shape shape, float width, int color, Path p, Matrix matrix) {
             GraffitiPath path = new GraffitiPath();
             path.mPen = pen;
+            path.mShape = shape;
             path.mStrokeWidth = width;
             path.mColor = color;
             path.mPath = p;
@@ -480,6 +480,7 @@ public class GraffitiView extends View {
                     (centreY + transY) / (n * scale) + mCopyLocation.mTouchStartY - mCopyLocation.mCopyStartY);
             this.mBitmapShader4C.setLocalMatrix(this.mShaderMatrix);
 
+
             this.mShaderMatrix.set(null);
             this.mShaderMatrix.postTranslate(mCopyLocation.mTouchStartX - mCopyLocation.mCopyStartX, mCopyLocation.mTouchStartY - mCopyLocation.mCopyStartY);
             this.mBitmapShader.setLocalMatrix(this.mShaderMatrix);
@@ -489,11 +490,10 @@ public class GraffitiView extends View {
             this.mShaderMatrix.postTranslate((centreX + transX) / (n * scale), (centreY + transY) / (n * scale));
             this.mBitmapShader4C.setLocalMatrix(this.mShaderMatrix);
 
+
             this.mShaderMatrix.set(null);
             this.mBitmapShader.setLocalMatrix(this.mShaderMatrix);
         }
-
-
     }
 
     /**
@@ -745,7 +745,11 @@ public class GraffitiView extends View {
     }
 
     public void setPen(Pen pen) {
+        if (pen == null) {
+            throw new RuntimeException("Pen can't be null");
+        }
         mPen = pen;
+        resetMatrix();
         invalidate();
     }
 
@@ -754,6 +758,9 @@ public class GraffitiView extends View {
     }
 
     public void setShape(Shape shape) {
+        if (shape == null) {
+            throw new RuntimeException("Shape can't be null");
+        }
         mShape = shape;
         invalidate();
     }
