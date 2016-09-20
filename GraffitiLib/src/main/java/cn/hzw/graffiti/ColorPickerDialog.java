@@ -10,13 +10,16 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import cn.forward.androids.utils.ImageUtils;
@@ -367,16 +370,25 @@ public class ColorPickerDialog extends Dialog {
         int height = Util.dp2px(context, 220);
         int width = Util.dp2px(context, 200);
         ColorPickerView myView = new ColorPickerView(context, height, width);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(height, width);
         params.gravity = Gravity.CENTER;
-        LinearLayout frameLayout = new LinearLayout(context);
-        frameLayout.setOrientation(LinearLayout.VERTICAL);
-        frameLayout.addView(myView, params);
+        LinearLayout container = new LinearLayout(context);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.addView(myView, params);
 
-        frameLayout.addView(View.inflate(context, R.layout.graffiti_shader_view, null));
+        container.addView(View.inflate(context, R.layout.graffiti_shader_view, null),
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        container.findViewById(R.id.graffiti_shader1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImageView imageView = (ImageView) v;
+                mListener.colorChanged(imageView.getDrawable());
+                dismiss();
+            }
+        });
 
-        setContentView(frameLayout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        frameLayout.setBackgroundColor(0x22444444);
+        setContentView(container, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        container.setBackgroundColor(0x22444444);
         setCanceledOnTouchOutside(true);
     }
 
@@ -394,5 +406,7 @@ public class ColorPickerDialog extends Dialog {
          * @param color 选中的颜色
          */
         void colorChanged(int color);
+
+        void colorChanged(Drawable color);
     }
 }  

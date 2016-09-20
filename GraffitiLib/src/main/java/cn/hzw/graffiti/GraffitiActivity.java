@@ -2,6 +2,8 @@ package cn.hzw.graffiti;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,7 +81,7 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.btn_undo).setOnClickListener(mOnClickListener);
         mBtnColor = findViewById(R.id.btn_set_color);
         mBtnColor.setOnClickListener(mOnClickListener);
-        mBtnColor.setBackgroundColor(mGraffitiView.getColor());
+        mBtnColor.setBackgroundColor(mGraffitiView.getGraffitiColor().getColor());
 
         findViewById(R.id.btn_pen_hand).performClick();
         findViewById(R.id.btn_hand_write).performClick();
@@ -129,7 +131,6 @@ public class GraffitiActivity extends Activity {
                 return;
             }
 
-
             if (v.getId() == R.id.btn_clear) {
                 mGraffitiView.clear();
                 mDone = true;
@@ -137,11 +138,17 @@ public class GraffitiActivity extends Activity {
                 mGraffitiView.undo();
                 mDone = true;
             } else if (v.getId() == R.id.btn_set_color) {
-                new ColorPickerDialog(GraffitiActivity.this, mGraffitiView.getColor(), "画笔颜色",
+                new ColorPickerDialog(GraffitiActivity.this, mGraffitiView.getGraffitiColor().getColor(), "画笔颜色",
                         new ColorPickerDialog.OnColorChangedListener() {
                             public void colorChanged(int color) {
                                 mBtnColor.setBackgroundColor(color);
                                 mGraffitiView.setColor(color);
+                            }
+
+                            @Override
+                            public void colorChanged(Drawable color) {
+                                mBtnColor.setBackgroundDrawable(color);
+                                mGraffitiView.setColor(ImageUtils.getBitmapFromDrawable(color));
                             }
                         }).show();
                 mDone = true;

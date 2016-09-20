@@ -8,6 +8,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -415,6 +416,11 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
                     public void colorChanged(int color) {
                         btnSetColor.setBackgroundColor(color);
                         handWrite.setColor(color);
+                    }
+
+                    @Override
+                    public void colorChanged(Drawable color) {
+
                     }
                 }).show();
         ;
