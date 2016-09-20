@@ -242,7 +242,7 @@
                         android:id="@+id/paint_size"
                         android:layout_width="260dp"
                         android:layout_height="33dp"
-                        android:max="200"
+                        android:max="100"
                         android:paddingBottom="17dp"
                         android:paddingLeft="12dp"
                         android:paddingRight="10dp"
@@ -251,7 +251,7 @@
                         android:thumb="@drawable/thumb_seekbarr"/>
 
                     <TextView
-                        android:id="@+id/seekbar_progress"
+                        android:id="@+id/paint_size_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingLeft="2dp"

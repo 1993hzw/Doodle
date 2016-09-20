@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.FrameLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 import cn.forward.androids.utils.ImageUtils;
 
@@ -23,6 +25,11 @@ public class GraffitiActivity extends Activity {
     private GraffitiView mGraffitiView;
 
     private View.OnClickListener mOnClickListener;
+
+    private SeekBar mPaintSizeBar;
+    private TextView mPaintSize;
+
+    private View mBtnColor;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,9 +77,29 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.btn_fill_rect).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_clear).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_undo).setOnClickListener(mOnClickListener);
+        mBtnColor = findViewById(R.id.btn_set_color);
+        mBtnColor.setOnClickListener(mOnClickListener);
+        mBtnColor.setBackgroundColor(mGraffitiView.getColor());
 
         findViewById(R.id.btn_pen_hand).performClick();
         findViewById(R.id.btn_hand_write).performClick();
+
+        mPaintSizeBar = (SeekBar) findViewById(R.id.paint_size);
+        mPaintSize = (TextView) findViewById(R.id.paint_size_text);
+
+        mPaintSizeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mPaintSize.setText("" + progress);
+                mGraffitiView.setPaintSize(progress);
+            }
+
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+        mPaintSizeBar.setProgress((int) mGraffitiView.getPaintSize());
     }
 
     private class GraffitiOnClickListener implements View.OnClickListener {
@@ -108,6 +135,15 @@ public class GraffitiActivity extends Activity {
                 mDone = true;
             } else if (v.getId() == R.id.btn_undo) {
                 mGraffitiView.undo();
+                mDone = true;
+            } else if (v.getId() == R.id.btn_set_color) {
+                new ColorPickerDialog(GraffitiActivity.this, mGraffitiView.getColor(), "画笔颜色",
+                        new ColorPickerDialog.OnColorChangedListener() {
+                            public void colorChanged(int color) {
+                                mBtnColor.setBackgroundColor(color);
+                                mGraffitiView.setColor(color);
+                            }
+                        }).show();
                 mDone = true;
             }
             if (mDone) {

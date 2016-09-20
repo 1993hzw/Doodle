@@ -2,6 +2,7 @@ package cn.hzw.graffiti;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -11,9 +12,14 @@ import android.graphics.Shader;
 import android.graphics.SweepGradient;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
+import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.Util;
 
 public class ColorPickerDialog extends Dialog {
@@ -45,7 +51,7 @@ public class ColorPickerDialog extends Dialog {
      */
     public ColorPickerDialog(Context context, int initialColor,
                              String title, OnColorChangedListener listener) {
-        super(context);
+        super(context, android.R.style.Theme_Translucent_NoTitleBar);
         this.context = context;
         mListener = listener;
         mInitialColor = initialColor;
@@ -80,7 +86,8 @@ public class ColorPickerDialog extends Dialog {
         private boolean downInCircle = true;//按在渐变环上   
         private boolean downInRect;//按在渐变方块上   
         private boolean highlightCenter;//高亮   
-        private boolean highlightCenterLittle;//微亮   
+        private boolean highlightCenterLittle;//微亮
+        private RectF mRectF = new RectF();
 
         public ColorPickerView(Context context, int height, int width) {
             super(context);
@@ -141,13 +148,20 @@ public class ColorPickerDialog extends Dialog {
                 mCenterPaint.setStyle(Paint.Style.FILL);
                 mCenterPaint.setColor(c);
             }
+            mRectF.set(-r, -r, r, r);
             //画色环   
-            canvas.drawOval(new RectF(-r, -r, r, r), mPaint);
+            canvas.drawOval(mRectF, mPaint);
             //画黑白渐变块   
             if (downInCircle) {
-                mRectColors[1] = mCenterPaint.getColor();
+                if (mRectColors[1] != mCenterPaint.getColor()) {
+                    mRectColors[1] = mCenterPaint.getColor();
+                    rectShader = new LinearGradient(rectLeft, 0, rectRight, 0, mRectColors, null, Shader.TileMode.MIRROR);
+                }
             }
-            rectShader = new LinearGradient(rectLeft, 0, rectRight, 0, mRectColors, null, Shader.TileMode.MIRROR);
+            if (rectShader == null) {
+                rectShader = new LinearGradient(rectLeft, 0, rectRight, 0, mRectColors, null, Shader.TileMode.MIRROR);
+            }
+
             mRectPaint.setShader(rectShader);
             canvas.drawRect(rectLeft, rectTop, rectRight, rectBottom, mRectPaint);
             float offset = mLinePaint.getStrokeWidth() / 2;
@@ -158,7 +172,8 @@ public class ColorPickerDialog extends Dialog {
             canvas.drawLine(rectRight + offset, rectTop - offset * 2,
                     rectRight + offset, rectBottom + offset * 2, mLinePaint);//右   
             canvas.drawLine(rectLeft - offset * 2, rectBottom + offset,
-                    rectRight + offset * 2, rectBottom + offset, mLinePaint);//下   
+                    rectRight + offset * 2, rectBottom + offset, mLinePaint);//下
+
             super.onDraw(canvas);
         }
 
@@ -352,8 +367,16 @@ public class ColorPickerDialog extends Dialog {
         int height = Util.dp2px(context, 220);
         int width = Util.dp2px(context, 200);
         ColorPickerView myView = new ColorPickerView(context, height, width);
-        setContentView(myView);
-        myView.setBackgroundColor(0);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.gravity = Gravity.CENTER;
+        LinearLayout frameLayout = new LinearLayout(context);
+        frameLayout.setOrientation(LinearLayout.VERTICAL);
+        frameLayout.addView(myView, params);
+
+        frameLayout.addView(View.inflate(context, R.layout.graffiti_shader_view, null));
+
+        setContentView(frameLayout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        frameLayout.setBackgroundColor(0x22444444);
         setCanceledOnTouchOutside(true);
     }
 
@@ -361,7 +384,7 @@ public class ColorPickerDialog extends Dialog {
      * 回调接口
      *
      * @author <a href="clarkamx@gmail.com">LynK</a>
-     *         <p/>
+     *         <p>
      *         Create on 2012-1-6 上午8:21:05
      */
     public interface OnColorChangedListener {
