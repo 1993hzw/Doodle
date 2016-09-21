@@ -285,7 +285,7 @@
                     android:textStyle="bold"/>
 
                 <ImageView
-                    android:id="@+id/btn_amplifer"
+                    android:id="@+id/btn_amplifier"
                     android:layout_width="@dimen/title_bar_height"
                     android:layout_height="@dimen/title_bar_height"
                     android:layout_marginBottom="5dp"

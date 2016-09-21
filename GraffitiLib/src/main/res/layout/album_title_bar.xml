@@ -44,14 +44,22 @@
             android:textSize="18dp"/>
 
 
-        <ImageView
-            android:id="@+id/title_bar_btn01"
+        <FrameLayout
             android:layout_width="@dimen/title_bar_height"
             android:layout_height="@dimen/title_bar_height"
             android:layout_marginRight="10dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_indicator_settings_normal"
-            android:visibility="visible"/>
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/title_bar_btn01"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/btn_effect_round_pressed_yellow"
+                android:padding="5dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/graffiti_hide_panel"
+                android:visibility="visible"/>
+        </FrameLayout>
 
         <ImageView
             android:id="@+id/title_bar_btn02"

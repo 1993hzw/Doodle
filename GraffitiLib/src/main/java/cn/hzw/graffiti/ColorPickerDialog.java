@@ -2,7 +2,6 @@ package cn.hzw.graffiti;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -13,16 +12,11 @@ import android.graphics.SweepGradient;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
-import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.Util;
 
 public class ColorPickerDialog extends Dialog {
@@ -368,27 +362,28 @@ public class ColorPickerDialog extends Dialog {
     public void show() {
         super.show();
         int height = Util.dp2px(context, 220);
-        int width = Util.dp2px(context, 200);
+        int width = Util.dp2px(context, 180);
         ColorPickerView myView = new ColorPickerView(context, height, width);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(height, width);
-        params.gravity = Gravity.CENTER;
-        LinearLayout container = new LinearLayout(context);
-        container.setOrientation(LinearLayout.VERTICAL);
-        container.addView(myView, params);
 
-        container.addView(View.inflate(context, R.layout.graffiti_shader_view, null),
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        container.findViewById(R.id.graffiti_shader1).setOnClickListener(new View.OnClickListener() {
+        ViewGroup viewGroup = (ViewGroup) View.inflate(context, R.layout.graffiti_color_selector_dialog, null);
+        View.OnClickListener listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ImageView imageView = (ImageView) v;
                 mListener.colorChanged(imageView.getDrawable());
                 dismiss();
             }
-        });
+        };
 
-        setContentView(container, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        container.setBackgroundColor(0x22444444);
+        ViewGroup shaderContainer = (ViewGroup) viewGroup.findViewById(R.id.graffiti_shader_container);
+        for (int i = 0; i < shaderContainer.getChildCount(); i++) {
+            shaderContainer.getChildAt(i).setOnClickListener(listener);
+        }
+
+        ViewGroup container = (ViewGroup) viewGroup.findViewById(R.id.graffiti_color_selector_container);
+        container.addView(myView, 0, new ViewGroup.LayoutParams(height, width));
+
+        setContentView(viewGroup, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setCanceledOnTouchOutside(true);
     }
 
@@ -396,7 +391,7 @@ public class ColorPickerDialog extends Dialog {
      * 回调接口
      *
      * @author <a href="clarkamx@gmail.com">LynK</a>
-     *         <p>
+     *         <p/>
      *         Create on 2012-1-6 上午8:21:05
      */
     public interface OnColorChangedListener {

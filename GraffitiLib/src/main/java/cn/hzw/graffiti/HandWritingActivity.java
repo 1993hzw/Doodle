@@ -104,7 +104,7 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
         });
         previewLayout.addView(handWrite, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         seekBar = (SeekBar) findViewById(R.id.paint_size);
-        btnAmplify = findViewById(R.id.btn_amplifer);
+        btnAmplify = findViewById(R.id.btn_amplifier);
         btnReduce = findViewById(R.id.btn_reduce);
         btnSetColor = findViewById(R.id.btn_set_color);
 
@@ -199,7 +199,7 @@ public class HandWritingActivity extends Activity implements View.OnClickListene
             return;
         isScaling = true;
 
-        if (v.getId() == R.id.btn_amplifer) {
+        if (v.getId() == R.id.btn_amplifier) {
             new Thread(new Runnable() {
                 public void run() {
                     do {

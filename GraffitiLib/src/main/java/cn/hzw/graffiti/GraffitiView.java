@@ -14,6 +14,8 @@ import android.view.View;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import cn.forward.androids.utils.ThreadUtil;
+
 /**
  * Created by Administrator on 2016/9/3.
  */
@@ -82,7 +84,7 @@ public class GraffitiView extends View {
     private Shape mShape;
 
     private float mTouchDownX, mTouchDownY, mLastTouchX, mLastTouchY, mTouchX, mTouchY;
-    private Matrix mShaderMatrix;
+    private Matrix mShaderMatrix, mShaderMatrix4C;
 
     public GraffitiView(Context context, Bitmap bitmap, HandWrite.GraffitiListener listener) {
         super(context);
@@ -117,6 +119,7 @@ public class GraffitiView extends View {
         this.mBitmapShader4C = new BitmapShader(this.mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
 
         mShaderMatrix = new Matrix();
+        mShaderMatrix4C = new Matrix();
         mCanvasPath = new Path();
         mCopyLocation = new CopyLocation(150, 150);
     }
@@ -375,9 +378,9 @@ public class GraffitiView extends View {
             case HAND:
                 paint.setShader(null);
                 if (is4Canvas) {
-                    color.setColor(paint, mShaderMatrix);
+                    color.initColor(paint, mShaderMatrix4C);
                 } else {
-                    color.setColor(paint, null);
+                    color.initColor(paint, null);
                 }
                 break;
             case COPY:
@@ -403,28 +406,43 @@ public class GraffitiView extends View {
     /**
      * 将屏幕触摸坐标x转换成在图片中的坐标
      */
-    private float toX(float x) {
-        return (x - mCentreTranX - mTransX) / (mPrivateScale * mScale);
+    public final float toX(float touchX) {
+        return (touchX - mCentreTranX - mTransX) / (mPrivateScale * mScale);
     }
 
     /**
      * 将屏幕触摸坐标y转换成在图片中的坐标
      */
-    private float toY(float y) {
-        return (y - mCentreTranY - mTransY) / (mPrivateScale * mScale);
+    public final float toY(float touchY) {
+        return (touchY - mCentreTranY - mTransY) / (mPrivateScale * mScale);
+    }
+
+    /**
+     * 坐标换算
+     *
+     * @param touchX    触摸坐标
+     * @param graffitiX 在涂鸦图片中的坐标
+     * @return 偏移量
+     */
+    public final float toTransX(float touchX, float graffitiX) {
+        return -graffitiX * (mPrivateScale * mScale) + touchX - mCentreTranX;
+    }
+
+    public final float toTransY(float touchY, float graffitiY) {
+        return -graffitiY * (mPrivateScale * mScale) + touchY - mCentreTranY;
     }
 
     /**
      * 将屏幕触摸坐标x转换成在canvas中的坐标
      */
-    private float toX4C(float x) {
+    public final float toX4C(float x) {
         return (x) / (mPrivateScale * mScale);
     }
 
     /**
      * 将屏幕触摸坐标y转换成在canvas中的坐标
      */
-    private float toY4C(float y) {
+    public final float toY4C(float y) {
         return (y) / (mPrivateScale * mScale);
     }
 
@@ -479,18 +497,18 @@ public class GraffitiView extends View {
             this.mBitmapShader.setLocalMatrix(this.mShaderMatrix);
 
 
-            this.mShaderMatrix.set(null);
-            this.mShaderMatrix.postTranslate((mCentreTranX + mTransX) / (mPrivateScale * mScale) + mCopyLocation.mTouchStartX - mCopyLocation.mCopyStartX,
+            this.mShaderMatrix4C.set(null);
+            this.mShaderMatrix4C.postTranslate((mCentreTranX + mTransX) / (mPrivateScale * mScale) + mCopyLocation.mTouchStartX - mCopyLocation.mCopyStartX,
                     (mCentreTranY + mTransY) / (mPrivateScale * mScale) + mCopyLocation.mTouchStartY - mCopyLocation.mCopyStartY);
-            this.mBitmapShader4C.setLocalMatrix(this.mShaderMatrix);
+            this.mBitmapShader4C.setLocalMatrix(this.mShaderMatrix4C);
 
         } else {
             this.mShaderMatrix.set(null);
             this.mBitmapShader.setLocalMatrix(this.mShaderMatrix);
 
-            this.mShaderMatrix.set(null);
-            this.mShaderMatrix.postTranslate((mCentreTranX + mTransX) / (mPrivateScale * mScale), (mCentreTranY + mTransY) / (mPrivateScale * mScale));
-            this.mBitmapShader4C.setLocalMatrix(this.mShaderMatrix);
+            this.mShaderMatrix4C.set(null);
+            this.mShaderMatrix4C.postTranslate((mCentreTranX + mTransX) / (mPrivateScale * mScale), (mCentreTranY + mTransY) / (mPrivateScale * mScale));
+            this.mBitmapShader4C.setLocalMatrix(this.mShaderMatrix4C);
         }
     }
 
@@ -605,25 +623,58 @@ public class GraffitiView extends View {
     }
 
     public static class GraffitiColor {
+        public enum Type {
+            COLOR, BITMAP
+        }
+
         private int mColor;
         private Bitmap mBitmap;
+        private Type mType;
+        private Shader.TileMode mTileX = Shader.TileMode.MIRROR;
+        private Shader.TileMode mTileY = Shader.TileMode.MIRROR;  // 镜像
 
         public GraffitiColor(int color) {
+            mType = Type.COLOR;
             mColor = color;
         }
 
         public GraffitiColor(Bitmap bitmap) {
+            mType = Type.BITMAP;
             mBitmap = bitmap;
         }
 
-        void setColor(Paint paint, Matrix matrix) {
-            if (mBitmap == null) {
+        public GraffitiColor(Bitmap bitmap, Shader.TileMode tileX, Shader.TileMode tileY) {
+            mType = Type.BITMAP;
+            mBitmap = bitmap;
+            mTileX = tileX;
+            mTileY = tileY;
+        }
+
+        void initColor(Paint paint, Matrix matrix) {
+            if (mType == Type.COLOR) {
                 paint.setColor(mColor);
-            } else {
-                BitmapShader shader = new BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+            } else if (mType == Type.BITMAP) {
+                BitmapShader shader = new BitmapShader(mBitmap, mTileX, mTileY);
                 shader.setLocalMatrix(matrix);
                 paint.setShader(shader);
             }
+        }
+
+        private void setColor(int color) {
+            mType = Type.COLOR;
+            mColor = color;
+        }
+
+        private void setColor(Bitmap bitmap) {
+            mType = Type.BITMAP;
+            mBitmap = bitmap;
+        }
+
+        private void setColor(Bitmap bitmap, Shader.TileMode tileX, Shader.TileMode tileY) {
+            mType = Type.BITMAP;
+            mBitmap = bitmap;
+            mTileX = tileX;
+            mTileY = tileY;
         }
 
         public int getColor() {
@@ -634,9 +685,19 @@ public class GraffitiView extends View {
             return mBitmap;
         }
 
+        public Type getType() {
+            return mType;
+        }
+
         public GraffitiColor copy() {
-            GraffitiColor color = new GraffitiColor(mColor);
-            color.mBitmap = mBitmap;
+            GraffitiColor color = null;
+            if (mType == Type.COLOR) {
+                color = new GraffitiColor(mColor);
+            } else {
+                color = new GraffitiColor(mBitmap);
+            }
+            color.mTileX = mTileX;
+            color.mTileY = mTileY;
             return color;
         }
     }
@@ -645,19 +706,9 @@ public class GraffitiView extends View {
     // ===================== api ==============
 
     public void save() {
-        try {
-            initCanvas();
-            draw(mBitmapCanvas, pathStackBackup, false);
-            draw(mBitmapCanvas, mPathStack, false);
-            mGraffitiListener.onSaved(mGraffitiBitmap);
-            // 释放图片
-           /* mGraffitiBitmap.recycle();
-            mBitmap.recycle();*/
-        } catch (Throwable e) {//异常 �? error
-            e.printStackTrace();
-            mGraffitiListener.onError(ERROR_SAVE, "save error");
-            return;
-        }
+//            initCanvas();
+//            draw(mBitmapCanvas, pathStackBackup, false);
+//            draw(mBitmapCanvas, mPathStack, false);
         mGraffitiListener.onSaved(mGraffitiBitmap);
     }
 
@@ -701,7 +752,7 @@ public class GraffitiView extends View {
      */
     public void centrePic() {
         if (mScale > 1) {
-            new Thread(new Runnable() {
+            ThreadUtil.getInstance().runOnAsyncThread(new Runnable() {
                 boolean isScaling = true;
 
                 public void run() {
@@ -721,9 +772,9 @@ public class GraffitiView extends View {
                     } while (isScaling);
 
                 }
-            }).start();
+            });
         } else if (mScale < 1) {
-            new Thread(new Runnable() {
+            ThreadUtil.getInstance().runOnAsyncThread(new Runnable() {
                 boolean isScaling = true;
 
                 public void run() {
@@ -742,7 +793,7 @@ public class GraffitiView extends View {
                         }
                     } while (isScaling);
                 }
-            }).start();
+            });
         }
     }
 
@@ -761,16 +812,23 @@ public class GraffitiView extends View {
     }
 
     public void setColor(int color) {
-        this.mColor.mBitmap = null;
-        this.mColor.mColor = color;
+        mColor.setColor(color);
         invalidate();
     }
 
-    public void setColor(Bitmap color) {
+    public void setColor(Bitmap bitmap) {
         if (mBitmap == null) {
             return;
         }
-        this.mColor.mBitmap = color;
+        mColor.setColor(bitmap);
+        invalidate();
+    }
+
+    public void setColor(Bitmap bitmap, Shader.TileMode tileX, Shader.TileMode tileY) {
+        if (mBitmap == null) {
+            return;
+        }
+        mColor.setColor(bitmap, tileX, tileY);
         invalidate();
     }
 
@@ -781,6 +839,7 @@ public class GraffitiView extends View {
     public void setScale(float scale) {
         this.mScale = scale;
         judgePosition();
+        resetMatrix();
         invalidate();
     }
 
@@ -813,6 +872,14 @@ public class GraffitiView extends View {
         return mShape;
     }
 
+    public void setTrans(float transX, float transY) {
+        mTransX = transX;
+        mTransY = transY;
+        judgePosition();
+        resetMatrix();
+        invalidate();
+    }
+
     public void setTransX(float transX) {
         this.mTransX = transX;
         judgePosition();
@@ -836,6 +903,7 @@ public class GraffitiView extends View {
 
     public void setPaintSize(float paintSize) {
         mPaintSize = paintSize;
+        invalidate();
     }
 
     public float getPaintSize() {
