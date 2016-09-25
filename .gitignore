@@ -11,10 +11,3 @@ out
 build
 local.properties
 
-
-
-将删除 GraffitiLib/libs/
-将删除 GraffitiLib/src/main/java/
-将删除 GraffitiLib/src/main/res/drawable/
-将删除 app/libs/
-将删除 app/src/main/res/drawable/
