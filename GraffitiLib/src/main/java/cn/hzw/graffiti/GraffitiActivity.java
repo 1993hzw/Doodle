@@ -75,7 +75,7 @@ public class GraffitiActivity extends Activity {
         setContentView(R.layout.layout_graffiti);
         mFrameLayout = (FrameLayout) findViewById(R.id.graffiti_container);
 
-        mGraffitiView = new GraffitiView(this, mBitmap, new HandWrite.GraffitiListener() {
+        mGraffitiView = new GraffitiView(this, mBitmap, new GraffitiView.GraffitiListener() {
             @Override
             public void onSaved(Bitmap bitmap) { // 保存图片
                 File dcimFile = new File(Environment.getExternalStorageDirectory(), "DCIM");

@@ -10,7 +10,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import cn.hzw.graffiti.GraffitiActivity;
-import cn.hzw.graffiti.HandWritingActivity;
 import cn.hzw.imageselector.ImageLoader;
 import cn.hzw.imageselector.ImageSelectorActivity;
 
@@ -51,7 +50,7 @@ public class MainActivity extends Activity {
             if (data == null) {
                 return;
             }
-            String path = data.getStringExtra(HandWritingActivity.KEY_IMAGE_PATH);
+            String path = data.getStringExtra(GraffitiActivity.KEY_IMAGE_PATH);
             if (TextUtils.isEmpty(path)) {
                 return;
             }

@@ -27,10 +27,10 @@ public class GraffitiView extends View {
     private static final float VALUE = 1f;
     private final int TIME_SPAN = 80;
 
-    private HandWrite.GraffitiListener mGraffitiListener;
+    private GraffitiListener mGraffitiListener;
 
-    private Bitmap mBitmap;
-    private Bitmap mGraffitiBitmap;
+    private Bitmap mBitmap; // 原图
+    private Bitmap mGraffitiBitmap; // 用绘制涂鸦的图片
     private Canvas mBitmapCanvas;
 
     private float mPrivateScale; // 图片适应屏幕时的缩放倍数
@@ -41,13 +41,13 @@ public class GraffitiView extends View {
     private BitmapShader mBitmapShader4C;
     private Path mCurrPath; // 当前手写的路径
     private Path mCanvasPath; //
-    private CopyLocation mCopyLocation;
+    private CopyLocation mCopyLocation; // 仿制的定位器
 
     private Paint mPaint;
-    private int mTouchMode;
+    private int mTouchMode; // 触摸模式，用于判断单点或多点触摸
     private float mPaintSize;
-    private GraffitiColor mColor;
-    private float mScale;
+    private GraffitiColor mColor; // 画笔底色
+    private float mScale; // 缩放倍数, 图片真实的缩放倍数为 mPrivateScale*mScale
     private float mTransX = 0, mTransY = 0;
 
     private boolean mIsPainting = false; // 是否正在绘制
@@ -86,7 +86,7 @@ public class GraffitiView extends View {
     private float mTouchDownX, mTouchDownY, mLastTouchX, mLastTouchY, mTouchX, mTouchY;
     private Matrix mShaderMatrix, mShaderMatrix4C;
 
-    public GraffitiView(Context context, Bitmap bitmap, HandWrite.GraffitiListener listener) {
+    public GraffitiView(Context context, Bitmap bitmap, GraffitiListener listener) {
         super(context);
         mBitmap = bitmap;
         mGraffitiListener = listener;
@@ -419,7 +419,7 @@ public class GraffitiView extends View {
 
     /**
      * 坐标换算
-     *
+     * （公式由toX()中的公式推算出）
      * @param touchX    触摸坐标
      * @param graffitiX 在涂鸦图片中的坐标
      * @return 偏移量
@@ -553,6 +553,10 @@ public class GraffitiView extends View {
         }
     }
 
+    /**
+     *
+     * 仿制的定位器
+     */
     private class CopyLocation {
 
         private float mCopyStartX, mCopyStartY; // 仿制的坐标
@@ -622,9 +626,13 @@ public class GraffitiView extends View {
 
     }
 
+    /**
+     * 涂鸦底色
+     */
     public static class GraffitiColor {
         public enum Type {
-            COLOR, BITMAP
+            COLOR, // 颜色值
+            BITMAP // 图片
         }
 
         private int mColor;
@@ -705,6 +713,9 @@ public class GraffitiView extends View {
 
     // ===================== api ==============
 
+    /**
+     * 保存
+     */
     public void save() {
 //            initCanvas();
 //            draw(mBitmapCanvas, pathStackBackup, false);
@@ -811,6 +822,10 @@ public class GraffitiView extends View {
         return isJustDrawOriginal;
     }
 
+    /**
+     * 设置画笔底色
+     * @param color
+     */
     public void setColor(int color) {
         mColor.setColor(color);
         invalidate();
@@ -836,6 +851,10 @@ public class GraffitiView extends View {
         return mColor;
     }
 
+    /**
+     * 缩放倍数，图片真实的缩放倍数为 mPrivateScale*mScale
+     * @param scale
+     */
     public void setScale(float scale) {
         this.mScale = scale;
         judgePosition();
@@ -847,6 +866,10 @@ public class GraffitiView extends View {
         return mScale;
     }
 
+    /**
+     * 设置画笔
+     * @param pen
+     */
     public void setPen(Pen pen) {
         if (pen == null) {
             throw new RuntimeException("Pen can't be null");
@@ -860,6 +883,10 @@ public class GraffitiView extends View {
         return mPen;
     }
 
+    /**
+     * 设置画笔形状
+     * @param shape
+     */
     public void setShape(Shape shape) {
         if (shape == null) {
             throw new RuntimeException("Shape can't be null");
@@ -880,6 +907,10 @@ public class GraffitiView extends View {
         invalidate();
     }
 
+    /**
+     * 设置图片偏移
+     * @param transX
+     */
     public void setTransX(float transX) {
         this.mTransX = transX;
         judgePosition();
@@ -908,5 +939,21 @@ public class GraffitiView extends View {
 
     public float getPaintSize() {
         return mPaintSize;
+    }
+
+    public interface GraffitiListener {
+
+        /**
+         * 保存图片
+         * @param bitmap
+         */
+        void onSaved(Bitmap bitmap);
+
+        /**
+         * 出错
+         * @param i
+         * @param msg
+         */
+        void onError(int i, String msg);
     }
 }
