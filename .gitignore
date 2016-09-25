@@ -10,4 +10,5 @@ out
 .gradle
 build
 local.properties
+gradle
 
