@@ -2,8 +2,6 @@ package cn.hzw.imageselector;
 
 import android.content.Context;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 
 import com.lidroid.xutils.BitmapUtils;
 import com.lidroid.xutils.bitmap.BitmapDisplayConfig;
@@ -36,8 +34,8 @@ public class ImageLoader {
 
         mBitmapUtils = new BitmapUtils(context, null, memoryCacheSize);
         mBitmapDisplayConfig = new BitmapDisplayConfig();
-        mBitmapDisplayConfig.setLoadFailedDrawable(context.getResources().getDrawable(R.drawable.loading));
-        mBitmapDisplayConfig.setLoadingDrawable(context.getResources().getDrawable(R.drawable.loading));
+        mBitmapDisplayConfig.setLoadFailedDrawable(context.getResources().getDrawable(R.drawable.imageselector_loading));
+        mBitmapDisplayConfig.setLoadingDrawable(context.getResources().getDrawable(R.drawable.imageselector_loading));
        /* Animation animation = new AlphaAnimation(0, 1);
         animation.setDuration(100);
         mBitmapDisplayConfig.setAnimation(animation);*/

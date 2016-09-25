@@ -26,7 +26,7 @@ import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.ThreadUtil;
 
 /**
- * Created by Administrator on 2016/9/3.
+ * Created by huangziwei on 2016/9/3.
  */
 public class GraffitiActivity extends Activity {
 
@@ -56,6 +56,7 @@ public class GraffitiActivity extends Activity {
     private float mScale = 1;
     private final float mMaxScale = 3.5f;
     private final int TIME_SPAN = 80;
+    private View mBtnMovePic;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -138,7 +139,8 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.title_bar_btn02).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_back).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_centre_pic).setOnClickListener(mOnClickListener);
-        findViewById(R.id.btn_move_pic).setOnClickListener(mOnClickListener);
+        mBtnMovePic = findViewById(R.id.btn_move_pic);
+        mBtnMovePic.setOnClickListener(mOnClickListener);
         mBtnColor = findViewById(R.id.btn_set_color);
         mBtnColor.setOnClickListener(mOnClickListener);
         if (mGraffitiView.getGraffitiColor().getType() == GraffitiView.GraffitiColor.Type.COLOR) {
@@ -284,14 +286,14 @@ public class GraffitiActivity extends Activity {
 
             if (v.getId() == R.id.btn_clear) {
                 new AlertDialog.Builder(GraffitiActivity.this)
-                        .setTitle(R.string.clear_screen)
-                        .setMessage(R.string.cant_undo_after_clearing)
-                        .setPositiveButton(R.string.enter, new DialogInterface.OnClickListener() {
+                        .setTitle(R.string.graffiti_clear_screen)
+                        .setMessage(R.string.graffiti_cant_undo_after_clearing)
+                        .setPositiveButton(R.string.graffiti_enter, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 mGraffitiView.clear();
                             }
                         })
-                        .setNegativeButton(R.string.cancel, null)
+                        .setNegativeButton(R.string.graffiti_cancel, null)
                         .show();
                 mDone = true;
             } else if (v.getId() == R.id.btn_undo) {
@@ -329,15 +331,15 @@ public class GraffitiActivity extends Activity {
                     finish();
                     return;
                 }
-                new AlertDialog.Builder(GraffitiActivity.this).setTitle(R.string.saving_picture)
+                new AlertDialog.Builder(GraffitiActivity.this).setTitle(R.string.graffiti_saving_picture)
                         .setIcon(android.R.drawable.ic_dialog_info)
-                        .setPositiveButton(R.string.enter, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.graffiti_enter, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface arg0, int arg1) {
                                 mGraffitiView.save();
                             }
                         })
-                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        .setNegativeButton(R.string.graffiti_cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface arg0, int arg1) {
                                 finish();
@@ -351,7 +353,7 @@ public class GraffitiActivity extends Activity {
                 v.setSelected(!v.isSelected());
                 mIsMovingPic = v.isSelected();
                 if (mIsMovingPic) {
-                    Toast.makeText(getApplicationContext(), R.string.moving_pic, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.graffiti_moving_pic, Toast.LENGTH_SHORT).show();
                 }
                 mDone = true;
             }
@@ -383,6 +385,17 @@ public class GraffitiActivity extends Activity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+
+        if(mBtnMovePic.isSelected()){
+            mBtnMovePic.setSelected(false);
+            return;
+        }else{
+            findViewById(R.id.btn_back).performClick();
+        }
+
+    }
 
     /**
      * 放大缩小

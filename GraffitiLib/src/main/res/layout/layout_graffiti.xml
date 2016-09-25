@@ -6,7 +6,7 @@
               android:background="#232323"
               android:orientation="vertical">
 
-    <include layout="@layout/album_title_bar"/>
+    <include layout="@layout/graffiti__title_bar"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -39,7 +39,7 @@
                         android:id="@+id/btn_pen_hand"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_round"
+                        android:background="@drawable/graffiti_btn_effect_round"
                         android:scaleType="centerCrop"
                         android:text="手绘"
                         android:textColor="#000000"
@@ -50,7 +50,7 @@
                         android:id="@+id/btn_pen_copy"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_round"
+                        android:background="@drawable/graffiti_btn_effect_round"
                         android:scaleType="centerCrop"
                         android:text="仿制"
                         android:textColor="#000000"
@@ -61,7 +61,7 @@
                         android:id="@+id/btn_pen_eraser"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_round"
+                        android:background="@drawable/graffiti_btn_effect_round"
 
                         android:scaleType="centerCrop"
                         android:text="橡皮擦"
@@ -78,7 +78,7 @@
                         android:id="@+id/btn_clear"
                         android:layout_width="@dimen/title_bar_height"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_round"
+                        android:background="@drawable/graffiti_btn_effect_round"
                         android:text="清屏"
                         android:textColor="#000000"
                         android:textSize="13dp"/>
@@ -87,7 +87,7 @@
                         android:id="@+id/btn_undo"
                         android:layout_width="@dimen/title_bar_height"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_round"
+                        android:background="@drawable/graffiti_btn_effect_round"
                         android:text="撤销"
                         android:textColor="#000000"
                         android:textSize="13dp"/>
@@ -106,7 +106,7 @@
                         android:id="@+id/btn_painter"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_rect_line"
+                        android:background="@drawable/graffiti_btn_effect_rect_line"
 
                         android:scaleType="centerCrop"
                         android:text="手绘"
@@ -118,7 +118,7 @@
                         android:id="@+id/btn_copy"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_rect_line"
+                        android:background="@drawable/graffiti_btn_effect_rect_line"
 
                         android:scaleType="centerCrop"
                         android:text="仿制"
@@ -140,7 +140,7 @@
                         android:id="@+id/btn_hand_write"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_rect_line"
+                        android:background="@drawable/graffiti_btn_effect_rect_line"
                         android:text="手绘"
                         android:textColor="#000000"
                         android:textSize="10dp"
@@ -150,7 +150,7 @@
                         android:id="@+id/btn_arrow"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_rect_line"
+                        android:background="@drawable/graffiti_btn_effect_rect_line"
 
                         android:text="箭头"
                         android:textColor="#000000"
@@ -161,7 +161,7 @@
                         android:id="@+id/btn_line"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_rect_line"
+                        android:background="@drawable/graffiti_btn_effect_rect_line"
 
                         android:text="直线"
                         android:textColor="#000000"
@@ -172,7 +172,7 @@
                         android:id="@+id/btn_holl_circle"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_rect_line"
+                        android:background="@drawable/graffiti_btn_effect_rect_line"
 
                         android:scaleType="centerCrop"
                         android:text="空心圆"
@@ -184,7 +184,7 @@
                         android:id="@+id/btn_fill_circle"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_rect_line"
+                        android:background="@drawable/graffiti_btn_effect_rect_line"
 
                         android:scaleType="centerCrop"
                         android:text="实心圆"
@@ -196,7 +196,7 @@
                         android:id="@+id/btn_holl_rect"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_rect_line"
+                        android:background="@drawable/graffiti_btn_effect_rect_line"
 
                         android:scaleType="centerCrop"
                         android:text="空心矩形"
@@ -208,7 +208,7 @@
                         android:id="@+id/btn_fill_rect"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
-                        android:background="@drawable/btn_effect_rect_line"
+                        android:background="@drawable/graffiti_btn_effect_rect_line"
 
                         android:scaleType="centerCrop"
                         android:text="实心矩形"
@@ -228,7 +228,7 @@
                     <RelativeLayout
                         android:layout_width="30dp"
                         android:layout_height="30dp"
-                        android:background="@drawable/btn_effect_rect_line"
+                        android:background="@drawable/graffiti_btn_effect_rect_line"
 
                         android:padding="2dp">
 
@@ -247,8 +247,8 @@
                         android:paddingLeft="12dp"
                         android:paddingRight="10dp"
                         android:paddingTop="3dp"
-                        android:progressDrawable="@drawable/seekbar_bg"
-                        android:thumb="@drawable/thumb_seekbarr"/>
+                        android:progressDrawable="@drawable/graffiti_seekbar_bg"
+                        android:thumb="@drawable/graffiti_thumb_seekbarr"/>
 
                     <TextView
                         android:id="@+id/paint_size_text"
@@ -274,7 +274,7 @@
                     android:layout_width="@dimen/title_bar_height"
                     android:layout_height="@dimen/title_bar_height"
                     android:layout_marginBottom="12dp"
-                    android:background="@drawable/btn_effect_rect_pressed_black"
+                    android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
 
                     android:text="M"
                     android:textColor="#ffffff"
@@ -285,7 +285,7 @@
                     android:id="@+id/btn_centre_pic"
                     android:layout_width="@dimen/title_bar_height"
                     android:layout_height="@dimen/title_bar_height"
-                    android:background="@drawable/btn_effect_rect_pressed_black"
+                    android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
 
                     android:text="O"
                     android:textColor="#ffffff"
@@ -297,15 +297,15 @@
                     android:layout_width="@dimen/title_bar_height"
                     android:layout_height="@dimen/title_bar_height"
                     android:layout_marginBottom="5dp"
-                    android:background="@drawable/btn_effect_rect_pressed_black"
-                    android:src="@drawable/btn_add"/>
+                    android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
+                    android:src="@drawable/graffiti_btn_add"/>
 
                 <ImageView
                     android:id="@+id/btn_reduce"
                     android:layout_width="@dimen/title_bar_height"
                     android:layout_height="@dimen/title_bar_height"
-                    android:background="@drawable/btn_effect_rect_pressed_black"
-                    android:src="@drawable/btn_sub"
+                    android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
+                    android:src="@drawable/graffiti_btn_sub"
                     android:textSize="20dp"/>
 
             </LinearLayout>

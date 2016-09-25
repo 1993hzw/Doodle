@@ -17,7 +17,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import cn.forward.androids.utils.ThreadUtil;
 
 /**
- * Created by Administrator on 2016/9/3.
+ * Created by huangziwei on 2016/9/3.
+ *
  */
 public class GraffitiView extends View {
 

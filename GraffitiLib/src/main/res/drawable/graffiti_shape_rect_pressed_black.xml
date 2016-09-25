@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+       android:useLevel="false">
+    <solid android:color="#A67D3D"/> <!-- 定义填充的颜色值 -->
+    <corners android:radius="1dp"/>
+</shape>
