@@ -434,7 +434,6 @@ public class GraffitiView extends View {
     public final float toTransY(float touchY, float graffitiY) {
         return -graffitiY * (mPrivateScale * mScale) + touchY - mCentreTranY;
     }
-
     /**
      * 将屏幕触摸坐标x转换成在canvas中的坐标
      */
@@ -449,14 +448,15 @@ public class GraffitiView extends View {
         return (y) / (mPrivateScale * mScale);
     }
 
+
     private static class GraffitiPath {
         Pen mPen; // 画笔类型
         Shape mShape; // 画笔形状
         float mStrokeWidth; // 大小
         GraffitiColor mColor; // 颜色
         Path mPath; // 画笔的路径
-        float mSx, mSy; // 起始坐标（手指点击）
-        float mDx, mDy; // 终止坐标（手指触摸）
+        float mSx, mSy; // 映射后的起始坐标，（手指点击）
+        float mDx, mDy; // 映射后的终止坐标，（手指抬起）
         Matrix mMatrix; //　仿制图片的偏移矩阵
 
         static GraffitiPath toShape(Pen pen, Shape shape, float width, GraffitiColor color,

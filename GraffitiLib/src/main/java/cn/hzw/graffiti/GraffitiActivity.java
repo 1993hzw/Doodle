@@ -2,6 +2,7 @@ package cn.hzw.graffiti;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -29,6 +30,19 @@ import cn.forward.androids.utils.ThreadUtil;
  * Created by huangziwei on 2016/9/3.
  */
 public class GraffitiActivity extends Activity {
+
+
+    /**
+     * 启动涂鸦界面
+     * @param activity
+     * @param imagePath 图片路径
+     * @param requestCode startActivityForResult的请求码
+     */
+    public static void startActivityForResult(Activity activity, String imagePath, int requestCode) {
+        Intent intent = new Intent(activity, GraffitiActivity.class);
+        intent.putExtra(GraffitiActivity.KEY_IMAGE_PATH, imagePath);
+        activity.startActivityForResult(intent, requestCode);
+    }
 
     public static final String KEY_IMAGE_PATH = "key_image_path";
     private String mImagePath;
@@ -248,6 +262,7 @@ public class GraffitiActivity extends Activity {
 
     /**
      * 计算两指间的距离
+     *
      * @param event
      * @return
      */
@@ -388,10 +403,10 @@ public class GraffitiActivity extends Activity {
     @Override
     public void onBackPressed() {
 
-        if(mBtnMovePic.isSelected()){
+        if (mBtnMovePic.isSelected()) {
             mBtnMovePic.setSelected(false);
             return;
-        }else{
+        } else {
             findViewById(R.id.btn_back).performClick();
         }
 

@@ -42,9 +42,10 @@ public class MainActivity extends Activity {
             }
             ArrayList<String> list = data.getStringArrayListExtra(ImageSelectorActivity.KEY_PATH_LIST);
             if (list != null && list.size() > 0) {
-                Intent intent = new Intent(getApplicationContext(), GraffitiActivity.class);
+                /*Intent intent = new Intent(getApplicationContext(), GraffitiActivity.class);
                 intent.putExtra(GraffitiActivity.KEY_IMAGE_PATH, list.get(0));
-                startActivityForResult(intent, REQ_CODE_GRAFFITI);
+                startActivityForResult(intent, REQ_CODE_GRAFFITI);*/
+                GraffitiActivity.startActivityForResult(MainActivity.this, list.get(0), REQ_CODE_GRAFFITI);
             }
         } else if (requestCode == REQ_CODE_GRAFFITI) {
             if (data == null) {
