@@ -18,7 +18,6 @@ import cn.forward.androids.utils.ThreadUtil;
 
 /**
  * Created by huangziwei on 2016/9/3.
- *
  */
 public class GraffitiView extends View {
 
@@ -49,7 +48,7 @@ public class GraffitiView extends View {
     private float mPaintSize;
     private GraffitiColor mColor; // 画笔底色
     private float mScale; // 缩放倍数, 图片真实的缩放倍数为 mPrivateScale*mScale
-    private float mTransX = 0, mTransY = 0;
+    private float mTransX = 0, mTransY = 0; // 偏移量，图片真实偏移量为　mCentreTranX + mTransX
 
     private boolean mIsPainting = false; // 是否正在绘制
     private boolean isJustDrawOriginal; // 是否只绘制原图
@@ -57,7 +56,7 @@ public class GraffitiView extends View {
 
     // 保存涂鸦操作，便于撤销
     private CopyOnWriteArrayList<GraffitiPath> mPathStack = new CopyOnWriteArrayList<GraffitiPath>();
-    private CopyOnWriteArrayList<GraffitiPath> pathStackBackup = new CopyOnWriteArrayList<GraffitiPath>();
+//    private CopyOnWriteArrayList<GraffitiPath> mPathStackBackup = new CopyOnWriteArrayList<GraffitiPath>();
 
     /**
      * 画笔
@@ -143,11 +142,6 @@ public class GraffitiView extends View {
                 mTouchX += VALUE; // 为了仅点击时也能出现绘图，模拟滑动一个像素点
                 mTouchY += VALUE;
 
-                if (mPathStack.size() > 3) {// 当前栈大于3，则拷贝到备份栈
-                    pathStackBackup.addAll(mPathStack);
-                    mPathStack.clear();
-                }
-
                 if (mPen == Pen.COPY && mCopyLocation.isInIt(toX4C(mTouchX), toY4C(mTouchY))) { // 点击copy
                     mCopyLocation.isRelocating = true;
                     mCopyLocation.isCopying = false;
@@ -198,6 +192,8 @@ public class GraffitiView extends View {
                                     mCopyLocation.mCopyStartY + toY4C(mTouchY) - mCopyLocation.mTouchStartY);
                         }
 
+                        GraffitiPath path = null;
+
                         // 把操作记录到加入的堆栈中
                         if (mShape == Shape.HAND_WRITE) { // 手写
                             mCurrPath.quadTo(
@@ -205,13 +201,14 @@ public class GraffitiView extends View {
                                     toY(mLastTouchY),
                                     toX((mTouchX + mLastTouchX) / 2),
                                     toY((mTouchY + mLastTouchY) / 2));
-                            mPathStack.add(GraffitiPath.toPath(mPen, mShape, mPaintSize, mColor.copy(), mCurrPath, mPen == Pen.COPY ? new Matrix(mShaderMatrix) : null));
+                            path = GraffitiPath.toPath(mPen, mShape, mPaintSize, mColor.copy(), mCurrPath, mPen == Pen.COPY ? new Matrix(mShaderMatrix) : null);
                         } else {  // 画图形
-                            mPathStack.add(GraffitiPath.toShape(mPen, mShape, mPaintSize, mColor.copy(),
+                            path = GraffitiPath.toShape(mPen, mShape, mPaintSize, mColor.copy(),
                                     toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX), toY(mTouchY),
-                                    mPen == Pen.COPY ? new Matrix(mShaderMatrix) : null));
+                                    mPen == Pen.COPY ? new Matrix(mShaderMatrix) : null);
                         }
-                        draw(mBitmapCanvas, mPathStack, false); // 保存到图片中
+                        mPathStack.add(path);
+                        draw(mBitmapCanvas, path, false); // 保存到图片中
                         mIsPainting = false;
                     }
                 }
@@ -364,13 +361,17 @@ public class GraffitiView extends View {
     private void draw(Canvas canvas, CopyOnWriteArrayList<GraffitiPath> pathStack, boolean is4Canvas) {
         // 还原堆栈中的记录的操作
         for (GraffitiPath path : pathStack) {
-            mPaint.setStrokeWidth(path.mStrokeWidth);
-            if (path.mShape == Shape.HAND_WRITE) { // 手写
-                draw(canvas, path.mPen, mPaint, path.mPath, path.mMatrix, is4Canvas, path.mColor);
-            } else { // 画图形
-                draw(canvas, path.mPen, path.mShape, mPaint,
-                        path.mSx, path.mSy, path.mDx, path.mDy, path.mMatrix, is4Canvas, path.mColor);
-            }
+            draw(canvas, path, is4Canvas);
+        }
+    }
+
+    private void draw(Canvas canvas, GraffitiPath path, boolean is4Canvas) {
+        mPaint.setStrokeWidth(path.mStrokeWidth);
+        if (path.mShape == Shape.HAND_WRITE) { // 手写
+            draw(canvas, path.mPen, mPaint, path.mPath, path.mMatrix, is4Canvas, path.mColor);
+        } else { // 画图形
+            draw(canvas, path.mPen, path.mShape, mPaint,
+                    path.mSx, path.mSy, path.mDx, path.mDy, path.mMatrix, is4Canvas, path.mColor);
         }
     }
 
@@ -421,6 +422,7 @@ public class GraffitiView extends View {
     /**
      * 坐标换算
      * （公式由toX()中的公式推算出）
+     *
      * @param touchX    触摸坐标
      * @param graffitiX 在涂鸦图片中的坐标
      * @return 偏移量
@@ -448,13 +450,14 @@ public class GraffitiView extends View {
     }
 
     private static class GraffitiPath {
-        Pen mPen;
-        Shape mShape;
-        float mStrokeWidth;
-        GraffitiColor mColor;
-        Path mPath;
-        float mSx, mSy, mDx, mDy;
-        Matrix mMatrix;
+        Pen mPen; // 画笔类型
+        Shape mShape; // 画笔形状
+        float mStrokeWidth; // 大小
+        GraffitiColor mColor; // 颜色
+        Path mPath; // 画笔的路径
+        float mSx, mSy; // 起始坐标（手指点击）
+        float mDx, mDy; // 终止坐标（手指触摸）
+        Matrix mMatrix; //　仿制图片的偏移矩阵
 
         static GraffitiPath toShape(Pen pen, Shape shape, float width, GraffitiColor color,
                                     float sx, float sy, float dx, float dy, Matrix matrix) {
@@ -555,7 +558,6 @@ public class GraffitiView extends View {
     }
 
     /**
-     *
      * 仿制的定位器
      */
     private class CopyLocation {
@@ -719,7 +721,7 @@ public class GraffitiView extends View {
      */
     public void save() {
 //            initCanvas();
-//            draw(mBitmapCanvas, pathStackBackup, false);
+//            draw(mBitmapCanvas, mPathStackBackup, false);
 //            draw(mBitmapCanvas, mPathStack, false);
         mGraffitiListener.onSaved(mGraffitiBitmap);
     }
@@ -729,7 +731,7 @@ public class GraffitiView extends View {
      */
     public void clear() {
         mPathStack.clear();
-        pathStackBackup.clear();
+//        mPathStackBackup.clear();
         initCanvas();
         invalidate();
     }
@@ -741,13 +743,7 @@ public class GraffitiView extends View {
         if (mPathStack.size() > 0) {
             mPathStack.remove(mPathStack.size() - 1);
             initCanvas();
-            draw(mBitmapCanvas, pathStackBackup, false);
             draw(mBitmapCanvas, mPathStack, false);
-            invalidate();
-        } else if (pathStackBackup.size() > 0) {
-            pathStackBackup.remove(pathStackBackup.size() - 1);
-            initCanvas();
-            draw(mBitmapCanvas, pathStackBackup, false);
             invalidate();
         }
     }
@@ -756,7 +752,7 @@ public class GraffitiView extends View {
      * 是否有修改
      */
     public boolean isModified() {
-        return mPathStack.size() != 0 || pathStackBackup.size() != 0;
+        return mPathStack.size() != 0;
     }
 
     /**
@@ -825,6 +821,7 @@ public class GraffitiView extends View {
 
     /**
      * 设置画笔底色
+     *
      * @param color
      */
     public void setColor(int color) {
@@ -854,6 +851,7 @@ public class GraffitiView extends View {
 
     /**
      * 缩放倍数，图片真实的缩放倍数为 mPrivateScale*mScale
+     *
      * @param scale
      */
     public void setScale(float scale) {
@@ -869,6 +867,7 @@ public class GraffitiView extends View {
 
     /**
      * 设置画笔
+     *
      * @param pen
      */
     public void setPen(Pen pen) {
@@ -886,6 +885,7 @@ public class GraffitiView extends View {
 
     /**
      * 设置画笔形状
+     *
      * @param shape
      */
     public void setShape(Shape shape) {
@@ -910,6 +910,7 @@ public class GraffitiView extends View {
 
     /**
      * 设置图片偏移
+     *
      * @param transX
      */
     public void setTransX(float transX) {
@@ -946,12 +947,14 @@ public class GraffitiView extends View {
 
         /**
          * 保存图片
+         *
          * @param bitmap
          */
         void onSaved(Bitmap bitmap);
 
         /**
          * 出错
+         *
          * @param i
          * @param msg
          */
