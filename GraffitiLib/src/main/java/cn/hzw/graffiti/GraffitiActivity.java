@@ -2,7 +2,6 @@ package cn.hzw.graffiti;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -12,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.FrameLayout;
@@ -27,6 +27,8 @@ import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.ThreadUtil;
 
 /**
+ * 涂鸦界面，根据GraffitiView的接口，提供页面交互
+ * （这边代码和ui比较粗糙，主要目的是告诉大家GraffitiView的接口具体能实现什么功能，实际需求中的ui和交互需另提别论）
  * Created by huangziwei on 2016/9/3.
  */
 public class GraffitiActivity extends Activity {
@@ -34,8 +36,9 @@ public class GraffitiActivity extends Activity {
 
     /**
      * 启动涂鸦界面
+     *
      * @param activity
-     * @param imagePath 图片路径
+     * @param imagePath   图片路径
      * @param requestCode startActivityForResult的请求码
      */
     public static void startActivityForResult(Activity activity, String imagePath, int requestCode) {
@@ -62,15 +65,24 @@ public class GraffitiActivity extends Activity {
     private int mTouchMode;
     private boolean mIsMovingPic = false;
 
-    private float mOldDist, mNewDist, mToucheCentreXOnGraffiti,
+    // 手势操作相关
+    private float mOldScale, mOldDist, mNewDist, mToucheCentreXOnGraffiti,
             mToucheCentreYOnGraffiti, mTouchCentreX, mTouchCentreY;// 双指距离
+
     private float mTouchLastX, mTouchLastY;
 
     private boolean mIsScaling = false;
     private float mScale = 1;
-    private final float mMaxScale = 3.5f;
-    private final int TIME_SPAN = 80;
+    private final float mMaxScale = 3.5f; // 最大缩放倍数
+    private final float mMinScale = 0.25f; // 最小缩放倍数
+    private final int TIME_SPAN = 40;
     private View mBtnMovePic;
+
+    private int mTouchSlop;
+
+    // 当前屏幕中心点对应在GraffitiView中的点的坐标
+    float mCenterXOnGraffiti;
+    float mCenterYOnGraffiti;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -127,12 +139,7 @@ public class GraffitiActivity extends Activity {
         });
         mFrameLayout.addView(mGraffitiView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mOnClickListener = new GraffitiOnClickListener();
-
-        mUpdateScale = new Runnable() {
-            public void run() {
-                mGraffitiView.setScale(mScale);
-            }
-        };
+        mTouchSlop = ViewConfiguration.get(getApplicationContext()).getScaledTouchSlop();
         initView();
     }
 
@@ -223,19 +230,19 @@ public class GraffitiActivity extends Activity {
                             mTouchLastY = event.getY();
                         } else { // 多点
                             mNewDist = spacing(event);// 两点滑动时的距离
-                            if (Math.abs(mNewDist - mOldDist) >= 2000) {
-                                if (mNewDist - mOldDist > 0) {// 拉大
-                                    mScale += 0.05f;
-                                    if (mScale > mMaxScale) {
-                                        mScale = mMaxScale;
-                                    }
-                                } else {// 拉小
-                                    mScale -= 0.05f;
-                                    if (mScale < 0.5f) {
-                                        mScale = 0.5f;
-                                    }
+                            if (Math.abs(mNewDist - mOldDist) >= mTouchSlop) {
+                                float scale = mNewDist / mOldDist;
+                                mScale = mOldScale * scale;
+
+                                if (mScale > mMaxScale) {
+                                    mScale = mMaxScale;
                                 }
+                                if (mScale < mMinScale) { // 最小倍数
+                                    mScale = mMinScale;
+                                }
+                                // 围绕坐标(0,0)缩放图片
                                 mGraffitiView.setScale(mScale);
+                                // 缩放后，偏移图片，以产生围绕某个点缩放的效果
                                 float transX = mGraffitiView.toTransX(mTouchCentreX, mToucheCentreXOnGraffiti);
                                 float transY = mGraffitiView.toTransY(mTouchCentreY, mToucheCentreYOnGraffiti);
                                 mGraffitiView.setTrans(transX, transY);
@@ -247,6 +254,7 @@ public class GraffitiActivity extends Activity {
                         return true;
                     case MotionEvent.ACTION_POINTER_DOWN:
                         mTouchMode += 1;
+                        mOldScale = mGraffitiView.getScale();
                         mOldDist = spacing(event);// 两点按下时的距离
                         mTouchCentreX = (event.getX(0) + event.getX(1)) / 2;// 不用减trans
                         mTouchCentreY = (event.getY(0) + event.getY(1)) / 2;
@@ -269,7 +277,7 @@ public class GraffitiActivity extends Activity {
     private float spacing(MotionEvent event) {
         float x = event.getX(0) - event.getX(1);
         float y = event.getY(0) - event.getY(1);
-        return x * x + y * y;
+        return (float) Math.sqrt(x * x + y * y);
     }
 
     private class GraffitiOnClickListener implements View.OnClickListener {
@@ -443,11 +451,16 @@ public class GraffitiActivity extends Activity {
             return;
         mIsScaling = true;
         mScale = mGraffitiView.getScale();
-        if (v.getId() == R.id.btn_amplifier) {
+
+        // 确定当前屏幕中心点对应在GraffitiView中的点的坐标，之后将围绕这个点缩放
+        mCenterXOnGraffiti = mGraffitiView.toX(mGraffitiView.getWidth() / 2);
+        mCenterYOnGraffiti = mGraffitiView.toY(mGraffitiView.getHeight() / 2);
+
+        if (v.getId() == R.id.btn_amplifier) { // 放大
             ThreadUtil.getInstance().runOnAsyncThread(new Runnable() {
                 public void run() {
                     do {
-                        mScale += 0.1f;
+                        mScale += 0.05f;
                         if (mScale > mMaxScale) {
                             mScale = mMaxScale;
                             mIsScaling = false;
@@ -462,13 +475,13 @@ public class GraffitiActivity extends Activity {
 
                 }
             });
-        } else if (v.getId() == R.id.btn_reduce) {
+        } else if (v.getId() == R.id.btn_reduce) { // 缩小
             ThreadUtil.getInstance().runOnAsyncThread(new Runnable() {
                 public void run() {
                     do {
-                        mScale -= 0.1f;
-                        if (mScale < 0.5f) {
-                            mScale = 0.5f;
+                        mScale -= 0.05f;
+                        if (mScale < mMinScale) {
+                            mScale = mMinScale;
                             mIsScaling = false;
                         }
                         updateScale();
@@ -484,6 +497,19 @@ public class GraffitiActivity extends Activity {
     }
 
     private void updateScale() {
+        if (mUpdateScale == null) {
+
+            mUpdateScale = new Runnable() {
+                public void run() {
+                    // 围绕坐标(0,0)缩放图片
+                    mGraffitiView.setScale(mScale);
+                    // 缩放后，偏移图片，以产生围绕某个点缩放的效果
+                    float transX = mGraffitiView.toTransX(mGraffitiView.getWidth() / 2, mCenterXOnGraffiti);
+                    float transY = mGraffitiView.toTransY(mGraffitiView.getHeight() / 2, mCenterYOnGraffiti);
+                    mGraffitiView.setTrans(transX, transY);
+                }
+            };
+        }
         ThreadUtil.getInstance().runOnMainThread(mUpdateScale);
     }
 }
