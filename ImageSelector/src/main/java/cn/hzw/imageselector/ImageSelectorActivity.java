@@ -22,15 +22,16 @@ import java.util.ArrayList;
 
 
 /**
- * 图片选择
+ * 图片选择页面，扫描系统数据库中记录的图片，分批次加载
  * Created by huangziwei on 16-3-14.
  */
 public class ImageSelectorActivity extends Activity implements View.OnClickListener {
 
-    public static final String KEY_PATH_LIST = "key_path";
+    public static final String KEY_PATH_LIST = "key_path"; // 已选择的图片
+    public static final String KEY_IS_MULTIPLE_CHOICE = "key_is_multiple_choice"; // 是否多选
+    public static final String KEY_MAX_COUNT = "key_max_count"; //  多选时，可选的最大数量
+
     public static final int WHAT_REFRESH_PATH_LIST = 1;
-    public static final String KEY_IS_MULTIPLE_CHOICE = "key_is_multiple_choice";
-    public static final String KEY_MAX_COUNT = "key_max_count";
 
     private GridView mGridView;
     private int mCursorPosition = -1; // 当前在数据库查找位置
@@ -45,10 +46,25 @@ public class ImageSelectorActivity extends Activity implements View.OnClickListe
     private int mMaxCount = Integer.MAX_VALUE; // 最多可选数量,超过最大数时点击不会选中.多选时次变量才生效
     private TextView mBtnEnter;
 
+    /**
+     * 启动图片选择页面
+     * @param requestCode startActivityForResult的请求码
+     * @param activity
+     * @param pathList 已选择的图片,可传空
+     * @param multipleChoice 是否多选
+     */
     public static void startActivityForResult(int requestCode, Activity activity, ArrayList<String> pathList, boolean multipleChoice) {
         startActivityForResult(requestCode, activity, pathList, multipleChoice, Integer.MAX_VALUE);
     }
 
+    /**
+     * 启动图片选择页面
+     * @param requestCode startActivityForResult的请求码
+     * @param activity
+     * @param pathList 已选择的图片,可传空
+     * @param multipleChoice 是否多选
+     * @param maxCount 多选时，可选的最大数量
+     */
     public static void startActivityForResult(int requestCode, Activity activity, ArrayList<String> pathList, boolean multipleChoice, int maxCount) {
         Intent intent = new Intent(activity, ImageSelectorActivity.class);
         intent.putExtra(ImageSelectorActivity.KEY_IS_MULTIPLE_CHOICE, multipleChoice);

@@ -18,6 +18,11 @@
 ### 使用
 
 ```
+/**
+ * 涂鸦界面，根据GraffitiView的接口，提供页面交互
+ *
+ * （这边代码和ui比较粗糙，主要目的是告诉大家GraffitiView的接口具体能实现什么功能，实际需求中的ui和交互需另提别论）
+ */
 public class GraffitiActivity extends Activity {
 	/**
 	* 启动涂鸦界面
@@ -26,6 +31,23 @@ public class GraffitiActivity extends Activity {
 	* @param requestCode startActivityForResult的请求码
 	*/
 	public static void startActivityForResult(Activity activity, String imagePath, int requestCode);
+}
+```
+
+```
+/**
+ * 图片选择页面，扫描系统数据库中记录的图片，分批次加载
+ */
+public class ImageSelectorActivity extends Activity implements View.OnClickListener {
+    /**
+     * 启动图片选择页面
+     * @param requestCode startActivityForResult的请求码
+     * @param activity
+     * @param pathList 已选择的图片,可传空
+     * @param multipleChoice 是否多选
+     * @param maxCount 多选时，可选的最大数量
+     */
+    public static void startActivityForResult(int requestCode, Activity activity, ArrayList<String> pathList, boolean multipleChoice, int maxCount);
 }
 ```
 ### 界面
