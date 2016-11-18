@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -51,12 +52,16 @@ public class MainActivity extends Activity {
             if (data == null) {
                 return;
             }
-            String path = data.getStringExtra(GraffitiActivity.KEY_IMAGE_PATH);
-            if (TextUtils.isEmpty(path)) {
-                return;
+            if (resultCode == GraffitiActivity.RESULT_OK) {
+                String path = data.getStringExtra(GraffitiActivity.KEY_IMAGE_PATH);
+                if (TextUtils.isEmpty(path)) {
+                    return;
+                }
+                ImageLoader.getInstance(this).display(findViewById(R.id.img), path);
+                mPath.setText(path);
+            } else if (resultCode == GraffitiActivity.RESULT_ERROR) {
+                Toast.makeText(getApplicationContext(), "error", Toast.LENGTH_SHORT).show();
             }
-            ImageLoader.getInstance(this).display(findViewById(R.id.img), path);
-            mPath.setText(path);
         }
     }
 }

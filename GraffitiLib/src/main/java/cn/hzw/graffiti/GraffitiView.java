@@ -959,5 +959,10 @@ public class GraffitiView extends View {
          * @param msg
          */
         void onError(int i, String msg);
+
+        /**
+         * 准备工作已经完成
+         */
+        void onReady();
     }
 }

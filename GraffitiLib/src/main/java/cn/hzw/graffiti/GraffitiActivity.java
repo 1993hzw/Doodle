@@ -9,6 +9,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -33,14 +34,26 @@ import cn.forward.androids.utils.ThreadUtil;
  */
 public class GraffitiActivity extends Activity {
 
+    public static final int RESULT_ERROR = -111; // 出现错误
 
     /**
      * 启动涂鸦界面
      *
      * @param activity
      * @param imagePath   图片路径
+     * @param savePath    保存路径
+     * @param isDir       savePath表示的路径是否为目录
      * @param requestCode startActivityForResult的请求码
      */
+    public static void startActivityForResult(Activity activity, String imagePath, String savePath, boolean isDir, int requestCode) {
+        Intent intent = new Intent(activity, GraffitiActivity.class);
+        intent.putExtra(GraffitiActivity.KEY_IMAGE_PATH, imagePath);
+        intent.putExtra(GraffitiActivity.KEY_SAVE_PATH, savePath);
+        intent.putExtra(GraffitiActivity.KEY_SAVE_PATH_IS_DIR, isDir);
+        activity.startActivityForResult(intent, requestCode);
+    }
+
+
     public static void startActivityForResult(Activity activity, String imagePath, int requestCode) {
         Intent intent = new Intent(activity, GraffitiActivity.class);
         intent.putExtra(GraffitiActivity.KEY_IMAGE_PATH, imagePath);
@@ -48,6 +61,9 @@ public class GraffitiActivity extends Activity {
     }
 
     public static final String KEY_IMAGE_PATH = "key_image_path";
+    public static final String KEY_SAVE_PATH = "key_save_path"; // 保存路径
+    public static final String KEY_SAVE_PATH_IS_DIR = "key_save_path_is_dir"; // 保存路径是否为目录
+
     private String mImagePath;
     private Bitmap mBitmap;
 
@@ -105,11 +121,27 @@ public class GraffitiActivity extends Activity {
         mGraffitiView = new GraffitiView(this, mBitmap, new GraffitiView.GraffitiListener() {
             @Override
             public void onSaved(Bitmap bitmap) { // 保存图片
-                File dcimFile = new File(Environment.getExternalStorageDirectory(), "DCIM");
-                File graffitiFile = new File(dcimFile, "Graffiti");
+                File graffitiFile = null;
+                File file = null;
+                String savePath = getIntent().getExtras().getString(KEY_SAVE_PATH);
+                boolean isDir = getIntent().getExtras().getBoolean(KEY_SAVE_PATH_IS_DIR);
+                if (TextUtils.isEmpty(savePath)) {
+                    File dcimFile = new File(Environment.getExternalStorageDirectory(), "DCIM");
+                    graffitiFile = new File(dcimFile, "Graffiti");
+                    //　保存的路径
+                    file = new File(graffitiFile, System.currentTimeMillis() + ".jpg");
+                } else {
+                    if (isDir) {
+                        graffitiFile = new File(savePath);
+                        //　保存的路径
+                        file = new File(graffitiFile, System.currentTimeMillis() + ".jpg");
+                    } else {
+                        file = new File(savePath);
+                        graffitiFile = file.getParentFile();
+                    }
+                }
                 graffitiFile.mkdirs();
-                //　保存的路径
-                File file = new File(graffitiFile, System.currentTimeMillis() + ".jpg");
+
                 FileOutputStream outputStream = null;
                 try {
                     outputStream = new FileOutputStream(file);
@@ -134,7 +166,14 @@ public class GraffitiActivity extends Activity {
 
             @Override
             public void onError(int i, String msg) {
-                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+                setResult(RESULT_ERROR);
+                finish();
+            }
+
+            @Override
+            public void onReady() {
+
             }
         });
         mFrameLayout.addView(mGraffitiView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
