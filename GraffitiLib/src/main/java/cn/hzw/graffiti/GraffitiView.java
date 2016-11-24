@@ -9,6 +9,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Shader;
+import android.os.Build;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -53,6 +54,8 @@ public class GraffitiView extends View {
     private boolean mIsPainting = false; // 是否正在绘制
     private boolean isJustDrawOriginal; // 是否只绘制原图
 
+    private boolean mIsDrawableOutside = false; // 触摸时，图片区域外是否绘制涂鸦轨迹
+
 
     // 保存涂鸦操作，便于撤销
     private CopyOnWriteArrayList<GraffitiPath> mPathStack = new CopyOnWriteArrayList<GraffitiPath>();
@@ -88,6 +91,13 @@ public class GraffitiView extends View {
 
     public GraffitiView(Context context, Bitmap bitmap, GraffitiListener listener) {
         super(context);
+
+        //[11,18)对硬件加速支持不完整，clipPath时会crash
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            setLayerType(LAYER_TYPE_SOFTWARE, null);
+        }
+
         mBitmap = bitmap;
         mGraffitiListener = listener;
         if (mGraffitiListener == null) {
@@ -295,8 +305,15 @@ public class GraffitiView extends View {
         }
 
         canvas.scale(mPrivateScale * mScale, mPrivateScale * mScale);
+        float left = (mCentreTranX + mTransX) / (mPrivateScale * mScale);
+        float top = (mCentreTranY + mTransY) / (mPrivateScale * mScale);
+
+        if (!mIsDrawableOutside) { // 裁剪绘制区域为图片区域
+            canvas.clipRect(left, top, left + mBitmap.getWidth(), top + mBitmap.getHeight());
+        }
+
         if (isJustDrawOriginal) { // 只绘制原图
-            canvas.drawBitmap(mBitmap, (mCentreTranX + mTransX) / (mPrivateScale * mScale), (mCentreTranY + mTransY) / (mPrivateScale * mScale), null);
+            canvas.drawBitmap(mBitmap, left, top, null);
             return;
         }
 
@@ -434,6 +451,7 @@ public class GraffitiView extends View {
     public final float toTransY(float touchY, float graffitiY) {
         return -graffitiY * (mPrivateScale * mScale) + touchY - mCentreTranY;
     }
+
     /**
      * 将屏幕触摸坐标x转换成在canvas中的坐标
      */
@@ -941,6 +959,22 @@ public class GraffitiView extends View {
 
     public float getPaintSize() {
         return mPaintSize;
+    }
+
+    /**
+     * 触摸时，图片区域外是否绘制涂鸦轨迹
+     *
+     * @param isDrawableOutside
+     */
+    public void setIsDrawableOutside(boolean isDrawableOutside) {
+        mIsDrawableOutside = isDrawableOutside;
+    }
+
+    /**
+     * 触摸时，图片区域外是否绘制涂鸦轨迹
+     */
+    public boolean getIsDrawableOutside() {
+        return mIsDrawableOutside;
     }
 
     public interface GraffitiListener {
