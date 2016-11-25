@@ -2,6 +2,7 @@ package cn.hzw.graffiti;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -9,6 +10,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.os.PersistableBundle;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import cn.forward.androids.utils.ImageUtils;
+import cn.forward.androids.utils.LogUtil;
 import cn.forward.androids.utils.ThreadUtil;
 
 /**
@@ -34,35 +39,51 @@ import cn.forward.androids.utils.ThreadUtil;
  */
 public class GraffitiActivity extends Activity {
 
+    public static final String TAG = "Graffiti";
+
     public static final int RESULT_ERROR = -111; // 出现错误
 
     /**
      * 启动涂鸦界面
      *
      * @param activity
-     * @param imagePath   图片路径
-     * @param savePath    保存路径
-     * @param isDir       savePath表示的路径是否为目录
+     * @param params      参数
      * @param requestCode startActivityForResult的请求码
      */
+    public static void startActivityForResult(Activity activity, GraffitiParams params, int requestCode) {
+        Intent intent = new Intent(activity, GraffitiActivity.class);
+        intent.putExtra(GraffitiActivity.KEY_PARAMS, params);
+        activity.startActivityForResult(intent, requestCode);
+    }
+
+    /**
+     * 启动涂鸦界面
+     *
+     * @param activity
+     * @param imagePath   　图片路径
+     * @param savePath    　保存路径
+     * @param isDir       　保存路径是否为目录
+     * @param requestCode 　startActivityForResult的请求码
+     */
     public static void startActivityForResult(Activity activity, String imagePath, String savePath, boolean isDir, int requestCode) {
-        Intent intent = new Intent(activity, GraffitiActivity.class);
-        intent.putExtra(GraffitiActivity.KEY_IMAGE_PATH, imagePath);
-        intent.putExtra(GraffitiActivity.KEY_SAVE_PATH, savePath);
-        intent.putExtra(GraffitiActivity.KEY_SAVE_PATH_IS_DIR, isDir);
-        activity.startActivityForResult(intent, requestCode);
+        GraffitiParams params = new GraffitiParams();
+        params.mImagePath = imagePath;
+        params.mSavePath = savePath;
+        params.mSavePathIsDir = isDir;
+        startActivityForResult(activity, params, requestCode);
     }
 
-
+    /**
+     * {@link GraffitiActivity#startActivityForResult(Activity, String, String, boolean, int)}
+     */
     public static void startActivityForResult(Activity activity, String imagePath, int requestCode) {
-        Intent intent = new Intent(activity, GraffitiActivity.class);
-        intent.putExtra(GraffitiActivity.KEY_IMAGE_PATH, imagePath);
-        activity.startActivityForResult(intent, requestCode);
+        GraffitiParams params = new GraffitiParams();
+        params.mImagePath = imagePath;
+        startActivityForResult(activity, params, requestCode);
     }
 
+    public static final String KEY_PARAMS = "key_graffiti_params";
     public static final String KEY_IMAGE_PATH = "key_image_path";
-    public static final String KEY_SAVE_PATH = "key_save_path"; // 保存路径
-    public static final String KEY_SAVE_PATH_IS_DIR = "key_save_path_is_dir"; // 保存路径是否为目录
 
     private String mImagePath;
     private Bitmap mBitmap;
@@ -100,14 +121,39 @@ public class GraffitiActivity extends Activity {
     float mCenterXOnGraffiti;
     float mCenterYOnGraffiti;
 
+    private GraffitiParams mGraffitiParams;
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(KEY_PARAMS, mGraffitiParams);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState, PersistableBundle persistentState) {
+        super.onRestoreInstanceState(savedInstanceState, persistentState);
+        mGraffitiParams = savedInstanceState.getParcelable(KEY_PARAMS);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mImagePath = getIntent().getExtras().getString(KEY_IMAGE_PATH);
-        if (mImagePath == null) {
+        if (mGraffitiParams == null) {
+            mGraffitiParams = getIntent().getExtras().getParcelable(KEY_PARAMS);
+        }
+        if (mGraffitiParams == null) {
+            LogUtil.d("TAG", "mGraffitiParams is null!");
             this.finish();
             return;
         }
+
+        mImagePath = mGraffitiParams.mImagePath;
+        if (mImagePath == null) {
+            LogUtil.d("TAG", "mImagePath is null!");
+            this.finish();
+            return;
+        }
+        LogUtil.d("TAG", mImagePath);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         mBitmap = ImageUtils.createBitmapFromPath(mImagePath, this);
         if (mBitmap == null) {
@@ -118,64 +164,70 @@ public class GraffitiActivity extends Activity {
         setContentView(R.layout.layout_graffiti);
         mFrameLayout = (FrameLayout) findViewById(R.id.graffiti_container);
 
-        mGraffitiView = new GraffitiView(this, mBitmap, new GraffitiView.GraffitiListener() {
-            @Override
-            public void onSaved(Bitmap bitmap) { // 保存图片
-                File graffitiFile = null;
-                File file = null;
-                String savePath = getIntent().getExtras().getString(KEY_SAVE_PATH);
-                boolean isDir = getIntent().getExtras().getBoolean(KEY_SAVE_PATH_IS_DIR);
-                if (TextUtils.isEmpty(savePath)) {
-                    File dcimFile = new File(Environment.getExternalStorageDirectory(), "DCIM");
-                    graffitiFile = new File(dcimFile, "Graffiti");
-                    //　保存的路径
-                    file = new File(graffitiFile, System.currentTimeMillis() + ".jpg");
-                } else {
-                    if (isDir) {
-                        graffitiFile = new File(savePath);
-                        //　保存的路径
-                        file = new File(graffitiFile, System.currentTimeMillis() + ".jpg");
-                    } else {
-                        file = new File(savePath);
-                        graffitiFile = file.getParentFile();
-                    }
-                }
-                graffitiFile.mkdirs();
+        // /storage/emulated/0/DCIM/Graffiti/1479369280029.jpg
+        mGraffitiView = new GraffitiView(this, mBitmap, mGraffitiParams.mEraserPath, mGraffitiParams.mEraserImageIsResizeable,
+                new GraffitiView.GraffitiListener() {
+                    @Override
+                    public void onSaved(Bitmap bitmap, Bitmap bitmapEraser) { // 保存图片
+                        if (bitmapEraser != null) {
+                            bitmapEraser.recycle(); // 回收图片，不再涂鸦，避免内存溢出
+                        }
+                        File graffitiFile = null;
+                        File file = null;
+                        String savePath = mGraffitiParams.mSavePath;
+                        boolean isDir = mGraffitiParams.mSavePathIsDir;
+                        if (TextUtils.isEmpty(savePath)) {
+                            File dcimFile = new File(Environment.getExternalStorageDirectory(), "DCIM");
+                            graffitiFile = new File(dcimFile, "Graffiti");
+                            //　保存的路径
+                            file = new File(graffitiFile, System.currentTimeMillis() + ".jpg");
+                        } else {
+                            if (isDir) {
+                                graffitiFile = new File(savePath);
+                                //　保存的路径
+                                file = new File(graffitiFile, System.currentTimeMillis() + ".jpg");
+                            } else {
+                                file = new File(savePath);
+                                graffitiFile = file.getParentFile();
+                            }
+                        }
+                        graffitiFile.mkdirs();
 
-                FileOutputStream outputStream = null;
-                try {
-                    outputStream = new FileOutputStream(file);
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream);
-                    ImageUtils.addImage(getContentResolver(), file.getAbsolutePath());
-                    Intent intent = new Intent();
-                    intent.putExtra(KEY_IMAGE_PATH, file.getAbsolutePath());
-                    setResult(Activity.RESULT_OK, intent);
-                    finish();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    onError(GraffitiView.ERROR_SAVE, e.getMessage());
-                } finally {
-                    if (outputStream != null) {
+                        FileOutputStream outputStream = null;
                         try {
-                            outputStream.close();
-                        } catch (IOException e) {
+                            outputStream = new FileOutputStream(file);
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream);
+                            ImageUtils.addImage(getContentResolver(), file.getAbsolutePath());
+                            Intent intent = new Intent();
+                            intent.putExtra(KEY_IMAGE_PATH, file.getAbsolutePath());
+                            setResult(Activity.RESULT_OK, intent);
+                            finish();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            onError(GraffitiView.ERROR_SAVE, e.getMessage());
+                        } finally {
+                            if (outputStream != null) {
+                                try {
+                                    outputStream.close();
+                                } catch (IOException e) {
+                                }
+                            }
                         }
                     }
-                }
-            }
 
-            @Override
-            public void onError(int i, String msg) {
-//                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
-                setResult(RESULT_ERROR);
-                finish();
-            }
+                    @Override
+                    public void onError(int i, String msg) {
+                        setResult(RESULT_ERROR);
+                        finish();
+                    }
 
-            @Override
-            public void onReady() {
-
-            }
-        });
+                    @Override
+                    public void onReady() {
+                        findViewById(R.id.btn_pen_hand).performClick();
+                        findViewById(R.id.btn_hand_write).performClick();
+                    }
+                });
+        mGraffitiView.setIsDrawableOutside(mGraffitiParams.mIsDrawableOutside);
         mFrameLayout.addView(mGraffitiView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mOnClickListener = new GraffitiOnClickListener();
         mTouchSlop = ViewConfiguration.get(getApplicationContext()).getScaledTouchSlop();
@@ -208,9 +260,6 @@ public class GraffitiActivity extends Activity {
         } else if (mGraffitiView.getGraffitiColor().getType() == GraffitiView.GraffitiColor.Type.BITMAP) {
             mBtnColor.setBackgroundDrawable(new BitmapDrawable(mGraffitiView.getGraffitiColor().getBitmap()));
         }
-
-        findViewById(R.id.btn_pen_hand).performClick();
-        findViewById(R.id.btn_hand_write).performClick();
 
         mPaintSizeBar = (SeekBar) findViewById(R.id.paint_size);
         mPaintSizeView = (TextView) findViewById(R.id.paint_size_text);
@@ -550,5 +599,75 @@ public class GraffitiActivity extends Activity {
             };
         }
         ThreadUtil.getInstance().runOnMainThread(mUpdateScale);
+    }
+
+    /**
+     * 涂鸦参数
+     */
+    public static class GraffitiParams implements Parcelable {
+
+        /**
+         * 图片路径
+         */
+        public String mImagePath;
+        /**
+         * 　保存路径，如果为null，则图片保存在根目录下/DCIM/Graffiti/
+         */
+        public String mSavePath;
+        /**
+         * 　保存路径是否为目录，如果为目录，则在该目录生成由时间戳组成的图片名称
+         */
+        public boolean mSavePathIsDir;
+        /**
+         * 　橡皮擦底图，如果为null，则底图为当前图片路径
+         * {@link GraffitiView#GraffitiView(Context, Bitmap, String, boolean, GraffitiView.GraffitiListener)}
+         */
+        public String mEraserPath;
+
+        /**
+         * 橡皮擦底图是否调整大小，如果可以则调整到跟当前涂鸦图片一样的大小．
+         * 默认为true
+         */
+        public boolean mEraserImageIsResizeable = true;
+
+        /**
+         * 触摸时，图片区域外是否绘制涂鸦轨迹
+         */
+        public boolean mIsDrawableOutside;
+
+        public static final Creator<GraffitiParams> CREATOR = new Creator<GraffitiParams>() {
+            @Override
+            public GraffitiParams createFromParcel(Parcel in) {
+                GraffitiParams params = new GraffitiParams();
+                params.mImagePath = in.readString();
+                params.mSavePath = in.readString();
+                params.mSavePathIsDir = in.readInt() == 1;
+                params.mEraserPath = in.readString();
+                params.mEraserImageIsResizeable = in.readInt() == 1;
+                params.mIsDrawableOutside = in.readInt() == 1;
+
+                return params;
+            }
+
+            @Override
+            public GraffitiParams[] newArray(int size) {
+                return new GraffitiParams[size];
+            }
+        };
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(mImagePath);
+            dest.writeString(mSavePath);
+            dest.writeInt(mSavePathIsDir ? 1 : 0);
+            dest.writeString(mEraserPath);
+            dest.writeInt(mEraserImageIsResizeable ? 1 : 0);
+            dest.writeInt(mIsDrawableOutside ? 1 : 0);
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
     }
 }

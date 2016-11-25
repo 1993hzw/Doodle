@@ -10,11 +10,13 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Shader;
 import android.os.Build;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.ThreadUtil;
 
 /**
@@ -31,6 +33,7 @@ public class GraffitiView extends View {
     private GraffitiListener mGraffitiListener;
 
     private Bitmap mBitmap; // 原图
+    private Bitmap mBitmapEraser; // 橡皮擦底图
     private Bitmap mGraffitiBitmap; // 用绘制涂鸦的图片
     private Canvas mBitmapCanvas;
 
@@ -40,6 +43,8 @@ public class GraffitiView extends View {
 
     private BitmapShader mBitmapShader; // 用于涂鸦的图片上
     private BitmapShader mBitmapShader4C;
+    private BitmapShader mBitmapShaderEraser; // 橡皮擦底图
+    private BitmapShader mBitmapShaderEraser4C;
     private Path mCurrPath; // 当前手写的路径
     private Path mCanvasPath; //
     private CopyLocation mCopyLocation; // 仿制的定位器
@@ -55,6 +60,8 @@ public class GraffitiView extends View {
     private boolean isJustDrawOriginal; // 是否只绘制原图
 
     private boolean mIsDrawableOutside = false; // 触摸时，图片区域外是否绘制涂鸦轨迹
+    private boolean mEraserImageIsResizeable;
+    private boolean mReady = false;
 
 
     // 保存涂鸦操作，便于撤销
@@ -87,9 +94,21 @@ public class GraffitiView extends View {
     private Shape mShape;
 
     private float mTouchDownX, mTouchDownY, mLastTouchX, mLastTouchY, mTouchX, mTouchY;
-    private Matrix mShaderMatrix, mShaderMatrix4C;
+    private Matrix mShaderMatrix, mShaderMatrix4C, mMatrixTemp;
 
     public GraffitiView(Context context, Bitmap bitmap, GraffitiListener listener) {
+        this(context, bitmap, null, true, listener);
+    }
+
+    /**
+     * @param context
+     * @param bitmap
+     * @param eraser                  橡皮擦的底图，如果涂鸦保存后再次涂鸦，传入涂鸦前的底图，则可以实现擦除涂鸦的效果．
+     * @param eraserImageIsResizeable 橡皮擦底图是否调整大小，如果可以则调整到跟当前涂鸦图片一样的大小．
+     * @param listener
+     * @
+     */
+    public GraffitiView(Context context, Bitmap bitmap, String eraser, boolean eraserImageIsResizeable, GraffitiListener listener) {
         super(context);
 
         //[11,18)对硬件加速支持不完整，clipPath时会crash
@@ -107,7 +126,13 @@ public class GraffitiView extends View {
             throw new RuntimeException("Bitmap is null!!!");
         }
 
+        if (eraser != null) {
+            mBitmapEraser = ImageUtils.createBitmapFromPath(eraser, getContext());
+        }
+        mEraserImageIsResizeable = eraserImageIsResizeable;
+
         init();
+
     }
 
     public void init() {
@@ -122,14 +147,23 @@ public class GraffitiView extends View {
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
 
-        mPen = Pen.COPY;
+        mPen = Pen.HAND;
         mShape = Shape.HAND_WRITE;
 
         this.mBitmapShader = new BitmapShader(this.mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
         this.mBitmapShader4C = new BitmapShader(this.mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
 
+        if (mBitmapEraser != null) {
+            this.mBitmapShaderEraser = new BitmapShader(this.mBitmapEraser, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+            this.mBitmapShaderEraser4C = new BitmapShader(this.mBitmapEraser, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        } else {
+            this.mBitmapShaderEraser = mBitmapShader;
+            this.mBitmapShaderEraser4C = mBitmapShader4C;
+        }
+
         mShaderMatrix = new Matrix();
         mShaderMatrix4C = new Matrix();
+        mMatrixTemp = new Matrix();
         mCanvasPath = new Path();
         mCopyLocation = new CopyLocation(150, 150);
     }
@@ -139,6 +173,10 @@ public class GraffitiView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         setBG();
         mCopyLocation.updateLocation(toX4C(w / 2), toY4C(h / 2));
+        if (!mReady) {
+            mGraffitiListener.onReady();
+            mReady = true;
+        }
     }
 
     @Override
@@ -412,10 +450,12 @@ public class GraffitiView extends View {
                 break;
             case ERASER:
                 if (is4Canvas) {
-                    paint.setShader(this.mBitmapShader4C);
+                    paint.setShader(this.mBitmapShaderEraser4C);
                 } else {
-                    mBitmapShader.setLocalMatrix(null);
-                    paint.setShader(this.mBitmapShader);
+                    if (mBitmapShader == mBitmapShaderEraser) { // 图片的矩阵不需要任何偏移
+                        mBitmapShaderEraser.setLocalMatrix(null);
+                    }
+                    paint.setShader(this.mBitmapShaderEraser);
                 }
                 break;
         }
@@ -531,6 +571,27 @@ public class GraffitiView extends View {
             this.mShaderMatrix4C.set(null);
             this.mShaderMatrix4C.postTranslate((mCentreTranX + mTransX) / (mPrivateScale * mScale), (mCentreTranY + mTransY) / (mPrivateScale * mScale));
             this.mBitmapShader4C.setLocalMatrix(this.mShaderMatrix4C);
+        }
+
+        // 如果使用了自定义的橡皮擦底图，则需要跳转矩阵
+        if (mPen == Pen.ERASER && mBitmapShader != mBitmapShaderEraser) {
+            mMatrixTemp.reset();
+            mBitmapShaderEraser.getLocalMatrix(mMatrixTemp);
+            mBitmapShader.getLocalMatrix(mMatrixTemp);
+            // 缩放橡皮擦底图，使之与涂鸦图片大小一样
+            if (mEraserImageIsResizeable) {
+                mMatrixTemp.preScale(mBitmap.getWidth() * 1f / mBitmapEraser.getWidth(), mBitmap.getHeight() * 1f / mBitmapEraser.getHeight());
+            }
+            mBitmapShaderEraser.setLocalMatrix(mMatrixTemp);
+
+            mMatrixTemp.reset();
+            mBitmapShaderEraser4C.getLocalMatrix(mMatrixTemp);
+            mBitmapShader4C.getLocalMatrix(mMatrixTemp);
+            // 缩放橡皮擦底图，使之与涂鸦图片大小一样
+            if (mEraserImageIsResizeable) {
+                mMatrixTemp.preScale(mBitmap.getWidth() * 1f / mBitmapEraser.getWidth(), mBitmap.getHeight() * 1f / mBitmapEraser.getHeight());
+            }
+            mBitmapShaderEraser4C.setLocalMatrix(mMatrixTemp);
         }
     }
 
@@ -741,7 +802,7 @@ public class GraffitiView extends View {
 //            initCanvas();
 //            draw(mBitmapCanvas, mPathStackBackup, false);
 //            draw(mBitmapCanvas, mPathStack, false);
-        mGraffitiListener.onSaved(mGraffitiBitmap);
+        mGraffitiListener.onSaved(mGraffitiBitmap, mBitmapEraser);
     }
 
     /**
@@ -982,9 +1043,10 @@ public class GraffitiView extends View {
         /**
          * 保存图片
          *
-         * @param bitmap
+         * @param bitmap       涂鸦后的图片
+         * @param bitmapEraser 橡皮擦底图
          */
-        void onSaved(Bitmap bitmap);
+        void onSaved(Bitmap bitmap, Bitmap bitmapEraser);
 
         /**
          * 出错
