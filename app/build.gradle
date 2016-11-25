@@ -22,5 +22,5 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':GraffitiLib')
-    compile project(':ImageSelector')
+    compile project(':ImageSelctorLib-release')
 }

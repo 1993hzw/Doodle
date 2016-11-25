@@ -1,1 +1,1 @@
-include ':app', ':GraffitiLib', ':ImageSelector', ':AndroidsLib-release'
+include ':app', ':GraffitiLib', ':ImageSelector', ':AndroidsLib-release', ':ImageSelctorLib-release'

@@ -36,25 +36,68 @@ public class GraffitiActivity extends Activity {
 
 ```
 /**
- * 图片选择页面，扫描系统数据库中记录的图片，分批次加载
- */
-public class ImageSelectorActivity extends Activity implements View.OnClickListener {
-    /**
-     * 启动图片选择页面
-     * @param requestCode startActivityForResult的请求码
+     * 启动涂鸦界面
+     *
      * @param activity
-     * @param pathList 已选择的图片,可传空
-     * @param multipleChoice 是否多选
-     * @param maxCount 多选时，可选的最大数量
+     * @param params      参数
+     * @param requestCode startActivityForResult的请求码
      */
-    public static void startActivityForResult(int requestCode, Activity activity, ArrayList<String> pathList, boolean multipleChoice, int maxCount);
-}
+    public static void startActivityForResult(Activity activity, GraffitiParams params, int requestCode) {
+        Intent intent = new Intent(activity, GraffitiActivity.class);
+        intent.putExtra(GraffitiActivity.KEY_PARAMS, params);
+        activity.startActivityForResult(intent, requestCode);
+    }
 ```
+
+```
+ /**
+     * 涂鸦参数
+     */
+    public static class GraffitiParams implements Parcelable {
+
+        /**
+         * 图片路径
+         */
+        public String mImagePath;
+        /**
+         * 　保存路径，如果为null，则图片保存在根目录下/DCIM/Graffiti/
+         */
+        public String mSavePath;
+        /**
+         * 　保存路径是否为目录，如果为目录，则在该目录生成由时间戳组成的图片名称
+         */
+        public boolean mSavePathIsDir;
+        /**
+         * 　橡皮擦底图，如果为null，则底图为当前图片路径
+         * {@link GraffitiView#GraffitiView(Context, Bitmap, String, boolean, GraffitiView.GraffitiListener)}
+         */
+        public String mEraserPath;
+
+        /**
+         * 橡皮擦底图是否调整大小，如果可以则调整到跟当前涂鸦图片一样的大小．
+         * 默认为true
+         */
+        public boolean mEraserImageIsResizeable = true;
+
+        /**
+         * 触摸时，图片区域外是否绘制涂鸦轨迹
+         */
+        public boolean mIsDrawableOutside;
+    }
+```
+
+### 依赖
+  * [Androids](https://github.com/1993hzw/Androids)
+  * [ImageSelector](https://github.com/1993hzw/ImageSelector)
+###
+
 ### 界面
 
  ![IMG](http://s1.sinaimg.cn/orignal/003eBWOtzy757JQaYiA00&690)
  ![IMG](http://s16.sinaimg.cn/orignal/003eBWOtzy757JPIatxbf&690)
  ![IMG](http://s1.sinaimg.cn/orignal/003eBWOtzy757JQ7CG470&690)
+
+
 
 ### 相关文章
 
