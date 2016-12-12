@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Shader;
 import android.os.Build;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -47,6 +46,7 @@ public class GraffitiView extends View {
     private BitmapShader mBitmapShaderEraser4C;
     private Path mCurrPath; // 当前手写的路径
     private Path mCanvasPath; //
+    private Path mTempPath;
     private CopyLocation mCopyLocation; // 仿制的定位器
 
     private Paint mPaint;
@@ -111,9 +111,14 @@ public class GraffitiView extends View {
     public GraffitiView(Context context, Bitmap bitmap, String eraser, boolean eraserImageIsResizeable, GraffitiListener listener) {
         super(context);
 
-        //[11,18)对硬件加速支持不完整，clipPath时会crash
+       /* //[11,18)对硬件加速支持不完整，clipPath时会crash
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            setLayerType(LAYER_TYPE_SOFTWARE, null);
+        }*/
+
+        // 关闭硬件加速，因为bitmap的Canvas不支持硬件加速
+        if (Build.VERSION.SDK_INT >= 11) {
             setLayerType(LAYER_TYPE_SOFTWARE, null);
         }
 
@@ -165,6 +170,7 @@ public class GraffitiView extends View {
         mShaderMatrix4C = new Matrix();
         mMatrixTemp = new Matrix();
         mCanvasPath = new Path();
+        mTempPath = new Path();
         mCopyLocation = new CopyLocation(150, 150);
     }
 
@@ -187,9 +193,6 @@ public class GraffitiView extends View {
                 mTouchDownX = mTouchX = mLastTouchX = event.getX();
                 mTouchDownY = mTouchY = mLastTouchY = event.getY();
 
-                mTouchX += VALUE; // 为了仅点击时也能出现绘图，模拟滑动一个像素点
-                mTouchY += VALUE;
-
                 if (mPen == Pen.COPY && mCopyLocation.isInIt(toX4C(mTouchX), toY4C(mTouchY))) { // 点击copy
                     mCopyLocation.isRelocating = true;
                     mCopyLocation.isCopying = false;
@@ -208,12 +211,6 @@ public class GraffitiView extends View {
                         mCanvasPath.reset();
                         mCanvasPath.moveTo(toX4C(mTouchDownX), toY4C(mTouchDownY));
 
-                        // 为了仅点击时也能出现绘图，必须移动path
-                        mCanvasPath.quadTo(
-                                toX4C(mLastTouchX),
-                                toY4C(mLastTouchY),
-                                toX4C((mTouchX + mLastTouchX) / 2),
-                                toY4C((mTouchY + mLastTouchY) / 2));
                     } else {  // 画图形
 
                     }
@@ -228,6 +225,12 @@ public class GraffitiView extends View {
                 mLastTouchY = mTouchY;
                 mTouchX = event.getX();
                 mTouchY = event.getY();
+
+                // 为了仅点击时也能出现绘图，必须移动path
+                if (mTouchDownX == mTouchX && mTouchDownY == mTouchY) {
+                    mTouchX += VALUE;
+                    mTouchY += VALUE;
+                }
 
                 if (mCopyLocation.isRelocating) { // 正在定位location
                     mCopyLocation.updateLocation(toX4C(mTouchX), toY4C(mTouchY));
@@ -359,13 +362,30 @@ public class GraffitiView extends View {
         canvas.drawBitmap(mGraffitiBitmap, (mCentreTranX + mTransX) / (mPrivateScale * mScale), (mCentreTranY + mTransY) / (mPrivateScale * mScale), null);
 
         if (mIsPainting) {  //画在view的画布上
+            Path path;
+            float span = 0;
+            // 为了仅点击时也能出现绘图，必须移动path
+            if (mTouchDownX == mTouchX && mTouchDownY == mTouchY) {
+                mTempPath.reset();
+                mTempPath.addPath(mCanvasPath);
+                mTempPath.quadTo(
+                        toX4C(mLastTouchX),
+                        toY4C(mLastTouchY),
+                        toX4C((mTouchX + mLastTouchX + VALUE) / 2),
+                        toY4C((mTouchY + mLastTouchY + VALUE) / 2));
+                path = mTempPath;
+                span = VALUE;
+            } else {
+                path = mCanvasPath;
+                span = 0;
+            }
             // 画触摸的路径
             mPaint.setStrokeWidth(mPaintSize);
             if (mShape == Shape.HAND_WRITE) { // 手写
-                draw(canvas, mPen, mPaint, mCanvasPath, null, true, mColor);
+                draw(canvas, mPen, mPaint, path, null, true, mColor);
             } else {  // 画图形
                 draw(canvas, mPen, mShape, mPaint,
-                        toX4C(mTouchDownX), toY4C(mTouchDownY), toX4C(mTouchX), toY4C(mTouchY), null, true, mColor);
+                        toX4C(mTouchDownX), toY4C(mTouchDownY), toX4C(mTouchX + span), toY4C(mTouchY + span), null, true, mColor);
             }
         }
 
