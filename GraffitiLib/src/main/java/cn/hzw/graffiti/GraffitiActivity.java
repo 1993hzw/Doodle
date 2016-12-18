@@ -14,11 +14,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
 import android.text.TextUtils;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewGroup;
-import android.view.Window;
+import android.view.*;
+import android.view.animation.AlphaAnimation;
 import android.widget.FrameLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -35,7 +32,7 @@ import cn.forward.androids.utils.ThreadUtil;
 /**
  * 涂鸦界面，根据GraffitiView的接口，提供页面交互
  * （这边代码和ui比较粗糙，主要目的是告诉大家GraffitiView的接口具体能实现什么功能，实际需求中的ui和交互需另提别论）
- * Created by huangziwei on 2016/9/3.
+ * Created by huangziwei(154330138@qq.com) on 2016/9/3.
  */
 public class GraffitiActivity extends Activity {
 
@@ -49,6 +46,7 @@ public class GraffitiActivity extends Activity {
      * @param activity
      * @param params      参数
      * @param requestCode startActivityForResult的请求码
+     * @see GraffitiParams
      */
     public static void startActivityForResult(Activity activity, GraffitiParams params, int requestCode) {
         Intent intent = new Intent(activity, GraffitiActivity.class);
@@ -113,15 +111,22 @@ public class GraffitiActivity extends Activity {
     private final float mMaxScale = 3.5f; // 最大缩放倍数
     private final float mMinScale = 0.25f; // 最小缩放倍数
     private final int TIME_SPAN = 40;
-    private View mBtnMovePic;
+    private View mBtnMovePic, mBtnHidePanel, mSettingsPanel;
 
     private int mTouchSlop;
+
+    private AlphaAnimation mViewShowAnimation, mViewHideAnimation; // view隐藏和显示时用到的渐变动画
 
     // 当前屏幕中心点对应在GraffitiView中的点的坐标
     float mCenterXOnGraffiti;
     float mCenterYOnGraffiti;
 
     private GraffitiParams mGraffitiParams;
+
+    // 触摸屏幕超过一定时间才判断为需要隐藏设置面板
+    private Runnable mHideDelayRunnable;
+    //触摸屏幕超过一定时间才判断为需要隐藏设置面板
+    private Runnable mShowDelayRunnable;
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -154,6 +159,11 @@ public class GraffitiActivity extends Activity {
             return;
         }
         LogUtil.d("TAG", mImagePath);
+        if (mGraffitiParams.mIsFullScreen) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }/*else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }*/
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         mBitmap = ImageUtils.createBitmapFromPath(mImagePath, this);
         if (mBitmap == null) {
@@ -247,14 +257,16 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.btn_fill_rect).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_clear).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_undo).setOnClickListener(mOnClickListener);
-        findViewById(R.id.title_bar_btn01).setOnClickListener(mOnClickListener);
-        findViewById(R.id.title_bar_btn02).setOnClickListener(mOnClickListener);
-        findViewById(R.id.btn_back).setOnClickListener(mOnClickListener);
+        mBtnHidePanel = findViewById(R.id.graffiti_btn_hide_panel);
+        mBtnHidePanel.setOnClickListener(mOnClickListener);
+        findViewById(R.id.graffiti_btn_finish).setOnClickListener(mOnClickListener);
+        findViewById(R.id.graffiti_btn_back).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_centre_pic).setOnClickListener(mOnClickListener);
         mBtnMovePic = findViewById(R.id.btn_move_pic);
         mBtnMovePic.setOnClickListener(mOnClickListener);
         mBtnColor = findViewById(R.id.btn_set_color);
         mBtnColor.setOnClickListener(mOnClickListener);
+        mSettingsPanel = findViewById(R.id.graffiti_panel);
         if (mGraffitiView.getGraffitiColor().getType() == GraffitiView.GraffitiColor.Type.COLOR) {
             mBtnColor.setBackgroundColor(mGraffitiView.getGraffitiColor().getColor());
         } else if (mGraffitiView.getGraffitiColor().getType() == GraffitiView.GraffitiColor.Type.BITMAP) {
@@ -289,8 +301,26 @@ public class GraffitiActivity extends Activity {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                // 隐藏设置面板
+                if (!mBtnHidePanel.isSelected()  // 设置面板没有被隐藏
+                        && mGraffitiParams.mChangePanelVisibilityDelay > 0) {
+                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                        case MotionEvent.ACTION_DOWN:
+                            mSettingsPanel.removeCallbacks(mHideDelayRunnable);
+                            mSettingsPanel.removeCallbacks(mShowDelayRunnable);
+                            mSettingsPanel.postDelayed(mHideDelayRunnable, mGraffitiParams.mChangePanelVisibilityDelay); //触摸屏幕超过一定时间才判断为需要隐藏设置面板
+                            break;
+                        case MotionEvent.ACTION_CANCEL:
+                        case MotionEvent.ACTION_UP:
+                            mSettingsPanel.removeCallbacks(mHideDelayRunnable);
+                            mSettingsPanel.removeCallbacks(mShowDelayRunnable);
+                            mSettingsPanel.postDelayed(mShowDelayRunnable, mGraffitiParams.mChangePanelVisibilityDelay); //离开屏幕超过一定时间才判断为需要显示设置面板
+                            break;
+                    }
+                }
+
                 if (!mIsMovingPic) {
-                    return false;
+                    return false;  // 交给下一层的涂鸦处理
                 }
                 mScale = mGraffitiView.getScale();
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
@@ -305,7 +335,7 @@ public class GraffitiActivity extends Activity {
                         return true;
                     case MotionEvent.ACTION_MOVE:
                         if (mTouchMode < 2) { // 单点滑动
-                            if (mIsBusy) {
+                            if (mIsBusy) { // 从多点触摸变为单点触摸，忽略该次事件，避免从双指缩放变为单指移动时图片瞬间移动
                                 mIsBusy = false;
                                 mTouchLastX = event.getX();
                                 mTouchLastY = event.getY();
@@ -348,12 +378,44 @@ public class GraffitiActivity extends Activity {
                         mTouchCentreY = (event.getY(0) + event.getY(1)) / 2;
                         mToucheCentreXOnGraffiti = mGraffitiView.toX(mTouchCentreX);
                         mToucheCentreYOnGraffiti = mGraffitiView.toY(mTouchCentreY);
-                        mIsBusy = true;
+                        mIsBusy = true; // 标志位多点触摸
                         return true;
                 }
-                return false;
+                return true;
             }
         });
+
+        findViewById(R.id.graffiti_txt_title).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) { // 长按标题栏显示原图
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_DOWN:
+                        mGraffitiView.setJustDrawOriginal(true);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        mGraffitiView.setJustDrawOriginal(false);
+                        break;
+                }
+                return true;
+            }
+        });
+
+        mViewShowAnimation = new AlphaAnimation(0, 1);
+        mViewShowAnimation.setDuration(500);
+        mViewHideAnimation = new AlphaAnimation(1, 0);
+        mViewHideAnimation.setDuration(500);
+        mHideDelayRunnable = new Runnable() {
+            public void run() {
+                hideView(mSettingsPanel);
+            }
+
+        };
+        mShowDelayRunnable = new Runnable() {
+            public void run() {
+                showView(mSettingsPanel);
+            }
+        };
     }
 
     /**
@@ -362,6 +424,7 @@ public class GraffitiActivity extends Activity {
      * @param event
      * @return
      */
+
     private float spacing(MotionEvent event) {
         float x = event.getX(0) - event.getX(1);
         float y = event.getY(0) - event.getY(1);
@@ -430,14 +493,20 @@ public class GraffitiActivity extends Activity {
                 return;
             }
 
-            if (v.getId() == R.id.title_bar_btn01) {
+            if (v.getId() == R.id.graffiti_btn_hide_panel) {
+                mSettingsPanel.removeCallbacks(mHideDelayRunnable);
+                mSettingsPanel.removeCallbacks(mShowDelayRunnable);
                 v.setSelected(!v.isSelected());
-                findViewById(R.id.graffiti_panel).setVisibility(v.isSelected() ? View.GONE : View.VISIBLE);
+                if (!mBtnHidePanel.isSelected()) {
+                    showView(mSettingsPanel);
+                } else {
+                    hideView(mSettingsPanel);
+                }
                 mDone = true;
-            } else if (v.getId() == R.id.title_bar_btn02) {
+            } else if (v.getId() == R.id.graffiti_btn_finish) {
                 mGraffitiView.save();
                 mDone = true;
-            } else if (v.getId() == R.id.btn_back) {
+            } else if (v.getId() == R.id.graffiti_btn_back) {
                 if (!mGraffitiView.isModified()) {
                     finish();
                     return;
@@ -503,7 +572,7 @@ public class GraffitiActivity extends Activity {
             mBtnMovePic.setSelected(false);
             return;
         } else {
-            findViewById(R.id.btn_back).performClick();
+            findViewById(R.id.graffiti_btn_back).performClick();
         }
 
     }
@@ -601,6 +670,25 @@ public class GraffitiActivity extends Activity {
         ThreadUtil.getInstance().runOnMainThread(mUpdateScale);
     }
 
+    private void showView(View view) {
+        if (view.getVisibility() == View.VISIBLE) {
+            return;
+        }
+
+        view.clearAnimation();
+        view.startAnimation(mViewShowAnimation);
+        view.setVisibility(View.VISIBLE);
+    }
+
+    private void hideView(View view) {
+        if (view.getVisibility() != View.VISIBLE) {
+            return;
+        }
+        view.clearAnimation();
+        view.startAnimation(mViewHideAnimation);
+        view.setVisibility(View.GONE);
+    }
+
     /**
      * 涂鸦参数
      */
@@ -634,6 +722,19 @@ public class GraffitiActivity extends Activity {
          * 触摸时，图片区域外是否绘制涂鸦轨迹
          */
         public boolean mIsDrawableOutside;
+
+        /**
+         * 涂鸦时（手指按下）隐藏设置面板的延长时间(ms)，当小于等于0时则为不尝试隐藏面板（即保持面板当前状态不变），当大于0时表示需要触摸屏幕超过一定时间后才隐藏
+         * 或者手指抬起时展示面板的延长时间(ms)，当小于等于0时则为不尝试展示面板，当大于0时表示需要离开屏幕超过一定时间后才展示
+         * 默认为800ms
+         */
+        public long mChangePanelVisibilityDelay = 800; //ms
+
+        /**
+         * 是否全屏显示，即是否隐藏状态栏
+         * 默认为false，表示状态栏继承应用样式
+         */
+        public boolean mIsFullScreen = false;
 
         public static final Creator<GraffitiParams> CREATOR = new Creator<GraffitiParams>() {
             @Override

@@ -1,28 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-              android:background="#232323"
-              android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:background="#232323"
+                android:orientation="vertical">
 
-    <include layout="@layout/graffiti__title_bar"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
-        <FrameLayout
+    <include
+            android:id="@+id/graffiti__title_bar"
+            layout="@layout/graffiti__title_bar"/>
+
+    <FrameLayout
+            android:layout_below="@id/graffiti__title_bar"
             android:id="@+id/graffiti_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
-        <RelativeLayout
+    <RelativeLayout
+            android:layout_below="@id/graffiti__title_bar"
             android:id="@+id/graffiti_panel"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
 
-            <LinearLayout
+        <LinearLayout
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
@@ -30,12 +33,12 @@
                 android:layout_marginTop="10dp"
                 android:orientation="vertical">
 
-                <LinearLayout
+            <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="30dp"
                     android:orientation="horizontal">
 
-                    <Button
+                <Button
                         android:id="@+id/btn_pen_hand"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -46,7 +49,7 @@
                         android:textSize="13dp"
                         android:visibility="visible"/>
 
-                    <Button
+                <Button
                         android:id="@+id/btn_pen_copy"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -57,7 +60,7 @@
                         android:textSize="13dp"
                         android:visibility="visible"/>
 
-                    <Button
+                <Button
                         android:id="@+id/btn_pen_eraser"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -69,12 +72,12 @@
                         android:textSize="13dp"
                         android:visibility="visible"/>
 
-                    <FrameLayout
+                <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="1dp"
                         android:layout_weight="1"/>
 
-                    <Button
+                <Button
                         android:id="@+id/btn_clear"
                         android:layout_width="@dimen/title_bar_height"
                         android:layout_height="match_parent"
@@ -83,7 +86,7 @@
                         android:textColor="#000000"
                         android:textSize="13dp"/>
 
-                    <Button
+                <Button
                         android:id="@+id/btn_undo"
                         android:layout_width="@dimen/title_bar_height"
                         android:layout_height="match_parent"
@@ -91,9 +94,9 @@
                         android:text="撤销"
                         android:textColor="#000000"
                         android:textSize="13dp"/>
-                </LinearLayout>
+            </LinearLayout>
 
-                <LinearLayout
+            <LinearLayout
                     android:id="@+id/bar_paint_mode"
                     android:layout_width="fill_parent"
                     android:layout_height="30dp"
@@ -102,7 +105,7 @@
                     android:orientation="horizontal"
                     android:visibility="gone">
 
-                    <Button
+                <Button
                         android:id="@+id/btn_painter"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -114,7 +117,7 @@
                         android:textSize="10dp"
                         android:visibility="visible"/>
 
-                    <Button
+                <Button
                         android:id="@+id/btn_copy"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -125,9 +128,9 @@
                         android:textColor="#000000"
                         android:textSize="10dp"
                         android:visibility="visible"/>
-                </LinearLayout>
+            </LinearLayout>
 
-                <LinearLayout
+            <LinearLayout
                     android:id="@+id/bar_shape_mode"
                     android:layout_width="fill_parent"
                     android:layout_height="30dp"
@@ -136,7 +139,7 @@
                     android:orientation="horizontal"
                     android:visibility="visible">
 
-                    <Button
+                <Button
                         android:id="@+id/btn_hand_write"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -146,7 +149,7 @@
                         android:textSize="10dp"
                         android:visibility="visible"/>
 
-                    <Button
+                <Button
                         android:id="@+id/btn_arrow"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -157,7 +160,7 @@
                         android:textSize="10dp"
                         android:visibility="visible"/>
 
-                    <Button
+                <Button
                         android:id="@+id/btn_line"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -168,7 +171,7 @@
                         android:textSize="10dp"
                         android:visibility="visible"/>
 
-                    <Button
+                <Button
                         android:id="@+id/btn_holl_circle"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -180,7 +183,7 @@
                         android:textSize="10dp"
                         android:visibility="visible"/>
 
-                    <Button
+                <Button
                         android:id="@+id/btn_fill_circle"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -192,7 +195,7 @@
                         android:textSize="10dp"
                         android:visibility="visible"/>
 
-                    <Button
+                <Button
                         android:id="@+id/btn_holl_rect"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -204,7 +207,7 @@
                         android:textSize="10dp"
                         android:visibility="visible"/>
 
-                    <Button
+                <Button
                         android:id="@+id/btn_fill_rect"
                         android:layout_width="50dp"
                         android:layout_height="match_parent"
@@ -215,30 +218,30 @@
                         android:textColor="#000000"
                         android:textSize="10dp"
                         android:visibility="visible"/>
-                </LinearLayout>
+            </LinearLayout>
 
 
-                <LinearLayout
+            <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="10dp"
                     android:orientation="horizontal">
 
-                    <RelativeLayout
+                <RelativeLayout
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:background="@drawable/graffiti_btn_effect_rect_line"
 
                         android:padding="2dp">
 
-                        <ImageView
+                    <ImageView
                             android:id="@+id/btn_set_color"
                             android:layout_width="fill_parent"
                             android:layout_height="fill_parent"/>
-                    </RelativeLayout>
+                </RelativeLayout>
 
-                    <SeekBar
+                <SeekBar
                         android:id="@+id/paint_size"
                         android:layout_width="260dp"
                         android:layout_height="33dp"
@@ -250,7 +253,7 @@
                         android:progressDrawable="@drawable/graffiti_seekbar_bg"
                         android:thumb="@drawable/graffiti_thumb_seekbarr"/>
 
-                    <TextView
+                <TextView
                         android:id="@+id/paint_size_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -258,10 +261,10 @@
                         android:text=""
                         android:textColor="#ffffff"
                         android:textSize="14dp"/>
-                </LinearLayout>
             </LinearLayout>
+        </LinearLayout>
 
-            <LinearLayout
+        <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="@dimen/title_bar_height"
                 android:layout_alignParentBottom="true"
@@ -269,7 +272,7 @@
                 android:gravity="center_horizontal"
                 android:orientation="horizontal">
 
-                <Button
+            <Button
                     android:id="@+id/btn_move_pic"
                     android:layout_width="@dimen/title_bar_height"
                     android:layout_height="@dimen/title_bar_height"
@@ -281,7 +284,7 @@
                     android:textSize="16dp"
                     android:textStyle="bold"/>
 
-                <Button
+            <Button
                     android:id="@+id/btn_centre_pic"
                     android:layout_width="@dimen/title_bar_height"
                     android:layout_height="@dimen/title_bar_height"
@@ -292,7 +295,7 @@
                     android:textSize="16dp"
                     android:textStyle="bold"/>
 
-                <ImageView
+            <ImageView
                     android:id="@+id/btn_amplifier"
                     android:layout_width="@dimen/title_bar_height"
                     android:layout_height="@dimen/title_bar_height"
@@ -300,7 +303,7 @@
                     android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
                     android:src="@drawable/graffiti_btn_add"/>
 
-                <ImageView
+            <ImageView
                     android:id="@+id/btn_reduce"
                     android:layout_width="@dimen/title_bar_height"
                     android:layout_height="@dimen/title_bar_height"
@@ -308,7 +311,8 @@
                     android:src="@drawable/graffiti_btn_sub"
                     android:textSize="20dp"/>
 
-            </LinearLayout>
-        </RelativeLayout>
+        </LinearLayout>
     </RelativeLayout>
-</LinearLayout>
+
+
+</RelativeLayout>

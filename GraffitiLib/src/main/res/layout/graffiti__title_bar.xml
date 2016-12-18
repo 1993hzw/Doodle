@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:id="@+id/title_bar"
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
              android:background="#232323"
              android:fitsSystemWindows="true">
 
     <LinearLayout
-        android:id="@+id/title_menu"
         android:layout_width="match_parent"
         android:layout_height="@dimen/title_bar_height"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/btn_back"
+            android:id="@+id/graffiti_btn_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="8dp"
+            android:padding="12dp"
             android:text="返回"
             android:textColor="#ffffff"
             android:textSize="18dp"/>
@@ -25,15 +23,15 @@
         <FrameLayout
             android:layout_width="1dp"
             android:layout_height="match_parent"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="5dp"
-            android:background="#888888"/>
+            android:layout_marginBottom="15dp"
+            android:layout_marginTop="15dp"
+            android:background="#181818"/>
 
         <TextView
-            android:id="@+id/title_bar_title"
+            android:id="@+id/graffiti_txt_title"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_marginLeft="8dp"
+            android:layout_marginLeft="12dp"
             android:layout_weight="1"
             android:ellipsize="end"
             android:gravity="center_vertical"
@@ -51,18 +49,18 @@
             android:padding="8dp">
 
             <ImageView
-                android:id="@+id/title_bar_btn01"
+                android:id="@+id/graffiti_btn_hide_panel"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/graffiti_btn_effect_round_pressed_yellow"
-                android:padding="5dp"
+                android:padding="6dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/graffiti_hide_panel"
                 android:visibility="visible"/>
         </FrameLayout>
 
         <ImageView
-            android:id="@+id/title_bar_btn02"
+            android:id="@+id/graffiti_btn_finish"
             android:layout_width="@dimen/title_bar_height"
             android:layout_height="@dimen/title_bar_height"
             android:scaleType="centerCrop"
