@@ -17,6 +17,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.ThreadUtil;
+import cn.forward.androids.utils.Util;
 
 /**
  * Created by huangziwei on 2016/9/3.
@@ -37,8 +38,8 @@ public class GraffitiView extends View {
     private Canvas mBitmapCanvas;
 
     private float mPrivateScale; // 图片适应屏幕时的缩放倍数
-    private int mPrivateHeight, mPrivateWidth;// 图片适应屏幕时的大小
-    private float mCentreTranX, mCentreTranY;// 图片居中时的偏移
+    private int mPrivateHeight, mPrivateWidth;// 图片适应屏幕时的大小（肉眼看到的在屏幕上的大小）
+    private float mCentreTranX, mCentreTranY;// 图片居中时的偏移（肉眼看到的在屏幕上的偏移）
 
     private BitmapShader mBitmapShader; // 用于涂鸦的图片上
     private BitmapShader mBitmapShader4C;
@@ -95,6 +96,10 @@ public class GraffitiView extends View {
 
     private float mTouchDownX, mTouchDownY, mLastTouchX, mLastTouchY, mTouchX, mTouchY;
     private Matrix mShaderMatrix, mShaderMatrix4C, mMatrixTemp;
+
+    private float mAmplifierRadius;
+    private Path mAmplifierPath;
+    private float mAmplifierScale = 0; // 放大镜的倍数
 
     public GraffitiView(Context context, Bitmap bitmap, GraffitiListener listener) {
         this(context, bitmap, null, true, listener);
@@ -172,6 +177,8 @@ public class GraffitiView extends View {
         mCanvasPath = new Path();
         mTempPath = new Path();
         mCopyLocation = new CopyLocation(150, 150);
+
+        mAmplifierRadius = Util.getScreenWidth(getContext()) / 4;
     }
 
     @Override
@@ -227,7 +234,7 @@ public class GraffitiView extends View {
                 mTouchY = event.getY();
 
                 // 为了仅点击时也能出现绘图，必须移动path
-                if (mTouchDownX == mTouchX && mTouchDownY == mTouchY) {
+                if (mTouchDownX == mTouchX && mTouchDownY == mTouchY & mTouchDownX == mLastTouchX && mTouchDownY == mLastTouchY) {
                     mTouchX += VALUE;
                     mTouchY += VALUE;
                 }
@@ -337,6 +344,9 @@ public class GraffitiView extends View {
         initCanvas();
         resetMatrix();
         invalidate();
+
+        mAmplifierPath = new Path();
+        mAmplifierPath.addCircle(mAmplifierRadius, mAmplifierRadius, mAmplifierRadius, Path.Direction.CCW);
     }
 
     @Override
@@ -345,7 +355,30 @@ public class GraffitiView extends View {
             return;
         }
 
-        canvas.scale(mPrivateScale * mScale, mPrivateScale * mScale);
+        canvas.save();
+        doDraw(canvas);
+        canvas.restore();
+
+        if (mAmplifierScale > 0) { //启用放大镜
+            canvas.save();
+            if (mTouchY < getHeight() / 2) { // 1,2象限 把放大镜仿制底部
+                canvas.translate(0, getHeight() - mAmplifierRadius * 2);
+            } else { // 3,4
+//                canvas.translate(0, getHeight() - mAmplifierRadius * 2);
+            }
+
+            canvas.clipPath(mAmplifierPath);
+            float scale = mAmplifierScale / mScale; // 除以mScale，无论当前图片缩放多少，都产生图片在居中状态下缩放mAmplifierScale倍的效果
+            canvas.scale(scale, scale);
+            canvas.translate(-mTouchX + mAmplifierRadius / scale, -mTouchY + mAmplifierRadius / scale);
+            doDraw(canvas);
+            canvas.restore();
+        }
+
+    }
+
+    private void doDraw(Canvas canvas) {
+        canvas.scale(mPrivateScale * mScale, mPrivateScale * mScale); // 缩放画布，接下来的操作要进行坐标换算
         float left = (mCentreTranX + mTransX) / (mPrivateScale * mScale);
         float top = (mCentreTranY + mTransY) / (mPrivateScale * mScale);
 
@@ -365,7 +398,7 @@ public class GraffitiView extends View {
             Path path;
             float span = 0;
             // 为了仅点击时也能出现绘图，必须移动path
-            if (mTouchDownX == mTouchX && mTouchDownY == mTouchY) {
+            if (mTouchDownX == mTouchX && mTouchDownY == mTouchY && mTouchDownX == mLastTouchX && mTouchDownY == mLastTouchY) {
                 mTempPath.reset();
                 mTempPath.addPath(mCanvasPath);
                 mTempPath.quadTo(
@@ -392,7 +425,6 @@ public class GraffitiView extends View {
         if (mPen == Pen.COPY) {
             mCopyLocation.drawItSelf(canvas);
         }
-
     }
 
     private void draw(Canvas canvas, Pen pen, Paint paint, Path path, Matrix matrix, boolean is4Canvas, GraffitiColor color) {
@@ -1056,6 +1088,18 @@ public class GraffitiView extends View {
      */
     public boolean getIsDrawableOutside() {
         return mIsDrawableOutside;
+    }
+
+    /**
+     * 设置放大镜的倍数，当小于等于0时表示不使用放大器功能
+     * @param amplifierScale
+     */
+    public void setAmplifierScale(float amplifierScale) {
+        mAmplifierScale = amplifierScale;
+    }
+
+    public float getAmplifierScale() {
+        return mAmplifierScale;
     }
 
     public interface GraffitiListener {

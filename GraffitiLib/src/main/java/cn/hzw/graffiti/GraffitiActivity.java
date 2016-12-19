@@ -385,6 +385,19 @@ public class GraffitiActivity extends Activity {
             }
         });
 
+        if (mGraffitiParams.mAmplifierScale > 0) { // 启用放大器功能
+            mGraffitiView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                public boolean onPreDraw() {
+                    if (mSettingsPanel.getVisibility() == View.VISIBLE) {
+                        mGraffitiView.setAmplifierScale(-1);
+                    } else { // 当设置面板隐藏时才显示放大器
+                        mGraffitiView.setAmplifierScale(mGraffitiParams.mAmplifierScale);
+                    }
+                    return true;
+                }
+            });
+        }
+
         findViewById(R.id.graffiti_txt_title).setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) { // 长按标题栏显示原图
@@ -729,6 +742,13 @@ public class GraffitiActivity extends Activity {
          * 默认为800ms
          */
         public long mChangePanelVisibilityDelay = 800; //ms
+
+        /**
+         * 设置放大镜的倍数，当小于等于0时表示不使用放大器功能
+         * 放大器只有在设置面板被隐藏的时候才会出现
+         * 默认为2.5倍
+         */
+        public float mAmplifierScale = 2.5f;
 
         /**
          * 是否全屏显示，即是否隐藏状态栏
