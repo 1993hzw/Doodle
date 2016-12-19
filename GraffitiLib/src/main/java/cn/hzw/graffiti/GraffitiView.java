@@ -1096,6 +1096,7 @@ public class GraffitiView extends View {
      */
     public void setAmplifierScale(float amplifierScale) {
         mAmplifierScale = amplifierScale;
+        invalidate();
     }
 
     public float getAmplifierScale() {

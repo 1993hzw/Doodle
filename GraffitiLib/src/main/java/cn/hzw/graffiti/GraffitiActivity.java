@@ -385,19 +385,6 @@ public class GraffitiActivity extends Activity {
             }
         });
 
-        if (mGraffitiParams.mAmplifierScale > 0) { // 启用放大器功能
-            mGraffitiView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                public boolean onPreDraw() {
-                    if (mSettingsPanel.getVisibility() == View.VISIBLE) {
-                        mGraffitiView.setAmplifierScale(-1);
-                    } else { // 当设置面板隐藏时才显示放大器
-                        mGraffitiView.setAmplifierScale(mGraffitiParams.mAmplifierScale);
-                    }
-                    return true;
-                }
-            });
-        }
-
         findViewById(R.id.graffiti_txt_title).setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) { // 长按标题栏显示原图
@@ -691,6 +678,9 @@ public class GraffitiActivity extends Activity {
         view.clearAnimation();
         view.startAnimation(mViewShowAnimation);
         view.setVisibility(View.VISIBLE);
+        if (view == mSettingsPanel) {
+            mGraffitiView.setAmplifierScale(-1);
+        }
     }
 
     private void hideView(View view) {
@@ -700,6 +690,10 @@ public class GraffitiActivity extends Activity {
         view.clearAnimation();
         view.startAnimation(mViewHideAnimation);
         view.setVisibility(View.GONE);
+        if (view == mSettingsPanel) {
+            // 当设置面板隐藏时才显示放大器
+            mGraffitiView.setAmplifierScale(mGraffitiParams.mAmplifierScale);
+        }
     }
 
     /**
