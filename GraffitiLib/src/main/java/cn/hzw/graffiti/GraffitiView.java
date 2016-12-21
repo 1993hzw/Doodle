@@ -100,6 +100,8 @@ public class GraffitiView extends View {
     private float mAmplifierRadius;
     private Path mAmplifierPath;
     private float mAmplifierScale = 0; // 放大镜的倍数
+    private Paint mAmplifierPaint;
+    private int mAmplifierHorizonX; // 放大器的位置的x坐标，使其水平居中
 
     public GraffitiView(Context context, Bitmap bitmap, GraffitiListener listener) {
         this(context, bitmap, null, true, listener);
@@ -178,7 +180,13 @@ public class GraffitiView extends View {
         mTempPath = new Path();
         mCopyLocation = new CopyLocation(150, 150);
 
-        mAmplifierRadius = Util.getScreenWidth(getContext()) / 4;
+        mAmplifierPaint = new Paint();
+        mAmplifierPaint.setColor(0xaaffffff);
+        mAmplifierPaint.setStyle(Paint.Style.STROKE);
+        mAmplifierPaint.setAntiAlias(true);
+        mAmplifierPaint.setStrokeJoin(Paint.Join.ROUND);
+        mAmplifierPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
+        mAmplifierPaint.setStrokeWidth(Util.dp2px(getContext(), 10));
     }
 
     @Override
@@ -345,8 +353,10 @@ public class GraffitiView extends View {
         resetMatrix();
         invalidate();
 
+        mAmplifierRadius = getWidth() / 4;
         mAmplifierPath = new Path();
         mAmplifierPath.addCircle(mAmplifierRadius, mAmplifierRadius, mAmplifierRadius, Path.Direction.CCW);
+        mAmplifierHorizonX = (int) (getWidth() / 2 - mAmplifierRadius);
     }
 
     @Override
@@ -361,17 +371,24 @@ public class GraffitiView extends View {
 
         if (mAmplifierScale > 0) { //启用放大镜
             canvas.save();
-            if (mTouchY < getHeight() / 2) { // 1,2象限 把放大镜仿制底部
-                canvas.translate(0, getHeight() - mAmplifierRadius * 2);
-            } else { // 3,4
-//                canvas.translate(0, getHeight() - mAmplifierRadius * 2);
-            }
 
+            if (mTouchY <= mAmplifierRadius * 2) { // 在放大镜的范围内， 把放大镜仿制底部
+                canvas.translate(mAmplifierHorizonX, getHeight() - mAmplifierRadius * 2);
+            } else {
+                canvas.translate(mAmplifierHorizonX, 0);
+            }
             canvas.clipPath(mAmplifierPath);
+            canvas.drawColor(0xff000000);
+
+            canvas.save();
             float scale = mAmplifierScale / mScale; // 除以mScale，无论当前图片缩放多少，都产生图片在居中状态下缩放mAmplifierScale倍的效果
             canvas.scale(scale, scale);
             canvas.translate(-mTouchX + mAmplifierRadius / scale, -mTouchY + mAmplifierRadius / scale);
             doDraw(canvas);
+            canvas.restore();
+
+            // 画放大器的边框
+            DrawUtil.drawCircle(canvas, mAmplifierRadius, mAmplifierRadius, mAmplifierRadius, mAmplifierPaint);
             canvas.restore();
         }
 
@@ -1092,6 +1109,7 @@ public class GraffitiView extends View {
 
     /**
      * 设置放大镜的倍数，当小于等于0时表示不使用放大器功能
+     *
      * @param amplifierScale
      */
     public void setAmplifierScale(float amplifierScale) {
