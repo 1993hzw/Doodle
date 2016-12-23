@@ -912,64 +912,12 @@ public class GraffitiView extends View {
      * 居中图片
      */
     public void centrePic() {
-        if (mScale >= 1) {
-            ThreadUtil.getInstance().runOnAsyncThread(new Runnable() {
-                boolean isScaling = true;
-                int mTimes = Math.max((int) ((mScale - 1) / 0.2f + 0.5f), 1);
-                float mSpan = mTransX / mTimes;
-
-                public void run() {
-                    do {
-                        // 围绕坐标(0,0)缩放图片
-                        mScale -= 0.2f;
-
-                        if (mScale <= 1) {
-                            mScale = 1;
-                            isScaling = false;
-                        }
-                        mTransX = mTransX - mSpan;
-                        if (!isScaling) {
-                            mTransX = 0;
-                        }
-                        judgePosition();
-                        postInvalidate();
-                        try {
-                            Thread.sleep(TIME_SPAN / 2);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    } while (isScaling);
-
-                }
-            });
-        } else if (mScale < 1) {
-            ThreadUtil.getInstance().runOnAsyncThread(new Runnable() {
-                boolean isScaling = true;
-                int mTimes = Math.max((int) ((1 - mScale) / 0.2f), 1);
-                float mSpan = mTransX / mTimes;
-
-                public void run() {
-                    do {
-                        mScale += 0.2f;
-                        if (mScale >= 1) {
-                            mScale = 1;
-                            isScaling = false;
-                        }
-                        mTransX = mTransX - mSpan;
-                        if (!isScaling) {
-                            mTransX = 0;
-                        }
-                        judgePosition();
-                        postInvalidate();
-                        try {
-                            Thread.sleep(TIME_SPAN / 2);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    } while (isScaling);
-                }
-            });
-        }
+        mScale = 1;
+        // 居中图片
+        mTransX = 0;
+        mTransY = 0;
+        judgePosition();
+        invalidate();
     }
 
     /**

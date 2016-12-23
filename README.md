@@ -13,11 +13,15 @@
 
   * 放缩与移动
 
-    在涂鸦的过程中，可以自由地通过手势缩放和移动图片，以便更细微地涂鸦，同时在多次缩放后，可点击“O”按钮，快速居中图片。
+    在涂鸦的过程中，可以自由地通过手势缩放和移动图片，同时在多次缩放后，可快速居中图片。
+
+  * 放大器
+
+    为了更细微地涂鸦，涂鸦过程中可以设置出现放大器．
 
 ### 使用
 
-```
+```java
 /**
  * 涂鸦界面，根据GraffitiView的接口，提供页面交互
  *
@@ -34,7 +38,7 @@ public class GraffitiActivity extends Activity {
 }
 ```
 
-```
+```java
 /**
      * 启动涂鸦界面
      *
@@ -49,7 +53,7 @@ public class GraffitiActivity extends Activity {
     }
 ```
 
-```
+```java
  /**
      * 涂鸦参数
      */
@@ -69,7 +73,6 @@ public class GraffitiActivity extends Activity {
         public boolean mSavePathIsDir;
         /**
          * 　橡皮擦底图，如果为null，则底图为当前图片路径
-         * {@link GraffitiView#GraffitiView(Context, Bitmap, String, boolean, GraffitiView.GraffitiListener)}
          */
         public String mEraserPath;
 
@@ -89,13 +92,13 @@ public class GraffitiActivity extends Activity {
 ### 依赖
   * [Androids](https://github.com/1993hzw/Androids)
   * [ImageSelector](https://github.com/1993hzw/ImageSelector)
-###
+
 
 ### 界面
 
- ![IMG](http://s1.sinaimg.cn/orignal/003eBWOtzy757JQaYiA00&690)
- ![IMG](http://s16.sinaimg.cn/orignal/003eBWOtzy757JPIatxbf&690)
- ![IMG](http://s1.sinaimg.cn/orignal/003eBWOtzy757JQ7CG470&690)
+ ![IMG](http://s2.sinaimg.cn/orignal/003eBWOtzy77pGDrx8Rc1&690)
+ ![IMG](http://s7.sinaimg.cn/orignal/003eBWOtzy77pGDrA8ea6&690)
+ ![IMG](http://s8.sinaimg.cn/orignal/003eBWOtzy77pGEXU7dc7&690)
 
 
 
@@ -106,6 +109,17 @@ public class GraffitiActivity extends Activity {
    [android图片涂鸦，具有设置画笔，撤销，缩放移动等功能(一)](http://blog.csdn.net/u012964944/article/details/52661940)
 
 
-  *　原理介绍：
+  * 原理介绍：
 
   [android图片涂鸦，具有设置画笔，撤销，缩放移动等功能(二)](http://blog.csdn.net/u012964944/article/details/52769273)
+
+
+### 更新日志
+
+  * 2016-12-23 v2.0(2)
+
+  (1)增加放大器功能．
+
+  (2)新增接口：涂鸦时面板自动隐藏．
+
+  (3)修复：使用长图，缩放移动时不能自由移动．
