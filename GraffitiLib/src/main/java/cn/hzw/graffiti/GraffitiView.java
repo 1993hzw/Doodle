@@ -351,12 +351,13 @@ public class GraffitiView extends View {
 
         initCanvas();
         resetMatrix();
-        invalidate();
 
-        mAmplifierRadius = getWidth() / 4;
+        mAmplifierRadius = Math.min(getWidth(), getHeight()) / 4;
         mAmplifierPath = new Path();
         mAmplifierPath.addCircle(mAmplifierRadius, mAmplifierRadius, mAmplifierRadius, Path.Direction.CCW);
-        mAmplifierHorizonX = (int) (getWidth() / 2 - mAmplifierRadius);
+        mAmplifierHorizonX = (int) (Math.min(getWidth(), getHeight()) / 2 - mAmplifierRadius);
+
+        invalidate();
     }
 
     @Override
@@ -669,34 +670,38 @@ public class GraffitiView extends View {
      */
     private void judgePosition() {
         boolean changed = false;
-        if (mScale > 1) { // 当图片放大时，图片偏移的位置不能超过屏幕边缘
-            if (mTransX > 0) {
-                mTransX = 0;
+        if (mPrivateWidth * mScale > getWidth()) { // 图片偏移的位置不能超过屏幕边缘
+            if (mCentreTranX + mTransX > 0) {
+                mTransX = -mCentreTranX;
                 changed = true;
-            } else if (mTransX + mPrivateWidth * mScale < mPrivateWidth) {
-                mTransX = mPrivateWidth - mPrivateWidth * mScale;
-                changed = true;
-            }
-            if (mTransY > 0) {
-                mTransY = 0;
-                changed = true;
-            } else if (mTransY + mPrivateHeight * mScale < mPrivateHeight) {
-                mTransY = mPrivateHeight - mPrivateHeight * mScale;
+            } else if (mCentreTranX + mTransX + mPrivateWidth * mScale < getWidth()) {
+                mTransX = getWidth() - mPrivateWidth * mScale - mCentreTranX;
                 changed = true;
             }
-        } else { // 当图片缩小时，图片只能在屏幕可见范围内移动
-            if (mTransX + mBitmap.getWidth() * mPrivateScale * mScale > mPrivateWidth) { // mScale<1是preview.width不用乘scale
-                mTransX = mPrivateWidth - mBitmap.getWidth() * mPrivateScale * mScale;
+        } else { // 图片只能在屏幕可见范围内移动
+            if (mCentreTranX + mTransX + mBitmap.getWidth() * mPrivateScale * mScale > getWidth()) { // mScale<1是preview.width不用乘scale
+                mTransX = getWidth() - mBitmap.getWidth() * mPrivateScale * mScale - mCentreTranX;
                 changed = true;
-            } else if (mTransX < 0) {
-                mTransX = 0;
+            } else if (mCentreTranX + mTransX < 0) {
+                mTransX = -mCentreTranX;
                 changed = true;
             }
-            if (mTransY + mBitmap.getHeight() * mPrivateScale * mScale > mPrivateHeight) {
-                mTransY = mPrivateHeight - mBitmap.getHeight() * mPrivateScale * mScale;
+        }
+
+        if (mPrivateHeight * mScale > getHeight()) { // 图片偏移的位置不能超过屏幕边缘
+            if (mCentreTranY + mTransY > 0) {
+                mTransY = -mCentreTranY;
                 changed = true;
-            } else if (mTransY < 0) {
-                mTransY = 0;
+            } else if (mCentreTranY + mTransY + mPrivateHeight * mScale < getHeight()) {
+                mTransY = getHeight() - mPrivateHeight * mScale - mCentreTranY;
+                changed = true;
+            }
+        } else { // 图片只能在屏幕可见范围内移动
+            if (mCentreTranY + mTransY + mBitmap.getHeight() * mPrivateScale * mScale > getHeight()) {
+                mTransY = getHeight() - mBitmap.getHeight() * mPrivateScale * mScale - mCentreTranY;
+                changed = true;
+            } else if (mCentreTranY + mTransY < 0) {
+                mTransY = -mCentreTranY;
                 changed = true;
             }
         }
@@ -907,16 +912,24 @@ public class GraffitiView extends View {
      * 居中图片
      */
     public void centrePic() {
-        if (mScale > 1) {
+        if (mScale >= 1) {
             ThreadUtil.getInstance().runOnAsyncThread(new Runnable() {
                 boolean isScaling = true;
+                int mTimes = Math.max((int) ((mScale - 1) / 0.2f + 0.5f), 1);
+                float mSpan = mTransX / mTimes;
 
                 public void run() {
                     do {
+                        // 围绕坐标(0,0)缩放图片
                         mScale -= 0.2f;
+
                         if (mScale <= 1) {
                             mScale = 1;
                             isScaling = false;
+                        }
+                        mTransX = mTransX - mSpan;
+                        if (!isScaling) {
+                            mTransX = 0;
                         }
                         judgePosition();
                         postInvalidate();
@@ -932,6 +945,8 @@ public class GraffitiView extends View {
         } else if (mScale < 1) {
             ThreadUtil.getInstance().runOnAsyncThread(new Runnable() {
                 boolean isScaling = true;
+                int mTimes = Math.max((int) ((1 - mScale) / 0.2f), 1);
+                float mSpan = mTransX / mTimes;
 
                 public void run() {
                     do {
@@ -939,6 +954,10 @@ public class GraffitiView extends View {
                         if (mScale >= 1) {
                             mScale = 1;
                             isScaling = false;
+                        }
+                        mTransX = mTransX - mSpan;
+                        if (!isScaling) {
+                            mTransX = 0;
                         }
                         judgePosition();
                         postInvalidate();

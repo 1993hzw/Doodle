@@ -690,7 +690,7 @@ public class GraffitiActivity extends Activity {
         view.clearAnimation();
         view.startAnimation(mViewHideAnimation);
         view.setVisibility(View.GONE);
-        if ( view == mSettingsPanel && !mBtnHidePanel.isSelected()){
+        if (view == mSettingsPanel && !mBtnHidePanel.isSelected() && !mIsMovingPic) {
             // 当设置面板隐藏时才显示放大器
             mGraffitiView.setAmplifierScale(mGraffitiParams.mAmplifierScale);
         }
