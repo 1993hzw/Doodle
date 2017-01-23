@@ -37,16 +37,13 @@ public class GraffitiView extends View {
     private Bitmap mGraffitiBitmap; // 用绘制涂鸦的图片
     private Canvas mBitmapCanvas;
 
-    private float mPrivateScale; // 图片适应屏幕时的缩放倍数
-    private int mPrivateHeight, mPrivateWidth;// 图片适应屏幕时的大小（肉眼看到的在屏幕上的大小）
-    private float mCentreTranX, mCentreTranY;// 图片居中时的偏移（肉眼看到的在屏幕上的偏移）
+    private float mPrivateScale; // 图片适应屏幕（mScale=1）时的缩放倍数
+    private int mPrivateHeight, mPrivateWidth;// 图片在缩放mPrivateScale倍数的情况下，适应屏幕（mScale=1）时的大小（肉眼看到的在屏幕上的大小）
+    private float mCentreTranX, mCentreTranY;// 图片在缩放mPrivateScale倍数的情况下，居中（mScale=1）时的偏移（肉眼看到的在屏幕上的偏移）
 
-    private BitmapShader mBitmapShader; // 用于涂鸦的图片上
-    private BitmapShader mBitmapShader4C;
+    private BitmapShader mBitmapShader; // 用于涂鸦的图片上!
     private BitmapShader mBitmapShaderEraser; // 橡皮擦底图
-    private BitmapShader mBitmapShaderEraser4C;
     private Path mCurrPath; // 当前手写的路径
-    private Path mCanvasPath; //
     private Path mTempPath;
     private CopyLocation mCopyLocation; // 仿制的定位器
 
@@ -54,8 +51,15 @@ public class GraffitiView extends View {
     private int mTouchMode; // 触摸模式，用于判断单点或多点触摸
     private float mPaintSize;
     private GraffitiColor mColor; // 画笔底色
-    private float mScale; // 缩放倍数, 图片真实的缩放倍数为 mPrivateScale*mScale
-    private float mTransX = 0, mTransY = 0; // 偏移量，图片真实偏移量为　mCentreTranX + mTransX
+    private float mScale; // 图片在相对于居中时的缩放倍数 （ 图片真实的缩放倍数为 mPrivateScale*mScale ）
+
+    private float mTransX = 0, mTransY = 0; // 图片在相对于居中时且在缩放mScale倍数的情况下的偏移量 （ 图片真实偏移量为　(mCentreTranX + mTransX)/mPrivateScale*mScale ）
+
+/*
+      明白下面一点，对于理解涂鸦坐标系很重要：
+      假设不考虑任何缩放，图片就是肉眼看到的那么大，此时图片的大小width =  mPrivateWidth * mScale ,
+      偏移量x = mCentreTranX + mTransX，而view的大小为width = getWidth()。height和偏移量y以此类推。
+*/
 
     private boolean mIsPainting = false; // 是否正在绘制
     private boolean isJustDrawOriginal; // 是否只绘制原图
@@ -95,7 +99,7 @@ public class GraffitiView extends View {
     private Shape mShape;
 
     private float mTouchDownX, mTouchDownY, mLastTouchX, mLastTouchY, mTouchX, mTouchY;
-    private Matrix mShaderMatrix, mShaderMatrix4C, mMatrixTemp;
+    private Matrix mShaderMatrix, mMatrixTemp;
 
     private float mAmplifierRadius;
     private Path mAmplifierPath;
@@ -163,20 +167,15 @@ public class GraffitiView extends View {
         mShape = Shape.HAND_WRITE;
 
         this.mBitmapShader = new BitmapShader(this.mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-        this.mBitmapShader4C = new BitmapShader(this.mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
 
         if (mBitmapEraser != null) {
             this.mBitmapShaderEraser = new BitmapShader(this.mBitmapEraser, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-            this.mBitmapShaderEraser4C = new BitmapShader(this.mBitmapEraser, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
         } else {
             this.mBitmapShaderEraser = mBitmapShader;
-            this.mBitmapShaderEraser4C = mBitmapShader4C;
         }
 
         mShaderMatrix = new Matrix();
-        mShaderMatrix4C = new Matrix();
         mMatrixTemp = new Matrix();
-        mCanvasPath = new Path();
         mTempPath = new Path();
         mCopyLocation = new CopyLocation(150, 150);
 
@@ -193,7 +192,7 @@ public class GraffitiView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         setBG();
-        mCopyLocation.updateLocation(toX4C(w / 2), toY4C(h / 2));
+        mCopyLocation.updateLocation(toX(w / 2), toY(h / 2));
         if (!mReady) {
             mGraffitiListener.onReady();
             mReady = true;
@@ -208,13 +207,13 @@ public class GraffitiView extends View {
                 mTouchDownX = mTouchX = mLastTouchX = event.getX();
                 mTouchDownY = mTouchY = mLastTouchY = event.getY();
 
-                if (mPen == Pen.COPY && mCopyLocation.isInIt(toX4C(mTouchX), toY4C(mTouchY))) { // 点击copy
+                if (mPen == Pen.COPY && mCopyLocation.isInIt(toX(mTouchX), toY(mTouchY))) { // 点击copy
                     mCopyLocation.isRelocating = true;
                     mCopyLocation.isCopying = false;
                 } else {
                     if (mPen == Pen.COPY) {
                         if (!mCopyLocation.isCopying) {
-                            mCopyLocation.setStartPosition(toX4C(mTouchX), toY4C(mTouchY));
+                            mCopyLocation.setStartPosition(toX(mTouchX), toY(mTouchY));
                             resetMatrix();
                         }
                         mCopyLocation.isCopying = true;
@@ -223,9 +222,6 @@ public class GraffitiView extends View {
                     if (mShape == Shape.HAND_WRITE) { // 手写
                         mCurrPath = new Path();
                         mCurrPath.moveTo(toX(mTouchDownX), toY(mTouchDownY));
-                        mCanvasPath.reset();
-                        mCanvasPath.moveTo(toX4C(mTouchDownX), toY4C(mTouchDownY));
-
                     } else {  // 画图形
 
                     }
@@ -248,14 +244,14 @@ public class GraffitiView extends View {
                 }
 
                 if (mCopyLocation.isRelocating) { // 正在定位location
-                    mCopyLocation.updateLocation(toX4C(mTouchX), toY4C(mTouchY));
+                    mCopyLocation.updateLocation(toX(mTouchX), toY(mTouchY));
                     mCopyLocation.isRelocating = false;
                 } else {
                     if (mIsPainting) {
 
                         if (mPen == Pen.COPY) {
-                            mCopyLocation.updateLocation(mCopyLocation.mCopyStartX + toX4C(mTouchX) - mCopyLocation.mTouchStartX,
-                                    mCopyLocation.mCopyStartY + toY4C(mTouchY) - mCopyLocation.mTouchStartY);
+                            mCopyLocation.updateLocation(mCopyLocation.mCopyStartX + toX(mTouchX) - mCopyLocation.mTouchStartX,
+                                    mCopyLocation.mCopyStartY + toY(mTouchY) - mCopyLocation.mTouchStartY);
                         }
 
                         GraffitiPath path = null;
@@ -274,7 +270,7 @@ public class GraffitiView extends View {
                                     mPen == Pen.COPY ? new Matrix(mShaderMatrix) : null);
                         }
                         mPathStack.add(path);
-                        draw(mBitmapCanvas, path, false); // 保存到图片中
+                        draw(mBitmapCanvas, path); // 保存到图片中
                         mIsPainting = false;
                     }
                 }
@@ -289,11 +285,11 @@ public class GraffitiView extends View {
                     mTouchY = event.getY();
 
                     if (mCopyLocation.isRelocating) { // 正在定位location
-                        mCopyLocation.updateLocation(toX4C(mTouchX), toY4C(mTouchY));
+                        mCopyLocation.updateLocation(toX(mTouchX), toY(mTouchY));
                     } else {
                         if (mPen == Pen.COPY) {
-                            mCopyLocation.updateLocation(mCopyLocation.mCopyStartX + toX4C(mTouchX) - mCopyLocation.mTouchStartX,
-                                    mCopyLocation.mCopyStartY + toY4C(mTouchY) - mCopyLocation.mTouchStartY);
+                            mCopyLocation.updateLocation(mCopyLocation.mCopyStartX + toX(mTouchX) - mCopyLocation.mTouchStartX,
+                                    mCopyLocation.mCopyStartY + toY(mTouchY) - mCopyLocation.mTouchStartY);
                         }
                         if (mShape == Shape.HAND_WRITE) { // 手写
                             mCurrPath.quadTo(
@@ -301,11 +297,6 @@ public class GraffitiView extends View {
                                     toY(mLastTouchY),
                                     toX((mTouchX + mLastTouchX) / 2),
                                     toY((mTouchY + mLastTouchY) / 2));
-                            mCanvasPath.quadTo(
-                                    toX4C(mLastTouchX),
-                                    toY4C(mLastTouchY),
-                                    toX4C((mTouchX + mLastTouchX) / 2),
-                                    toY4C((mTouchY + mLastTouchY) / 2));
                         } else { // 画图形
 
                         }
@@ -396,21 +387,23 @@ public class GraffitiView extends View {
     }
 
     private void doDraw(Canvas canvas) {
-        canvas.scale(mPrivateScale * mScale, mPrivateScale * mScale); // 缩放画布，接下来的操作要进行坐标换算
         float left = (mCentreTranX + mTransX) / (mPrivateScale * mScale);
         float top = (mCentreTranY + mTransY) / (mPrivateScale * mScale);
+        // 画布和图片共用一个坐标系，只需要处理屏幕坐标系到图片（画布）坐标系的映射关系
+        canvas.scale(mPrivateScale * mScale, mPrivateScale * mScale); // 缩放画布
+        canvas.translate(left, top); // 偏移画布
 
         if (!mIsDrawableOutside) { // 裁剪绘制区域为图片区域
-            canvas.clipRect(left, top, left + mBitmap.getWidth(), top + mBitmap.getHeight());
+            canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
         }
 
         if (isJustDrawOriginal) { // 只绘制原图
-            canvas.drawBitmap(mBitmap, left, top, null);
+            canvas.drawBitmap(mBitmap, 0, 0, null);
             return;
         }
 
         // 绘制涂鸦
-        canvas.drawBitmap(mGraffitiBitmap, (mCentreTranX + mTransX) / (mPrivateScale * mScale), (mCentreTranY + mTransY) / (mPrivateScale * mScale), null);
+        canvas.drawBitmap(mGraffitiBitmap, 0, 0, null);
 
         if (mIsPainting) {  //画在view的画布上
             Path path;
@@ -418,25 +411,25 @@ public class GraffitiView extends View {
             // 为了仅点击时也能出现绘图，必须移动path
             if (mTouchDownX == mTouchX && mTouchDownY == mTouchY && mTouchDownX == mLastTouchX && mTouchDownY == mLastTouchY) {
                 mTempPath.reset();
-                mTempPath.addPath(mCanvasPath);
+                mTempPath.addPath(mCurrPath);
                 mTempPath.quadTo(
-                        toX4C(mLastTouchX),
-                        toY4C(mLastTouchY),
-                        toX4C((mTouchX + mLastTouchX + VALUE) / 2),
-                        toY4C((mTouchY + mLastTouchY + VALUE) / 2));
+                        toX(mLastTouchX),
+                        toY(mLastTouchY),
+                        toX((mTouchX + mLastTouchX + VALUE) / 2),
+                        toY((mTouchY + mLastTouchY + VALUE) / 2));
                 path = mTempPath;
                 span = VALUE;
             } else {
-                path = mCanvasPath;
+                path = mCurrPath;
                 span = 0;
             }
             // 画触摸的路径
             mPaint.setStrokeWidth(mPaintSize);
             if (mShape == Shape.HAND_WRITE) { // 手写
-                draw(canvas, mPen, mPaint, path, null, true, mColor);
+                draw(canvas, mPen, mPaint, path, mShaderMatrix, mColor);
             } else {  // 画图形
                 draw(canvas, mPen, mShape, mPaint,
-                        toX4C(mTouchDownX), toY4C(mTouchDownY), toX4C(mTouchX + span), toY4C(mTouchY + span), null, true, mColor);
+                        toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX + span), toY(mTouchY + span), mShaderMatrix, mColor);
             }
         }
 
@@ -445,16 +438,16 @@ public class GraffitiView extends View {
         }
     }
 
-    private void draw(Canvas canvas, Pen pen, Paint paint, Path path, Matrix matrix, boolean is4Canvas, GraffitiColor color) {
-        resetPaint(pen, paint, is4Canvas, matrix, color);
+    private void draw(Canvas canvas, Pen pen, Paint paint, Path path, Matrix matrix, GraffitiColor color) {
+        resetPaint(pen, paint, matrix, color);
 
         paint.setStyle(Paint.Style.STROKE);
         canvas.drawPath(path, paint);
 
     }
 
-    private void draw(Canvas canvas, Pen pen, Shape shape, Paint paint, float sx, float sy, float dx, float dy, Matrix matrix, boolean is4Canvas, GraffitiColor color) {
-        resetPaint(pen, paint, is4Canvas, matrix, color);
+    private void draw(Canvas canvas, Pen pen, Shape shape, Paint paint, float sx, float sy, float dx, float dy, Matrix matrix, GraffitiColor color) {
+        resetPaint(pen, paint, matrix, color);
 
         paint.setStyle(Paint.Style.STROKE);
 
@@ -483,50 +476,40 @@ public class GraffitiView extends View {
     }
 
 
-    private void draw(Canvas canvas, CopyOnWriteArrayList<GraffitiPath> pathStack, boolean is4Canvas) {
+    private void draw(Canvas canvas, CopyOnWriteArrayList<GraffitiPath> pathStack) {
         // 还原堆栈中的记录的操作
         for (GraffitiPath path : pathStack) {
-            draw(canvas, path, is4Canvas);
+            draw(canvas, path);
         }
     }
 
-    private void draw(Canvas canvas, GraffitiPath path, boolean is4Canvas) {
+    private void draw(Canvas canvas, GraffitiPath path) {
         mPaint.setStrokeWidth(path.mStrokeWidth);
         if (path.mShape == Shape.HAND_WRITE) { // 手写
-            draw(canvas, path.mPen, mPaint, path.mPath, path.mMatrix, is4Canvas, path.mColor);
+            draw(canvas, path.mPen, mPaint, path.mPath, path.mMatrix, path.mColor);
         } else { // 画图形
             draw(canvas, path.mPen, path.mShape, mPaint,
-                    path.mSx, path.mSy, path.mDx, path.mDy, path.mMatrix, is4Canvas, path.mColor);
+                    path.mSx, path.mSy, path.mDx, path.mDy, path.mMatrix, path.mColor);
         }
     }
 
-    private void resetPaint(Pen pen, Paint paint, boolean is4Canvas, Matrix matrix, GraffitiColor color) {
+    private void resetPaint(Pen pen, Paint paint, Matrix matrix, GraffitiColor color) {
         switch (pen) { // 设置画笔
             case HAND:
                 paint.setShader(null);
-                if (is4Canvas) {
-                    color.initColor(paint, mShaderMatrix4C);
-                } else {
+
                     color.initColor(paint, null);
-                }
                 break;
             case COPY:
-                if (is4Canvas) { // 画在view的画布上
-                    paint.setShader(this.mBitmapShader4C);
-                } else { // 调整copy图片位置
+                 // 调整copy图片位置
                     mBitmapShader.setLocalMatrix(matrix);
                     paint.setShader(this.mBitmapShader);
-                }
                 break;
             case ERASER:
-                if (is4Canvas) {
-                    paint.setShader(this.mBitmapShaderEraser4C);
-                } else {
                     if (mBitmapShader == mBitmapShaderEraser) { // 图片的矩阵不需要任何偏移
                         mBitmapShaderEraser.setLocalMatrix(null);
                     }
                     paint.setShader(this.mBitmapShaderEraser);
-                }
                 break;
         }
     }
@@ -561,21 +544,6 @@ public class GraffitiView extends View {
     public final float toTransY(float touchY, float graffitiY) {
         return -graffitiY * (mPrivateScale * mScale) + touchY - mCentreTranY;
     }
-
-    /**
-     * 将屏幕触摸坐标x转换成在canvas中的坐标
-     */
-    public final float toX4C(float x) {
-        return (x) / (mPrivateScale * mScale);
-    }
-
-    /**
-     * 将屏幕触摸坐标y转换成在canvas中的坐标
-     */
-    public final float toY4C(float y) {
-        return (y) / (mPrivateScale * mScale);
-    }
-
 
     private static class GraffitiPath {
         Pen mPen; // 画笔类型
@@ -627,23 +595,12 @@ public class GraffitiView extends View {
             this.mShaderMatrix.set(null);
             this.mShaderMatrix.postTranslate(mCopyLocation.mTouchStartX - mCopyLocation.mCopyStartX, mCopyLocation.mTouchStartY - mCopyLocation.mCopyStartY);
             this.mBitmapShader.setLocalMatrix(this.mShaderMatrix);
-
-
-            this.mShaderMatrix4C.set(null);
-            this.mShaderMatrix4C.postTranslate((mCentreTranX + mTransX) / (mPrivateScale * mScale) + mCopyLocation.mTouchStartX - mCopyLocation.mCopyStartX,
-                    (mCentreTranY + mTransY) / (mPrivateScale * mScale) + mCopyLocation.mTouchStartY - mCopyLocation.mCopyStartY);
-            this.mBitmapShader4C.setLocalMatrix(this.mShaderMatrix4C);
-
         } else {
             this.mShaderMatrix.set(null);
             this.mBitmapShader.setLocalMatrix(this.mShaderMatrix);
-
-            this.mShaderMatrix4C.set(null);
-            this.mShaderMatrix4C.postTranslate((mCentreTranX + mTransX) / (mPrivateScale * mScale), (mCentreTranY + mTransY) / (mPrivateScale * mScale));
-            this.mBitmapShader4C.setLocalMatrix(this.mShaderMatrix4C);
         }
 
-        // 如果使用了自定义的橡皮擦底图，则需要跳转矩阵
+        // 如果使用了自定义的橡皮擦底图，则需要调整矩阵
         if (mPen == Pen.ERASER && mBitmapShader != mBitmapShaderEraser) {
             mMatrixTemp.reset();
             mBitmapShaderEraser.getLocalMatrix(mMatrixTemp);
@@ -653,55 +610,49 @@ public class GraffitiView extends View {
                 mMatrixTemp.preScale(mBitmap.getWidth() * 1f / mBitmapEraser.getWidth(), mBitmap.getHeight() * 1f / mBitmapEraser.getHeight());
             }
             mBitmapShaderEraser.setLocalMatrix(mMatrixTemp);
-
-            mMatrixTemp.reset();
-            mBitmapShaderEraser4C.getLocalMatrix(mMatrixTemp);
-            mBitmapShader4C.getLocalMatrix(mMatrixTemp);
-            // 缩放橡皮擦底图，使之与涂鸦图片大小一样
-            if (mEraserImageIsResizeable) {
-                mMatrixTemp.preScale(mBitmap.getWidth() * 1f / mBitmapEraser.getWidth(), mBitmap.getHeight() * 1f / mBitmapEraser.getHeight());
-            }
-            mBitmapShaderEraser4C.setLocalMatrix(mMatrixTemp);
         }
     }
 
     /**
      * 调整图片位置
+     *
+     * 明白下面一点很重要：
+     * 假设不考虑任何缩放，图片就是肉眼看到的那么大，此时图片的大小width =  mPrivateWidth * mScale ,
+     * 偏移量x = mCentreTranX + mTransX，而view的大小为width = getWidth()。height和偏移量y以此类推。
      */
     private void judgePosition() {
         boolean changed = false;
-        if (mPrivateWidth * mScale > getWidth()) { // 图片偏移的位置不能超过屏幕边缘
-            if (mCentreTranX + mTransX > 0) {
+        if (mPrivateWidth * mScale < getWidth()) { // 限制在view范围内
+            if (mTransX + mCentreTranX < 0) {
                 mTransX = -mCentreTranX;
                 changed = true;
-            } else if (mCentreTranX + mTransX + mPrivateWidth * mScale < getWidth()) {
-                mTransX = getWidth() - mPrivateWidth * mScale - mCentreTranX;
+            } else if (mTransX + mCentreTranX + mPrivateWidth * mScale > getWidth()) {
+                mTransX = getWidth() - mCentreTranX - mPrivateWidth * mScale;
                 changed = true;
             }
-        } else { // 图片只能在屏幕可见范围内移动
-            if (mCentreTranX + mTransX + mBitmap.getWidth() * mPrivateScale * mScale > getWidth()) { // mScale<1是preview.width不用乘scale
-                mTransX = getWidth() - mBitmap.getWidth() * mPrivateScale * mScale - mCentreTranX;
-                changed = true;
-            } else if (mCentreTranX + mTransX < 0) {
+        } else { // 限制在view范围外
+            if (mTransX + mCentreTranX > 0) {
                 mTransX = -mCentreTranX;
+                changed = true;
+            } else if (mTransX + mCentreTranX + mPrivateWidth * mScale < getWidth()) {
+                mTransX = getWidth() - mCentreTranX - mPrivateWidth * mScale;
                 changed = true;
             }
         }
-
-        if (mPrivateHeight * mScale > getHeight()) { // 图片偏移的位置不能超过屏幕边缘
-            if (mCentreTranY + mTransY > 0) {
+        if (mPrivateHeight * mScale < getHeight()) { // 限制在view范围内
+            if (mTransY + mCentreTranY < 0) {
                 mTransY = -mCentreTranY;
                 changed = true;
-            } else if (mCentreTranY + mTransY + mPrivateHeight * mScale < getHeight()) {
-                mTransY = getHeight() - mPrivateHeight * mScale - mCentreTranY;
+            } else if (mTransY + mCentreTranY + mPrivateHeight * mScale > getHeight()) {
+                mTransY = getHeight() - mCentreTranY - mPrivateHeight * mScale;
                 changed = true;
             }
-        } else { // 图片只能在屏幕可见范围内移动
-            if (mCentreTranY + mTransY + mBitmap.getHeight() * mPrivateScale * mScale > getHeight()) {
-                mTransY = getHeight() - mBitmap.getHeight() * mPrivateScale * mScale - mCentreTranY;
-                changed = true;
-            } else if (mCentreTranY + mTransY < 0) {
+        } else { // 限制在view范围外
+            if (mTransY + mCentreTranY > 0) {
                 mTransY = -mCentreTranY;
+                changed = true;
+            } else if (mTransY + mCentreTranY + mPrivateHeight * mScale < getHeight()) {
+                mTransY = getHeight() - mCentreTranY - mPrivateHeight * mScale;
                 changed = true;
             }
         }
@@ -896,7 +847,7 @@ public class GraffitiView extends View {
         if (mPathStack.size() > 0) {
             mPathStack.remove(mPathStack.size() - 1);
             initCanvas();
-            draw(mBitmapCanvas, mPathStack, false);
+            draw(mBitmapCanvas, mPathStack);
             invalidate();
         }
     }

@@ -317,6 +317,8 @@ public class GraffitiActivity extends Activity {
                             mSettingsPanel.postDelayed(mShowDelayRunnable, mGraffitiParams.mChangePanelVisibilityDelay); //离开屏幕超过一定时间才判断为需要显示设置面板
                             break;
                     }
+                } else if (mBtnHidePanel.isSelected() && mGraffitiView.getAmplifierScale() > 0) {
+                    mGraffitiView.setAmplifierScale(-1);
                 }
 
                 if (!mIsMovingPic) {
@@ -678,21 +680,26 @@ public class GraffitiActivity extends Activity {
         view.clearAnimation();
         view.startAnimation(mViewShowAnimation);
         view.setVisibility(View.VISIBLE);
-        if (view == mSettingsPanel) {
+        if (view == mSettingsPanel || mBtnHidePanel.isSelected()) {
             mGraffitiView.setAmplifierScale(-1);
         }
     }
 
     private void hideView(View view) {
         if (view.getVisibility() != View.VISIBLE) {
+            if (view == mSettingsPanel && mGraffitiView.getAmplifierScale() > 0) {
+                mGraffitiView.setAmplifierScale(-1);
+            }
             return;
         }
         view.clearAnimation();
         view.startAnimation(mViewHideAnimation);
         view.setVisibility(View.GONE);
-        if (view == mSettingsPanel && !mBtnHidePanel.isSelected() && !mIsMovingPic) {
+        if (view == mSettingsPanel && !mBtnHidePanel.isSelected() && !mBtnMovePic.isSelected()) {
             // 当设置面板隐藏时才显示放大器
             mGraffitiView.setAmplifierScale(mGraffitiParams.mAmplifierScale);
+        } else if ((view == mSettingsPanel && mGraffitiView.getAmplifierScale() > 0)) {
+            mGraffitiView.setAmplifierScale(-1);
         }
     }
 
@@ -720,7 +727,7 @@ public class GraffitiActivity extends Activity {
         public String mEraserPath;
 
         /**
-         * 橡皮擦底图是否调整大小，如果可以则调整到跟当前涂鸦图片一样的大小．
+         * 橡皮擦底图是否调整大小，如果为true则调整到跟当前涂鸦图片一样的大小．
          * 默认为true
          */
         public boolean mEraserImageIsResizeable = true;
@@ -731,8 +738,8 @@ public class GraffitiActivity extends Activity {
         public boolean mIsDrawableOutside;
 
         /**
-         * 涂鸦时（手指按下）隐藏设置面板的延长时间(ms)，当小于等于0时则为不尝试隐藏面板（即保持面板当前状态不变），当大于0时表示需要触摸屏幕超过一定时间后才隐藏
-         * 或者手指抬起时展示面板的延长时间(ms)，当小于等于0时则为不尝试展示面板，当大于0时表示需要离开屏幕超过一定时间后才展示
+         * 涂鸦时（手指按下）隐藏设置面板的延长时间(ms)，当小于等于0时则为不尝试隐藏面板（即保持面板当前状态不变）;当大于0时表示需要触摸屏幕超过一定时间后才隐藏
+         * 或者手指抬起时展示面板的延长时间(ms)，或者表示需要离开屏幕超过一定时间后才展示
          * 默认为800ms
          */
         public long mChangePanelVisibilityDelay = 800; //ms

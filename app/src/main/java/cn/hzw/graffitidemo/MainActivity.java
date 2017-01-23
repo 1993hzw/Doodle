@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import cn.forward.androids.utils.LogUtil;
 import cn.hzw.graffiti.GraffitiActivity;
 import cn.hzw.imageselector.ImageLoader;
 import cn.hzw.imageselector.ImageSelectorActivity;
@@ -43,10 +44,23 @@ public class MainActivity extends Activity {
             }
             ArrayList<String> list = data.getStringArrayListExtra(ImageSelectorActivity.KEY_PATH_LIST);
             if (list != null && list.size() > 0) {
-                /*Intent intent = new Intent(getApplicationContext(), GraffitiActivity.class);
-                intent.putExtra(GraffitiActivity.KEY_IMAGE_PATH, list.get(0));
-                startActivityForResult(intent, REQ_CODE_GRAFFITI);*/
-                GraffitiActivity.startActivityForResult(MainActivity.this, list.get(0), REQ_CODE_GRAFFITI);
+                LogUtil.d("Graffiti", list.get(0));
+
+                // 涂鸦参数
+                GraffitiActivity.GraffitiParams params = new GraffitiActivity.GraffitiParams();
+                // 图片路径
+                params.mImagePath = list.get(0);
+
+                /*
+                // 橡皮擦底图，如果为null，则底图为当前图片路径
+                params.mEraserPath = "/storage/emulated/0/tencent/MicroMsg/WeiXin/mmexport1485172092678.jpg";
+                //  橡皮擦底图是否调整大小，如果为true则调整到跟当前涂鸦图片一样的大小．
+                params.mEraserImageIsResizeable = true;
+                // 设置放大镜的倍数，当小于等于0时表示不使用放大器功能.放大器只有在设置面板被隐藏的时候才会出现
+                params.mAmplifierScale = 2.5f;
+                */
+
+                GraffitiActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_GRAFFITI);
             }
         } else if (requestCode == REQ_CODE_GRAFFITI) {
             if (data == null) {
