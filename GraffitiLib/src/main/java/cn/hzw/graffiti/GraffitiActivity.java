@@ -44,7 +44,7 @@ public class GraffitiActivity extends Activity {
      * 启动涂鸦界面
      *
      * @param activity
-     * @param params      参数
+     * @param params      涂鸦参数
      * @param requestCode startActivityForResult的请求码
      * @see GraffitiParams
      */
@@ -63,6 +63,7 @@ public class GraffitiActivity extends Activity {
      * @param isDir       　保存路径是否为目录
      * @param requestCode 　startActivityForResult的请求码
      */
+    @Deprecated
     public static void startActivityForResult(Activity activity, String imagePath, String savePath, boolean isDir, int requestCode) {
         GraffitiParams params = new GraffitiParams();
         params.mImagePath = imagePath;
@@ -74,6 +75,7 @@ public class GraffitiActivity extends Activity {
     /**
      * {@link GraffitiActivity#startActivityForResult(Activity, String, String, boolean, int)}
      */
+    @Deprecated
     public static void startActivityForResult(Activity activity, String imagePath, int requestCode) {
         GraffitiParams params = new GraffitiParams();
         params.mImagePath = imagePath;
