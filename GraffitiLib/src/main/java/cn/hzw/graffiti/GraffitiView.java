@@ -219,9 +219,10 @@ public class GraffitiView extends View {
                         mCopyLocation.isCopying = true;
                     }
                     mCopyLocation.isRelocating = false;
+                    mCurrPath = new Path();
+                    mCurrPath.moveTo(toX(mTouchDownX), toY(mTouchDownY));
                     if (mShape == Shape.HAND_WRITE) { // 手写
-                        mCurrPath = new Path();
-                        mCurrPath.moveTo(toX(mTouchDownX), toY(mTouchDownY));
+
                     } else {  // 画图形
 
                     }
