@@ -16,7 +16,6 @@ import android.view.View;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import cn.forward.androids.utils.ImageUtils;
-import cn.forward.androids.utils.ThreadUtil;
 import cn.forward.androids.utils.Util;
 
 /**
@@ -32,17 +31,20 @@ public class GraffitiView extends View {
 
     private GraffitiListener mGraffitiListener;
 
-    private Bitmap mBitmap; // 原图
+    private Bitmap mBitmap; // 当前涂鸦的原图（旋转后）
     private Bitmap mBitmapEraser; // 橡皮擦底图
     private Bitmap mGraffitiBitmap; // 用绘制涂鸦的图片
     private Canvas mBitmapCanvas;
+
+    private int mOriginalWidth, mOriginalHeight; // 初始图片的尺寸
+    private float mOriginalPivotX, mOriginalPivotY; // 图片选择中心
 
     private float mPrivateScale; // 图片适应屏幕（mScale=1）时的缩放倍数
     private int mPrivateHeight, mPrivateWidth;// 图片在缩放mPrivateScale倍数的情况下，适应屏幕（mScale=1）时的大小（肉眼看到的在屏幕上的大小）
     private float mCentreTranX, mCentreTranY;// 图片在缩放mPrivateScale倍数的情况下，居中（mScale=1）时的偏移（肉眼看到的在屏幕上的偏移）
 
-    private BitmapShader mBitmapShader; // 用于涂鸦的图片上!
-    private BitmapShader mBitmapShaderEraser; // 橡皮擦底图
+    private BitmapShader mBitmapShader; // 主要用于盖章和橡皮擦（未设置底图）
+    private BitmapShader mBitmapShaderEraser; // 橡皮擦底图，当未设置橡皮擦底图时，mBitmapShaderEraser = mBitmapShader
     private Path mCurrPath; // 当前手写的路径
     private Path mTempPath;
     private CopyLocation mCopyLocation; // 仿制的定位器
@@ -71,7 +73,6 @@ public class GraffitiView extends View {
 
     // 保存涂鸦操作，便于撤销
     private CopyOnWriteArrayList<GraffitiPath> mPathStack = new CopyOnWriteArrayList<GraffitiPath>();
-//    private CopyOnWriteArrayList<GraffitiPath> mPathStackBackup = new CopyOnWriteArrayList<GraffitiPath>();
 
     /**
      * 画笔
@@ -99,7 +100,9 @@ public class GraffitiView extends View {
     private Shape mShape;
 
     private float mTouchDownX, mTouchDownY, mLastTouchX, mLastTouchY, mTouchX, mTouchY;
-    private Matrix mShaderMatrix, mMatrixTemp;
+    private Matrix mShaderMatrix; // 仿制图片的变化矩阵
+    private Matrix mShaderMatrixEraser; // 橡皮擦底图的变化矩阵
+    private Matrix mShaderMatrixColor; // 画笔图片底图的变化矩阵
 
     private float mAmplifierRadius;
     private Path mAmplifierPath;
@@ -147,6 +150,12 @@ public class GraffitiView extends View {
         }
         mEraserImageIsResizeable = eraserImageIsResizeable;
 
+        mOriginalWidth = mBitmap.getWidth();
+        mOriginalHeight = mBitmap.getHeight();
+        mOriginalPivotX = mOriginalWidth / 2f;
+        mOriginalPivotY = mOriginalHeight / 2f;
+
+
         init();
 
     }
@@ -166,18 +175,13 @@ public class GraffitiView extends View {
         mPen = Pen.HAND;
         mShape = Shape.HAND_WRITE;
 
-        this.mBitmapShader = new BitmapShader(this.mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-
-        if (mBitmapEraser != null) {
-            this.mBitmapShaderEraser = new BitmapShader(this.mBitmapEraser, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-        } else {
-            this.mBitmapShaderEraser = mBitmapShader;
-        }
 
         mShaderMatrix = new Matrix();
-        mMatrixTemp = new Matrix();
+        mShaderMatrixEraser = new Matrix();
         mTempPath = new Path();
         mCopyLocation = new CopyLocation(150, 150);
+
+        mShaderMatrixColor = new Matrix();
 
         mAmplifierPaint = new Paint();
         mAmplifierPaint.setColor(0xaaffffff);
@@ -264,11 +268,12 @@ public class GraffitiView extends View {
                                     toY(mLastTouchY),
                                     toX((mTouchX + mLastTouchX) / 2),
                                     toY((mTouchY + mLastTouchY) / 2));
-                            path = GraffitiPath.toPath(mPen, mShape, mPaintSize, mColor.copy(), mCurrPath, mPen == Pen.COPY ? new Matrix(mShaderMatrix) : null);
+                            path = GraffitiPath.toPath(mPen, mShape, mPaintSize, mColor.copy(), mCurrPath, mRotateDegree, mOriginalPivotX, mOriginalPivotY,
+                                    getCopyLocation());
                         } else {  // 画图形
                             path = GraffitiPath.toShape(mPen, mShape, mPaintSize, mColor.copy(),
-                                    toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX), toY(mTouchY),
-                                    mPen == Pen.COPY ? new Matrix(mShaderMatrix) : null);
+                                    toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX), toY(mTouchY), mRotateDegree, mOriginalPivotX, mOriginalPivotY,
+                                    getCopyLocation());
                         }
                         mPathStack.add(path);
                         draw(mBitmapCanvas, path); // 保存到图片中
@@ -322,8 +327,61 @@ public class GraffitiView extends View {
         return super.onTouchEvent(event);
     }
 
+    private int mRotateDegree = 0; // 相对于初始图片旋转的角度
+
+    public int getRotateDegree() {
+        return mRotateDegree;
+    }
+
+    /**
+     * 相对于初始图片旋转的角度
+     *
+     * @param degree
+     */
+    public void rotate(int degree) {
+        degree = degree % 360;
+        int absDegree = Math.abs(degree);
+        if (absDegree > 0 && absDegree < 90) {
+            degree = degree / absDegree * 90;
+        } else if (absDegree > 90 && absDegree < 180) {
+            degree = degree / absDegree * 180;
+        } else if (absDegree > 180 && absDegree < 270) {
+            degree = degree / absDegree * 2700;
+        } else if (absDegree > 270 && absDegree < 360) {
+            degree = 0;
+        }
+
+        if (degree == mRotateDegree) {
+            return;
+        }
+        int r = degree - mRotateDegree;
+        int originalDegree = mRotateDegree;
+        mRotateDegree = degree;
+
+        mCopyLocation.rotatePosition(originalDegree);
+
+        mBitmap = ImageUtils.rotate(getContext(), mBitmap, r, true);
+        if (mBitmapEraser != null) {
+            mBitmapEraser = ImageUtils.rotate(getContext(), mBitmapEraser, r, true);
+        }
+        setBG();
+
+        if (mPathStack.size() > 0) {
+            draw(mBitmapCanvas, mPathStack);
+        }
+        invalidate();
+
+    }
 
     private void setBG() {// 不用resize preview
+        this.mBitmapShader = new BitmapShader(this.mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+
+        if (mBitmapEraser != null) {
+            this.mBitmapShaderEraser = new BitmapShader(this.mBitmapEraser, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        } else {
+            this.mBitmapShaderEraser = mBitmapShader;
+        }
+
         int w = mBitmap.getWidth();
         int h = mBitmap.getHeight();
         float nw = w * 1f / getWidth();
@@ -427,10 +485,12 @@ public class GraffitiView extends View {
             // 画触摸的路径
             mPaint.setStrokeWidth(mPaintSize);
             if (mShape == Shape.HAND_WRITE) { // 手写
-                draw(canvas, mPen, mPaint, path, mShaderMatrix, mColor);
+                draw(canvas, mPen, mPaint, path, mPen == Pen.ERASER ? mShaderMatrixEraser : mShaderMatrix,
+                        mColor, mRotateDegree);
             } else {  // 画图形
                 draw(canvas, mPen, mShape, mPaint,
-                        toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX + span), toY(mTouchY + span), mShaderMatrix, mColor);
+                        toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX + span), toY(mTouchY + span),
+                        mPen == Pen.ERASER ? mShaderMatrixEraser : mShaderMatrix, mColor, mRotateDegree);
             }
         }
 
@@ -439,16 +499,16 @@ public class GraffitiView extends View {
         }
     }
 
-    private void draw(Canvas canvas, Pen pen, Paint paint, Path path, Matrix matrix, GraffitiColor color) {
-        resetPaint(pen, paint, matrix, color);
+    private void draw(Canvas canvas, Pen pen, Paint paint, Path path, Matrix matrix, GraffitiColor color, int degree) {
+        resetPaint(pen, paint, matrix, color, degree);
 
         paint.setStyle(Paint.Style.STROKE);
         canvas.drawPath(path, paint);
 
     }
 
-    private void draw(Canvas canvas, Pen pen, Shape shape, Paint paint, float sx, float sy, float dx, float dy, Matrix matrix, GraffitiColor color) {
-        resetPaint(pen, paint, matrix, color);
+    private void draw(Canvas canvas, Pen pen, Shape shape, Paint paint, float sx, float sy, float dx, float dy, Matrix matrix, GraffitiColor color, int degree) {
+        resetPaint(pen, paint, matrix, color, degree);
 
         paint.setStyle(Paint.Style.STROKE);
 
@@ -487,30 +547,49 @@ public class GraffitiView extends View {
     private void draw(Canvas canvas, GraffitiPath path) {
         mPaint.setStrokeWidth(path.mStrokeWidth);
         if (path.mShape == Shape.HAND_WRITE) { // 手写
-            draw(canvas, path.mPen, mPaint, path.mPath, path.mMatrix, path.mColor);
+            draw(canvas, path.mPen, mPaint, path.getPath(mRotateDegree), path.getMatrix(mRotateDegree), path.mColor, path.mRotateDegree);
         } else { // 画图形
+            float[] sxy = path.getSxSy(mRotateDegree);
+            float[] dxy = path.getDxDy(mRotateDegree);
             draw(canvas, path.mPen, path.mShape, mPaint,
-                    path.mSx, path.mSy, path.mDx, path.mDy, path.mMatrix, path.mColor);
+                    sxy[0], sxy[1], dxy[0], dxy[1], path.getMatrix(mRotateDegree), path.mColor, path.mRotateDegree);
         }
     }
 
-    private void resetPaint(Pen pen, Paint paint, Matrix matrix, GraffitiColor color) {
+    private void resetPaint(Pen pen, Paint paint, Matrix matrix, GraffitiColor color, int rotateDegree) {
         switch (pen) { // 设置画笔
             case HAND:
                 paint.setShader(null);
+                mShaderMatrixColor.reset();
 
-                    color.initColor(paint, null);
+                if (color.getType() == GraffitiColor.Type.BITMAP) { // 旋转底图
+                    if (mRotateDegree != 0) {
+                        float px = mOriginalPivotX, py = mOriginalPivotY;
+                        if (mRotateDegree == 90 || mRotateDegree == 270) { //　交换中心点的xy坐标
+                            float t = px;
+                            px = py;
+                            py = t;
+                        }
+                        mShaderMatrixColor.postRotate(mRotateDegree, px, py);
+                        if (Math.abs(mRotateDegree) == 90 || Math.abs(mRotateDegree) == 270) {
+                            mShaderMatrixColor.postTranslate((py - px), -(py - px));
+                        }
+                    }
+                }
+
+                color.initColor(paint, mShaderMatrixColor);
                 break;
             case COPY:
-                 // 调整copy图片位置
-                    mBitmapShader.setLocalMatrix(matrix);
-                    paint.setShader(this.mBitmapShader);
+                // 调整copy图片位置
+                mBitmapShader.setLocalMatrix(matrix);
+                paint.setShader(this.mBitmapShader);
                 break;
             case ERASER:
-                    if (mBitmapShader == mBitmapShaderEraser) { // 图片的矩阵不需要任何偏移
-                        mBitmapShaderEraser.setLocalMatrix(null);
-                    }
-                    paint.setShader(this.mBitmapShaderEraser);
+                mBitmapShaderEraser.setLocalMatrix(matrix);
+                if (mBitmapShader != mBitmapShaderEraser) {
+                    mBitmapShaderEraser.setLocalMatrix(mShaderMatrixEraser);
+                }
+                paint.setShader(this.mBitmapShaderEraser);
                 break;
         }
     }
@@ -554,10 +633,80 @@ public class GraffitiView extends View {
         Path mPath; // 画笔的路径
         float mSx, mSy; // 映射后的起始坐标，（手指点击）
         float mDx, mDy; // 映射后的终止坐标，（手指抬起）
-        Matrix mMatrix; //　仿制图片的偏移矩阵
+        Matrix mMatrix = new Matrix(); //　图片的偏移矩阵
+        int mRotateDegree = 0; // 选择的角度（围绕图片中心旋转）
+        float mPivotX, mPivotY;
+        CopyLocation mCopy;
+
+        public Path getPath(int currentDegree) {
+            int degree = currentDegree - mRotateDegree;
+            if (degree == 0) {
+                return mPath;
+            }
+            Path path = new Path(mPath);
+            Matrix matrix = new Matrix();
+
+            float px = mPivotX, py = mPivotY;
+            if (mRotateDegree == 90 || mRotateDegree == 270) { //　交换中心点的xy坐标
+                float t = px;
+                px = py;
+                py = t;
+            }
+
+            matrix.setRotate(degree, px, py);
+            if (Math.abs(degree) == 90 || Math.abs(degree) == 270) {
+                matrix.postTranslate((py - px), -(py - px));
+            }
+            path.transform(matrix);
+            return path;
+        }
+
+        public float[] getDxDy(int currentDegree) {
+
+            return rotatePointInGrffiti(currentDegree, mRotateDegree, mDx, mDy, mPivotX, mPivotY);
+        }
+
+        public float[] getSxSy(int currentDegree) {
+
+            return rotatePointInGrffiti(currentDegree, mRotateDegree, mSx, mSy, mPivotX, mPivotY);
+        }
+
+        public Matrix getMatrix(int currentDegree) {
+            if (mMatrix == null) {
+                return null;
+            }
+            if (mPen == Pen.COPY) { // 仿制，加上mCopyLocation记录的偏移
+                mMatrix.reset();
+
+                int degree = currentDegree - mRotateDegree;
+                if (degree == 0) {
+                    mMatrix.postTranslate(mCopy.mTouchStartX - mCopy.mCopyStartX, mCopy.mTouchStartY - mCopy.mCopyStartY);
+                    return mMatrix;
+                }
+                float px = mPivotX, py = mPivotY;
+                if (mRotateDegree == 90 || mRotateDegree == 270) { //　交换中心点的xy坐标
+                    float t = px;
+                    px = py;
+                    py = t;
+                }
+                float[] coords = rotatePoint(degree, mCopy.mTouchStartX, mCopy.mTouchStartY, px, py);
+                float[] coordsCopy = rotatePoint(degree, mCopy.mCopyStartX, mCopy.mCopyStartY, px, py);
+                if (Math.abs(degree) == 90 || Math.abs(degree) == 270) {
+                    coords[0] += (py - px);
+                    coords[1] += -(py - px);
+                    coordsCopy[0] += (py - px);
+                    coordsCopy[1] += -(py - px);
+                }
+                mMatrix.postTranslate(coords[0] - coordsCopy[0], coords[1] - coordsCopy[1]);
+                return mMatrix;
+            } else {
+                return mMatrix;
+            }
+
+        }
 
         static GraffitiPath toShape(Pen pen, Shape shape, float width, GraffitiColor color,
-                                    float sx, float sy, float dx, float dy, Matrix matrix) {
+                                    float sx, float sy, float dx, float dy, int degree, float px, float py, CopyLocation copyLocation) {
             GraffitiPath path = new GraffitiPath();
             path.mPen = pen;
             path.mShape = shape;
@@ -567,18 +716,24 @@ public class GraffitiView extends View {
             path.mSy = sy;
             path.mDx = dx;
             path.mDy = dy;
-            path.mMatrix = matrix;
+            path.mRotateDegree = degree;
+            path.mPivotX = px;
+            path.mPivotY = py;
+            path.mCopy = copyLocation;
             return path;
         }
 
-        static GraffitiPath toPath(Pen pen, Shape shape, float width, GraffitiColor color, Path p, Matrix matrix) {
+        static GraffitiPath toPath(Pen pen, Shape shape, float width, GraffitiColor color, Path p, int degree, float px, float py, CopyLocation copyLocation) {
             GraffitiPath path = new GraffitiPath();
             path.mPen = pen;
             path.mShape = shape;
             path.mStrokeWidth = width;
             path.mColor = color;
             path.mPath = p;
-            path.mMatrix = matrix;
+            path.mRotateDegree = degree;
+            path.mPivotX = px;
+            path.mPivotY = py;
+            path.mCopy = copyLocation;
             return path;
         }
     }
@@ -593,30 +748,34 @@ public class GraffitiView extends View {
 
     private void resetMatrix() {
         if (mPen == Pen.COPY) { // 仿制，加上mCopyLocation记录的偏移
-            this.mShaderMatrix.set(null);
+            this.mShaderMatrix.reset();
             this.mShaderMatrix.postTranslate(mCopyLocation.mTouchStartX - mCopyLocation.mCopyStartX, mCopyLocation.mTouchStartY - mCopyLocation.mCopyStartY);
-            this.mBitmapShader.setLocalMatrix(this.mShaderMatrix);
         } else {
-            this.mShaderMatrix.set(null);
-            this.mBitmapShader.setLocalMatrix(this.mShaderMatrix);
+            this.mShaderMatrix.reset();
         }
+        mShaderMatrixEraser.reset();
+        mShaderMatrixEraser.set(mShaderMatrix);
 
         // 如果使用了自定义的橡皮擦底图，则需要调整矩阵
         if (mPen == Pen.ERASER && mBitmapShader != mBitmapShaderEraser) {
-            mMatrixTemp.reset();
-            mBitmapShaderEraser.getLocalMatrix(mMatrixTemp);
-            mBitmapShader.getLocalMatrix(mMatrixTemp);
             // 缩放橡皮擦底图，使之与涂鸦图片大小一样
             if (mEraserImageIsResizeable) {
-                mMatrixTemp.preScale(mBitmap.getWidth() * 1f / mBitmapEraser.getWidth(), mBitmap.getHeight() * 1f / mBitmapEraser.getHeight());
+                mShaderMatrixEraser.preScale(mBitmap.getWidth() * 1f / mBitmapEraser.getWidth(), mBitmap.getHeight() * 1f / mBitmapEraser.getHeight());
+            } else {
+                if (mRotateDegree == 90) {
+                    mShaderMatrixEraser.preTranslate(mBitmap.getWidth() - mBitmapEraser.getWidth(), 0);
+                } else if (mRotateDegree == 180) {
+                    mShaderMatrixEraser.preTranslate(mBitmap.getWidth() - mBitmapEraser.getWidth(), mBitmap.getHeight() - mBitmapEraser.getHeight());
+                } else if (mRotateDegree == 270) {
+                    mShaderMatrixEraser.preTranslate(0, mBitmap.getHeight() - mBitmapEraser.getHeight());
+                }
             }
-            mBitmapShaderEraser.setLocalMatrix(mMatrixTemp);
         }
     }
 
     /**
      * 调整图片位置
-     *
+     * <p>
      * 明白下面一点很重要：
      * 假设不考虑任何缩放，图片就是肉眼看到的那么大，此时图片的大小width =  mPrivateWidth * mScale ,
      * 偏移量x = mCentreTranX + mTransX，而view的大小为width = getWidth()。height和偏移量y以此类推。
@@ -662,6 +821,13 @@ public class GraffitiView extends View {
         }
     }
 
+    private CopyLocation getCopyLocation() {
+        if (mPen == Pen.COPY) {
+            return mCopyLocation.copy();
+        }
+        return null;
+    }
+
     /**
      * 仿制的定位器
      */
@@ -675,6 +841,13 @@ public class GraffitiView extends View {
 
         private boolean isRelocating = true; // 正在定位中
         private boolean isCopying = false; // 正在仿制绘图中
+
+        public CopyLocation(float copyStartX, float copyStartY, float touchStartX, float touchStartY) {
+            this.mCopyStartX = copyStartX;
+            this.mCopyStartY = copyStartY;
+            this.mTouchStartX = touchStartX;
+            this.mTouchStartY = touchStartY;
+        }
 
         public CopyLocation(float x, float y) {
             mX = x;
@@ -730,6 +903,29 @@ public class GraffitiView extends View {
                 return true;
             }
             return false;
+        }
+
+        public CopyLocation copy() {
+            CopyLocation copyLocation = new CopyLocation(mCopyStartX, mCopyStartY, mTouchStartX, mTouchStartY);
+            return copyLocation;
+        }
+
+        public void rotatePosition(int originalDegree) {
+            // 旋转仿制图标的位置
+            float[] coords = rotatePointInGrffiti(mRotateDegree, originalDegree, this.mX,
+                    this.mY, mOriginalPivotX, mOriginalPivotY);
+            this.mX = coords[0];
+            this.mY = coords[1];
+
+            coords = rotatePointInGrffiti(mRotateDegree, originalDegree, this.mCopyStartX,
+                    this.mCopyStartY, mOriginalPivotX, mOriginalPivotY);
+            this.mCopyStartX = coords[0];
+            this.mCopyStartY = coords[1];
+
+            coords = rotatePointInGrffiti(mRotateDegree, originalDegree, this.mTouchStartX,
+                    this.mTouchStartY, mOriginalPivotX, mOriginalPivotY);
+            this.mTouchStartX = coords[0];
+            this.mTouchStartY = coords[1];
         }
 
     }
@@ -857,7 +1053,7 @@ public class GraffitiView extends View {
      * 是否有修改
      */
     public boolean isModified() {
-        return mPathStack.size() != 0;
+        return mPathStack.size() != 0 || mRotateDegree != 0;
     }
 
     /**
@@ -1038,6 +1234,38 @@ public class GraffitiView extends View {
 
     public float getAmplifierScale() {
         return mAmplifierScale;
+    }
+
+    private static float[] rotatePointInGrffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
+        int degree = nowDegree - oldDegree;
+        if (degree != 0) {
+            float px = mOriginalPivotX, py = mOriginalPivotY;
+            if (oldDegree == 90 || oldDegree == 270) { //　交换中心点的xy坐标
+                float t = px;
+                px = py;
+                py = t;
+            }
+
+            float[] coords = rotatePoint(degree, x,
+                    y, px, py);
+            if (Math.abs(degree) == 90 || Math.abs(degree) == 270) {
+                coords[0] += (py - px);
+                coords[1] += -(py - px);
+            }
+            return coords;
+        }
+        return new float[]{x, y};
+    }
+
+    // 顺时针旋转
+    public static float[] rotatePoint(int degree, float x, float y, float px, float py) {
+        float[] coords = new float[2];
+        /*角度变成弧度*/
+        float radian = (float) (degree * Math.PI / 180);
+        coords[0] = (float) ((x - px) * Math.cos(radian) - (y - py) * Math.sin(radian) + px);
+        coords[1] = (float) ((x - px) * Math.sin(radian) + (y - py) * Math.cos(radian) + py);
+
+        return coords;
     }
 
     public interface GraffitiListener {

@@ -14,7 +14,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
 import android.text.TextUtils;
-import android.view.*;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.widget.FrameLayout;
 import android.widget.SeekBar;
@@ -420,6 +425,13 @@ public class GraffitiActivity extends Activity {
                 showView(mSettingsPanel);
             }
         };
+
+        findViewById(R.id.graffiti_btn_rotate).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mGraffitiView.rotate(mGraffitiView.getRotateDegree()+90);
+            }
+        });
     }
 
     /**
