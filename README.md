@@ -85,10 +85,10 @@ public static class GraffitiParams implements Parcelable {
      */
     public float mAmplifierScale = 2.5f;
     /**
-     * 是否全屏显示，即是否隐藏状态栏
-     * 默认为false，表示状态栏继承应用样式
+     * 初始化的画笔大小
+     * 默认为30px
      */
-    public boolean mIsFullScreen = false;
+    public float mPaintSize = 30;
 }
 ```
 

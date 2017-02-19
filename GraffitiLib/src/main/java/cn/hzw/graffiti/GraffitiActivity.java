@@ -244,6 +244,7 @@ public class GraffitiActivity extends Activity {
                         findViewById(R.id.btn_hand_write).performClick();
                     }
                 });
+        mGraffitiView.setPaintSize(mGraffitiParams.mPaintSize);
         mGraffitiView.setIsDrawableOutside(mGraffitiParams.mIsDrawableOutside);
         mFrameLayout.addView(mGraffitiView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mOnClickListener = new GraffitiOnClickListener();
@@ -429,7 +430,7 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.graffiti_btn_rotate).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mGraffitiView.rotate(mGraffitiView.getRotateDegree()+90);
+                mGraffitiView.rotate(mGraffitiView.getRotateDegree() + 90);
             }
         });
     }
@@ -771,6 +772,12 @@ public class GraffitiActivity extends Activity {
          */
         public boolean mIsFullScreen = false;
 
+        /**
+         * 初始化的画笔大小
+         * 默认为30px
+         */
+        public float mPaintSize = 30;
+
         public static final Creator<GraffitiParams> CREATOR = new Creator<GraffitiParams>() {
             @Override
             public GraffitiParams createFromParcel(Parcel in) {
@@ -781,6 +788,10 @@ public class GraffitiActivity extends Activity {
                 params.mEraserPath = in.readString();
                 params.mEraserImageIsResizeable = in.readInt() == 1;
                 params.mIsDrawableOutside = in.readInt() == 1;
+                params.mChangePanelVisibilityDelay = in.readLong();
+                params.mAmplifierScale = in.readFloat();
+                params.mIsFullScreen = in.readInt() == 1;
+                params.mPaintSize = in.readFloat();
 
                 return params;
             }
@@ -799,6 +810,10 @@ public class GraffitiActivity extends Activity {
             dest.writeString(mEraserPath);
             dest.writeInt(mEraserImageIsResizeable ? 1 : 0);
             dest.writeInt(mIsDrawableOutside ? 1 : 0);
+            dest.writeLong(mChangePanelVisibilityDelay);
+            dest.writeFloat(mAmplifierScale);
+            dest.writeInt(mIsFullScreen ? 1 : 0);
+            dest.writeFloat(mPaintSize);
         }
 
         @Override

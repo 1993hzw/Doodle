@@ -663,12 +663,12 @@ public class GraffitiView extends View {
 
         public float[] getDxDy(int currentDegree) {
 
-            return rotatePointInGrffiti(currentDegree, mRotateDegree, mDx, mDy, mPivotX, mPivotY);
+            return rotatePointInGriffiti(currentDegree, mRotateDegree, mDx, mDy, mPivotX, mPivotY);
         }
 
         public float[] getSxSy(int currentDegree) {
 
-            return rotatePointInGrffiti(currentDegree, mRotateDegree, mSx, mSy, mPivotX, mPivotY);
+            return rotatePointInGriffiti(currentDegree, mRotateDegree, mSx, mSy, mPivotX, mPivotY);
         }
 
         public Matrix getMatrix(int currentDegree) {
@@ -912,17 +912,17 @@ public class GraffitiView extends View {
 
         public void rotatePosition(int originalDegree) {
             // 旋转仿制图标的位置
-            float[] coords = rotatePointInGrffiti(mRotateDegree, originalDegree, this.mX,
+            float[] coords = rotatePointInGriffiti(mRotateDegree, originalDegree, this.mX,
                     this.mY, mOriginalPivotX, mOriginalPivotY);
             this.mX = coords[0];
             this.mY = coords[1];
 
-            coords = rotatePointInGrffiti(mRotateDegree, originalDegree, this.mCopyStartX,
+            coords = rotatePointInGriffiti(mRotateDegree, originalDegree, this.mCopyStartX,
                     this.mCopyStartY, mOriginalPivotX, mOriginalPivotY);
             this.mCopyStartX = coords[0];
             this.mCopyStartY = coords[1];
 
-            coords = rotatePointInGrffiti(mRotateDegree, originalDegree, this.mTouchStartX,
+            coords = rotatePointInGriffiti(mRotateDegree, originalDegree, this.mTouchStartX,
                     this.mTouchStartY, mOriginalPivotX, mOriginalPivotY);
             this.mTouchStartX = coords[0];
             this.mTouchStartY = coords[1];
@@ -1236,7 +1236,7 @@ public class GraffitiView extends View {
         return mAmplifierScale;
     }
 
-    private static float[] rotatePointInGrffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
+    private static float[] rotatePointInGriffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
         int degree = nowDegree - oldDegree;
         if (degree != 0) {
             float px = mOriginalPivotX, py = mOriginalPivotY;
