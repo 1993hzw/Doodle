@@ -1,6 +1,9 @@
 package cn.hzw.graffiti;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
@@ -8,10 +11,18 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.Shader;
 import android.os.Build;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -72,7 +83,9 @@ public class GraffitiView extends View {
 
 
     // 保存涂鸦操作，便于撤销
+    private CopyOnWriteArrayList<Undoable> mUndoStack = new CopyOnWriteArrayList<Undoable>();
     private CopyOnWriteArrayList<GraffitiPath> mPathStack = new CopyOnWriteArrayList<GraffitiPath>();
+    private CopyOnWriteArrayList<GraffitiText> mTextStack = new CopyOnWriteArrayList<>();
 
     /**
      * 画笔
@@ -80,7 +93,8 @@ public class GraffitiView extends View {
     public enum Pen {
         HAND, // 手绘
         COPY, // 仿制
-        ERASER // 橡皮擦
+        ERASER, // 橡皮擦
+        TEXT, // 文本
     }
 
     /**
@@ -109,6 +123,15 @@ public class GraffitiView extends View {
     private float mAmplifierScale = 0; // 放大镜的倍数
     private Paint mAmplifierPaint;
     private int mAmplifierHorizonX; // 放大器的位置的x坐标，使其水平居中
+
+    // 当前选择的文字信息
+    private GraffitiText mSelectedText;
+    private float mSelectedTextX, mSelectedTextY;
+    private boolean mIsRotatingText;
+    private float mRotateTextDiff; // 开始旋转图片时的差值
+    private static float mGraffitiPixelUnit = 1;
+    private static int mTextCanRotateBound = 80;
+    private float mTextSize;
 
     public GraffitiView(Context context, Bitmap bitmap, GraffitiListener listener) {
         this(context, bitmap, null, true, listener);
@@ -155,7 +178,6 @@ public class GraffitiView extends View {
         mOriginalPivotX = mOriginalWidth / 2f;
         mOriginalPivotY = mOriginalHeight / 2f;
 
-
         init();
 
     }
@@ -163,7 +185,6 @@ public class GraffitiView extends View {
     public void init() {
 
         mScale = 1f;
-        mPaintSize = 30;
         mColor = new GraffitiColor(Color.RED);
         mPaint = new Paint();
         mPaint.setStrokeWidth(mPaintSize);
@@ -211,26 +232,61 @@ public class GraffitiView extends View {
                 mTouchDownX = mTouchX = mLastTouchX = event.getX();
                 mTouchDownY = mTouchY = mLastTouchY = event.getY();
 
-                if (mPen == Pen.COPY && mCopyLocation.isInIt(toX(mTouchX), toY(mTouchY))) { // 点击copy
-                    mCopyLocation.isRelocating = true;
-                    mCopyLocation.isCopying = false;
-                } else {
-                    if (mPen == Pen.COPY) {
-                        if (!mCopyLocation.isCopying) {
-                            mCopyLocation.setStartPosition(toX(mTouchX), toY(mTouchY));
-                            resetMatrix();
+                if (mPen == Pen.TEXT) {
+                    mIsRotatingText = false;
+                    if (mSelectedText != null) {
+                        if (mSelectedText.isCanRotate(mRotateDegree, toX(mTouchX), toY(mTouchY))) {
+                            mIsRotatingText = true;
+                            float[] xy = mSelectedText.getXy(mRotateDegree);
+                            mRotateTextDiff = mSelectedText.getTextRotate() -
+                                    DrawUtil.computeAngle(xy[0], xy[1], toX(mTouchX), toY(mTouchY));
                         }
-                        mCopyLocation.isCopying = true;
                     }
-                    mCopyLocation.isRelocating = false;
-                    mCurrPath = new Path();
-                    mCurrPath.moveTo(toX(mTouchDownX), toY(mTouchDownY));
-                    if (mShape == Shape.HAND_WRITE) { // 手写
-
-                    } else {  // 画图形
-
+                    if (!mIsRotatingText) {
+                        boolean found = false;
+                        for (GraffitiText text : mTextStack) {
+                            if (text.isInIt(mRotateDegree, toX(mTouchX), toY(mTouchY))) {
+                                found = true;
+                                mSelectedText = text;
+                                float[] xy = text.getXy(mRotateDegree);
+                                mSelectedTextX = xy[0];
+                                mSelectedTextY = xy[1];
+                                mGraffitiListener.onSelectedText(true);
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            if (mSelectedText != null) { // 取消选定
+                                mSelectedText = null;
+                                mGraffitiListener.onSelectedText(false);
+                            } else { // 新建文本
+                                createText(null, toX(mTouchX), toY(mTouchY));
+                            }
+                        }
                     }
-                    mIsPainting = true;
+                } else {
+                    // 点击copy
+                    if (mPen == Pen.COPY && mCopyLocation.isInIt(toX(mTouchX), toY(mTouchY))) {
+                        mCopyLocation.isRelocating = true;
+                        mCopyLocation.isCopying = false;
+                    } else {
+                        if (mPen == Pen.COPY) {
+                            if (!mCopyLocation.isCopying) {
+                                mCopyLocation.setStartPosition(toX(mTouchX), toY(mTouchY));
+                                resetMatrix();
+                            }
+                            mCopyLocation.isCopying = true;
+                        }
+                        mCopyLocation.isRelocating = false;
+                        mCurrPath = new Path();
+                        mCurrPath.moveTo(toX(mTouchDownX), toY(mTouchDownY));
+                        if (mShape == Shape.HAND_WRITE) { // 手写
+
+                        } else {  // 画图形
+
+                        }
+                        mIsPainting = true;
+                    }
                 }
                 invalidate();
                 return true;
@@ -248,15 +304,18 @@ public class GraffitiView extends View {
                     mTouchY += VALUE;
                 }
 
-                if (mCopyLocation.isRelocating) { // 正在定位location
-                    mCopyLocation.updateLocation(toX(mTouchX), toY(mTouchY));
-                    mCopyLocation.isRelocating = false;
+                if (mPen == Pen.TEXT) {
+                    mIsRotatingText = false;
                 } else {
                     if (mIsPainting) {
-
                         if (mPen == Pen.COPY) {
-                            mCopyLocation.updateLocation(mCopyLocation.mCopyStartX + toX(mTouchX) - mCopyLocation.mTouchStartX,
-                                    mCopyLocation.mCopyStartY + toY(mTouchY) - mCopyLocation.mTouchStartY);
+                            if (mCopyLocation.isRelocating) { // 正在定位location
+                                mCopyLocation.updateLocation(toX(mTouchX), toY(mTouchY));
+                                mCopyLocation.isRelocating = false;
+                            } else {
+                                mCopyLocation.updateLocation(mCopyLocation.mCopyStartX + toX(mTouchX) - mCopyLocation.mTouchStartX,
+                                        mCopyLocation.mCopyStartY + toY(mTouchY) - mCopyLocation.mTouchStartY);
+                            }
                         }
 
                         GraffitiPath path = null;
@@ -275,7 +334,7 @@ public class GraffitiView extends View {
                                     toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX), toY(mTouchY), mRotateDegree, mOriginalPivotX, mOriginalPivotY,
                                     getCopyLocation());
                         }
-                        mPathStack.add(path);
+                        addPath(path);
                         draw(mBitmapCanvas, path); // 保存到图片中
                         mIsPainting = false;
                     }
@@ -290,21 +349,37 @@ public class GraffitiView extends View {
                     mTouchX = event.getX();
                     mTouchY = event.getY();
 
-                    if (mCopyLocation.isRelocating) { // 正在定位location
-                        mCopyLocation.updateLocation(toX(mTouchX), toY(mTouchY));
-                    } else {
-                        if (mPen == Pen.COPY) {
-                            mCopyLocation.updateLocation(mCopyLocation.mCopyStartX + toX(mTouchX) - mCopyLocation.mTouchStartX,
-                                    mCopyLocation.mCopyStartY + toY(mTouchY) - mCopyLocation.mTouchStartY);
+                    if (mPen == Pen.TEXT) {
+                        if (mIsRotatingText) {
+                            float[] xy = mSelectedText.getXy(mRotateDegree);
+                            mSelectedText.setTextRotate(mRotateTextDiff + DrawUtil.computeAngle(
+                                    xy[0], xy[1], toX(mTouchX), toY(mTouchY)
+                            ));
+                        } else {
+                            if (mSelectedText != null) {
+                                mSelectedText.setXy(mRotateDegree,
+                                        mSelectedTextX + toX(mTouchX) - toX(mTouchDownX),
+                                        mSelectedTextY + toY(mTouchY) - toY(mTouchDownY));
+                            }
                         }
-                        if (mShape == Shape.HAND_WRITE) { // 手写
-                            mCurrPath.quadTo(
-                                    toX(mLastTouchX),
-                                    toY(mLastTouchY),
-                                    toX((mTouchX + mLastTouchX) / 2),
-                                    toY((mTouchY + mLastTouchY) / 2));
-                        } else { // 画图形
+                    } else {
+                        if (mPen == Pen.COPY && mCopyLocation.isRelocating) {
+                            // 正在定位location
+                            mCopyLocation.updateLocation(toX(mTouchX), toY(mTouchY));
+                        } else {
+                            if (mPen == Pen.COPY) {
+                                mCopyLocation.updateLocation(mCopyLocation.mCopyStartX + toX(mTouchX) - mCopyLocation.mTouchStartX,
+                                        mCopyLocation.mCopyStartY + toY(mTouchY) - mCopyLocation.mTouchStartY);
+                            }
+                            if (mShape == Shape.HAND_WRITE) { // 手写
+                                mCurrPath.quadTo(
+                                        toX(mLastTouchX),
+                                        toY(mLastTouchY),
+                                        toX((mTouchX + mLastTouchX) / 2),
+                                        toY((mTouchY + mLastTouchY) / 2));
+                            } else { // 画图形
 
+                            }
                         }
                     }
                 } else { // 多点
@@ -324,7 +399,9 @@ public class GraffitiView extends View {
                 invalidate();
                 return true;
         }
-        return super.onTouchEvent(event);
+        return super.
+
+                onTouchEvent(event);
     }
 
     private int mRotateDegree = 0; // 相对于初始图片旋转的角度
@@ -407,6 +484,11 @@ public class GraffitiView extends View {
         mAmplifierPath.addCircle(mAmplifierRadius, mAmplifierRadius, mAmplifierRadius, Path.Direction.CCW);
         mAmplifierHorizonX = (int) (Math.min(getWidth(), getHeight()) / 2 - mAmplifierRadius);
 
+        mGraffitiPixelUnit = Util.dp2px(getContext(), 1) / mPrivateScale;
+
+        mPaintSize = 30 * mGraffitiPixelUnit;
+        mTextSize = 30 * mGraffitiPixelUnit;
+
         invalidate();
     }
 
@@ -452,6 +534,7 @@ public class GraffitiView extends View {
         canvas.scale(mPrivateScale * mScale, mPrivateScale * mScale); // 缩放画布
         canvas.translate(left, top); // 偏移画布
 
+        canvas.save();
         if (!mIsDrawableOutside) { // 裁剪绘制区域为图片区域
             canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
         }
@@ -493,9 +576,15 @@ public class GraffitiView extends View {
                         mPen == Pen.ERASER ? mShaderMatrixEraser : mShaderMatrix, mColor, mRotateDegree);
             }
         }
+        canvas.restore();
+
 
         if (mPen == Pen.COPY) {
             mCopyLocation.drawItSelf(canvas);
+        }
+
+        for (GraffitiText text : mTextStack) {
+            draw(canvas, text);
         }
     }
 
@@ -504,7 +593,6 @@ public class GraffitiView extends View {
 
         paint.setStyle(Paint.Style.STROKE);
         canvas.drawPath(path, paint);
-
     }
 
     private void draw(Canvas canvas, Pen pen, Shape shape, Paint paint, float sx, float sy, float dx, float dy, Matrix matrix, GraffitiColor color, int degree) {
@@ -556,9 +644,61 @@ public class GraffitiView extends View {
         }
     }
 
+    // 画出文字
+    private void draw(Canvas canvas, GraffitiText text) {
+        canvas.save();
+
+        float[] xy = text.getXy(mRotateDegree); // 获取旋转图片后文字的起始坐标
+        canvas.translate(xy[0], xy[1]); // 把坐标系平移到文字矩形范围
+        canvas.rotate(mRotateDegree - text.mRotateDegree + text.mTextRotate, 0, 0); // 旋转坐标系
+
+        // 在变换后的坐标系中画出文字
+        if (text == mSelectedText) {
+            Rect rect = text.getBounds(mRotateDegree);
+            mPaint.setShader(null);
+            // Rect
+            if (text.mColor.getType() == GraffitiColor.Type.COLOR) {
+                mPaint.setColor(Color.argb(126,
+                        255 - Color.red(text.mColor.getColor()),
+                        255 - Color.green(text.mColor.getColor()),
+                        255 - Color.blue(text.mColor.getColor())));
+            } else {
+                mPaint.setColor(0x88888888);
+            }
+            mPaint.setStyle(Paint.Style.FILL);
+            mPaint.setStrokeWidth(1);
+            canvas.drawRect(rect, mPaint);
+            // border
+            if (mIsRotatingText) {
+                mPaint.setColor(0x88ffd700);
+            } else {
+                mPaint.setColor(0x88888888);
+            }
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeWidth(2 * mGraffitiPixelUnit);
+            canvas.drawRect(rect, mPaint);
+            // rotate
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeWidth(4 * mGraffitiPixelUnit);
+            canvas.drawLine(rect.right, rect.top + rect.height() / 2,
+                    rect.right + (mTextCanRotateBound - 16) * mGraffitiPixelUnit, rect.top + rect.height() / 2, mPaint);
+            canvas.drawCircle(rect.right + (mTextCanRotateBound - 8) * mGraffitiPixelUnit, rect.top + rect.height() / 2, 8 * mGraffitiPixelUnit, mPaint);
+
+
+        }
+        resetPaint(Pen.TEXT, mPaint, null, text.mColor, text.mRotateDegree);
+        mPaint.setTextSize(text.mSize);
+        mPaint.setStyle(Paint.Style.FILL);
+        canvas.drawText(text.mText, 0, 0, mPaint);
+
+        canvas.restore();
+
+    }
+
     private void resetPaint(Pen pen, Paint paint, Matrix matrix, GraffitiColor color, int rotateDegree) {
         switch (pen) { // 设置画笔
             case HAND:
+            case TEXT:
                 paint.setShader(null);
                 mShaderMatrixColor.reset();
 
@@ -625,7 +765,7 @@ public class GraffitiView extends View {
         return -graffitiY * (mPrivateScale * mScale) + touchY - mCentreTranY;
     }
 
-    private static class GraffitiPath {
+    private static class GraffitiPath implements Undoable {
         Pen mPen; // 画笔类型
         Shape mShape; // 画笔形状
         float mStrokeWidth; // 大小
@@ -634,7 +774,7 @@ public class GraffitiView extends View {
         float mSx, mSy; // 映射后的起始坐标，（手指点击）
         float mDx, mDy; // 映射后的终止坐标，（手指抬起）
         Matrix mMatrix = new Matrix(); //　图片的偏移矩阵
-        int mRotateDegree = 0; // 选择的角度（围绕图片中心旋转）
+        int mRotateDegree = 0; // 旋转的角度（围绕图片中心旋转）
         float mPivotX, mPivotY;
         CopyLocation mCopy;
 
@@ -738,6 +878,26 @@ public class GraffitiView extends View {
         }
     }
 
+    private void addPath(GraffitiPath path) {
+        mPathStack.add(path);
+        mUndoStack.add(path);
+    }
+
+    private void removePath(GraffitiPath path) {
+        mPathStack.remove(path);
+        mUndoStack.remove(path);
+    }
+
+    private void addText(GraffitiText text) {
+        mTextStack.add(text);
+        mUndoStack.add(text);
+    }
+
+    private void removeText(GraffitiText text) {
+        mTextStack.remove(text);
+        mUndoStack.remove(text);
+    }
+
     private void initCanvas() {
         if (mGraffitiBitmap != null) {
             mGraffitiBitmap.recycle();
@@ -826,6 +986,106 @@ public class GraffitiView extends View {
             return mCopyLocation.copy();
         }
         return null;
+    }
+
+    private void createText(final GraffitiText graffitiText, final float x, final float y) {
+        Activity activity = (Activity) getContext();
+
+        boolean fullScreen = (activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
+        Dialog dialog = null;
+        if (fullScreen) {
+            dialog = new Dialog(activity,
+                    android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
+        } else {
+            dialog = new Dialog(activity,
+                    android.R.style.Theme_Translucent_NoTitleBar);
+        }
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        dialog.show();
+
+        ViewGroup container = (ViewGroup) View.inflate(getContext(), R.layout.graffiti_create_text, null);
+        final Dialog finalDialog = dialog;
+        container.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finalDialog.dismiss();
+            }
+        });
+        dialog.setContentView(container);
+
+        final EditText textView = (EditText) container.findViewById(R.id.graffiti_text_edit);
+        final View cancelBtn = container.findViewById(R.id.graffiti_text_cancel_btn);
+        final TextView enterBtn = (TextView) container.findViewById(R.id.graffiti_text_enter_btn);
+
+        textView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String text = (textView.getText() + "").trim();
+                if (TextUtils.isEmpty(text)) {
+                    enterBtn.setEnabled(false);
+                    enterBtn.setTextColor(0xffb3b3b3);
+                } else {
+                    enterBtn.setEnabled(true);
+                    enterBtn.setTextColor(0xff232323);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+        textView.setText(graffitiText == null ? "" : graffitiText.getText());
+
+        cancelBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cancelBtn.setSelected(true);
+                finalDialog.dismiss();
+            }
+        });
+
+        enterBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finalDialog.dismiss();
+            }
+        });
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (cancelBtn.isSelected()) {
+                    mGraffitiListener.onEditText(false, null);
+                    return;
+                }
+                String text = (textView.getText() + "").trim();
+                if (TextUtils.isEmpty(text)) {
+                    mGraffitiListener.onEditText(false, null);
+                    return;
+                }
+                if (graffitiText == null) {
+                    addText(new GraffitiText(text, mTextSize, mColor.copy(),
+                            0, mRotateDegree, x, y, mOriginalPivotX, mOriginalPivotY));
+                } else {
+                    graffitiText.setText(text);
+                }
+                mGraffitiListener.onEditText(false, text);
+                invalidate();
+            }
+        });
+
+        if (graffitiText == null) {
+            mGraffitiListener.onEditText(true, null);
+        } else {
+            mGraffitiListener.onEditText(true, graffitiText.getText());
+        }
+
     }
 
     /**
@@ -1014,16 +1274,129 @@ public class GraffitiView extends View {
         }
     }
 
+    public static class GraffitiText implements Undoable {
+        private final static Paint sPaint = new Paint();
+        private String mText;
+        private float mSize;
+        private GraffitiColor mColor;
+        private float mTextRotate;
+        private int mRotateDegree;
+        float mPivotX, mPivotY;
+        private float mX, mY;
 
-    // ===================== api ==============
+        private Rect mRect = new Rect();
+
+        public GraffitiText(String mText, float mSize, GraffitiColor mColor, int mTextRotate, int mRotateDegree, float mX, float mY, float px, float py) {
+            this.mText = mText;
+            this.mSize = mSize;
+            this.mColor = mColor;
+            this.mTextRotate = mTextRotate;
+            this.mRotateDegree = mRotateDegree;
+            this.mX = mX;
+            this.mY = mY;
+            this.mPivotX = px;
+            this.mPivotY = py;
+
+            resetBounds();
+        }
+
+        private void resetBounds() {
+            sPaint.setTextSize(mSize);
+            sPaint.setStyle(Paint.Style.FILL);
+            sPaint.getTextBounds(mText, 0, mText.length(), mRect);
+            mRect.left -= 10 * mGraffitiPixelUnit;
+            mRect.top -= 10 * mGraffitiPixelUnit;
+            mRect.right += 10 * mGraffitiPixelUnit;
+            mRect.bottom += 10 * mGraffitiPixelUnit;
+        }
+
+        public float getSize() {
+            return mSize;
+        }
+
+        public void setSize(float size) {
+            mSize = size;
+            resetBounds();
+        }
+
+        public void setXy(int currentRotate, float x, float y) {
+            float[] xy = restoreRotatePointInGriffiti(currentRotate, mRotateDegree, x, y, mPivotX, mPivotY);
+            mX = xy[0];
+            mY = xy[1];
+        }
+
+        private float[] getXy(int currentDegree) {
+            return rotatePointInGriffiti(currentDegree, mRotateDegree, mX, mY, mPivotX, mPivotY);
+        }
+
+        public void setText(String text) {
+            mText = text;
+            resetBounds();
+        }
+
+        public String getText() {
+            return mText;
+        }
+
+        public GraffitiColor getColor() {
+            return mColor;
+        }
+
+        public void setColor(GraffitiColor color) {
+            mColor = color;
+        }
+
+        public Rect getBounds(int currentRotate) {
+            return mRect;
+        }
+
+        public void setTextRotate(float textRotate) {
+            mTextRotate = textRotate;
+        }
+
+        public float getTextRotate() {
+            return mTextRotate;
+        }
+
+        // 判断xy是否在文字范围内
+        public boolean isInIt(int currentRotate, float x, float y) {
+            float[] xy = getXy(currentRotate);
+            // 把触摸点转换成在文字坐标系（即以文字起始点作为坐标原点）内的点
+            x = x - xy[0];
+            y = y - xy[1];
+            // 把变换后相对于矩形的触摸点，还原回未变换前的点，然后判断是否矩形中
+            float[] rectXy = rotatePoint((int) -(currentRotate - mRotateDegree + mTextRotate), x, y, 0, 0);
+            return mRect.contains((int) rectXy[0], (int) rectXy[1]);
+        }
+
+        public boolean isCanRotate(int currentRotate, float x, float y) {
+            float[] xy = getXy(currentRotate);
+            // 把触摸点转换成在文字坐标系（即以文字起始点作为坐标原点）内的点
+            x = x - xy[0];
+            y = y - xy[1];
+            // 把变换后矩形中的触摸点，还原回未变换前矩形中的点，然后判断是否矩形中
+            float[] rectXy = rotatePoint((int) -(currentRotate - mRotateDegree + mTextRotate), x, y, 0, 0);
+
+            return rectXy[0] >= mRect.right && rectXy[0] <= mRect.right + mTextCanRotateBound * mGraffitiPixelUnit
+                    && rectXy[1] >= mRect.top && rectXy[1] <= mRect.bottom;
+        }
+
+    }
+
+
+    // ========================= api ================================
 
     /**
      * 保存
      */
     public void save() {
-//            initCanvas();
-//            draw(mBitmapCanvas, mPathStackBackup, false);
-//            draw(mBitmapCanvas, mPathStack, false);
+
+        mSelectedText = null;
+
+        // 保存的时候，把文字画上去
+        for (GraffitiText text : mTextStack) {
+            draw(mBitmapCanvas, text);
+        }
         mGraffitiListener.onSaved(mGraffitiBitmap, mBitmapEraser);
     }
 
@@ -1041,8 +1414,14 @@ public class GraffitiView extends View {
      * 撤销
      */
     public void undo() {
-        if (mPathStack.size() > 0) {
-            mPathStack.remove(mPathStack.size() - 1);
+        if (mUndoStack.size() > 0) {
+            Undoable undoable = mUndoStack.remove(mUndoStack.size() - 1);
+            mPathStack.remove(undoable);
+            mTextStack.remove(undoable);
+            if (undoable == mSelectedText) {
+                mSelectedText = null;
+            }
+
             initCanvas();
             draw(mBitmapCanvas, mPathStack);
             invalidate();
@@ -1053,7 +1432,7 @@ public class GraffitiView extends View {
      * 是否有修改
      */
     public boolean isModified() {
-        return mPathStack.size() != 0 || mRotateDegree != 0;
+        return mUndoStack.size() != 0 || mRotateDegree != 0;
     }
 
     /**
@@ -1100,6 +1479,10 @@ public class GraffitiView extends View {
         invalidate();
     }
 
+    public GraffitiColor getColor() {
+        return mColor;
+    }
+
     public void setColor(Bitmap bitmap, Shader.TileMode tileX, Shader.TileMode tileY) {
         if (mBitmap == null) {
             return;
@@ -1139,6 +1522,14 @@ public class GraffitiView extends View {
         }
         mPen = pen;
         resetMatrix();
+
+        if (mPen != Pen.TEXT) {
+            if (mSelectedText != null) {
+                mSelectedText = null;
+                mGraffitiListener.onSelectedText(false);
+            }
+        }
+
         invalidate();
     }
 
@@ -1257,6 +1648,114 @@ public class GraffitiView extends View {
         return new float[]{x, y};
     }
 
+    // xy为在涂鸦中旋转后的坐标，该函数逆向计算出未旋转前的坐标
+    private static float[] restoreRotatePointInGriffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
+        int degree = nowDegree - oldDegree;
+        if (degree != 0) {
+            float px = mOriginalPivotX, py = mOriginalPivotY;
+            if (oldDegree == 90 || oldDegree == 270) { //　交换中心点的xy坐标
+                float t = px;
+                px = py;
+                py = t;
+            }
+            if (Math.abs(degree) == 90 || Math.abs(degree) == 270) {
+                x -= (py - px);
+                y -= -(py - px);
+            }
+
+            float[] coords = rotatePoint(-degree, x,
+                    y, px, py);
+
+            return coords;
+        }
+        return new float[]{x, y};
+    }
+
+    public float getTextSize() {
+        return mTextSize;
+    }
+
+    public void setTextSize(float size) {
+        mTextSize = size;
+    }
+
+    public float getSelectedTextSize() {
+        if (mSelectedText == null) {
+            throw new NullPointerException("Selected text is null!");
+        }
+        return mSelectedText.getSize();
+    }
+
+    public void setSelectedTextSize(float selectedTextSize) {
+        if (mSelectedText == null) {
+            throw new NullPointerException("Selected text is null!");
+        }
+        mSelectedText.setSize(selectedTextSize);
+        invalidate();
+    }
+
+    public void setSelectedTextColor(int color) {
+        if (mSelectedText == null) {
+            throw new NullPointerException("Selected text is null!");
+        }
+        mSelectedText.getColor().setColor(color);
+        invalidate();
+    }
+
+    public void setSelectedTextColor(Bitmap bitmap) {
+        if (mSelectedText == null) {
+            throw new NullPointerException("Selected text is null!");
+        }
+        if (mBitmap == null) {
+            return;
+        }
+        mSelectedText.getColor().setColor(bitmap);
+        invalidate();
+    }
+
+    public GraffitiColor getSelectedTextColor() {
+        if (mSelectedText == null) {
+            throw new NullPointerException("Selected text is null!");
+        }
+        return mSelectedText.getColor();
+    }
+
+    public boolean isSelectedText() {
+        return mSelectedText != null;
+    }
+
+    public String getSelectedText() {
+        if (mSelectedText == null) {
+            return null;
+        }
+        return mSelectedText.mText;
+    }
+
+    public void setSelectedText(String text) {
+        if (mSelectedText == null) {
+            throw new NullPointerException("Selected text is null!");
+        }
+        mSelectedText.setText(text);
+    }
+
+    public void editSelectedText() {
+        if (mSelectedText == null) {
+            throw new NullPointerException("Selected text is null!");
+        }
+        createText(mSelectedText, -1, -1);
+    }
+
+    public void removeSelectedText() {
+        if (mSelectedText == null) {
+            throw new NullPointerException("Selected text is null!");
+        }
+        removeText(mSelectedText);
+        mSelectedText = null;
+        mGraffitiListener.onSelectedText(false);
+        invalidate();
+    }
+
+
     // 顺时针旋转
     public static float[] rotatePoint(int degree, float x, float y, float px, float py) {
         float[] coords = new float[2];
@@ -1290,5 +1789,21 @@ public class GraffitiView extends View {
          * 准备工作已经完成
          */
         void onReady();
+
+        /**
+         * 选中字体
+         *
+         * @param selected 是否选中，false表示从选中变成不选中
+         */
+        void onSelectedText(boolean selected);
+
+        /**
+         * 编辑文本时回调，包括新建文本和修改文本
+         *
+         * @param showDialog true表示弹出输入框开始编辑，false表示隐藏输入框结束编辑
+         * @param string     showDialog == true时，string表示需要编辑的文本，若为null则表示新建文本；
+         *                   showDialog == false时，string表示编辑后的文本，若为null则表示取消了该次编辑
+         */
+        void onEditText(boolean showDialog, String string);
     }
 }

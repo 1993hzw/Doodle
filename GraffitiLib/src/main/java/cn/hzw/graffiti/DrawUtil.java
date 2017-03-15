@@ -4,6 +4,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 
+import cn.forward.androids.utils.LogUtil;
+
 /**
  * Created by Administrator on 2016/9/3.
  */
@@ -90,5 +92,46 @@ public class DrawUtil {
                 canvas.drawRect(dx, dy, sx, sy, paint);
             }
         }
+    }
+
+    /**
+     * 计算点p2绕p1顺时针旋转的角度
+     *
+     * @param px1
+     * @param py1
+     * @param px2
+     * @param py2
+     * @return 旋转的角度
+     */
+    public static float computeAngle(float px1, float py1, float px2, float py2) {
+
+        float x = px2 - px1;
+        float y = py2 - py1;
+
+        float arc = (float) Math.atan(y / x);
+
+        float angle = (float) (arc / (Math.PI * 2) * 360);
+
+        if (x >= 0 && y == 0) {
+            angle = 0;
+        } else if (x < 0 && y == 0) {
+            angle = 180;
+        } else if (x == 0 && y > 0) {
+            angle = 90;
+        } else if (x == 0 && y < 0) {
+            angle = 270;
+        } else if (x > 0 && y > 0) { // 1
+
+        } else if (x < 0 && y > 0) { //2
+            angle = 180 + angle;
+        } else if (x < 0 && y < 0) { //3
+            angle = 180 + angle;
+        } else if (x > 0 && y < 0) { //4
+            angle = 360 + angle;
+        }
+
+        LogUtil.i("hzw", "[" + px1 + "," + py1 + "]:[" + px2 + "," + py2 + "] = " + angle);
+
+        return angle;
     }
 }

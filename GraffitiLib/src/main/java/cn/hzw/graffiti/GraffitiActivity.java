@@ -119,6 +119,9 @@ public class GraffitiActivity extends Activity {
     private final float mMinScale = 0.25f; // 最小缩放倍数
     private final int TIME_SPAN = 40;
     private View mBtnMovePic, mBtnHidePanel, mSettingsPanel;
+    private View mShapeModeContainer;
+    private View mSelectedTextEditContainer;
+    private View mEditContainer;
 
     private int mTouchSlop;
 
@@ -240,11 +243,46 @@ public class GraffitiActivity extends Activity {
 
                     @Override
                     public void onReady() {
+                        mGraffitiView.setPaintSize(mGraffitiParams.mPaintSize > 0 ? mGraffitiParams.mPaintSize
+                                : mGraffitiView.getPaintSize());
+                        if (mGraffitiView.getPen() == GraffitiView.Pen.TEXT) {
+                            mPaintSizeBar.setProgress((int) (mGraffitiView.getTextSize() + 0.5f));
+                        } else {
+                            mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
+                        }
+
                         findViewById(R.id.btn_pen_hand).performClick();
                         findViewById(R.id.btn_hand_write).performClick();
                     }
+
+                    @Override
+                    public void onSelectedText(boolean selected) {
+                        if (selected) {
+                            mSelectedTextEditContainer.setVisibility(View.VISIBLE);
+                            if (mGraffitiView.getSelectedTextColor().getType() == GraffitiView.GraffitiColor.Type.BITMAP) {
+                                mBtnColor.setBackgroundDrawable(new BitmapDrawable(mGraffitiView.getSelectedTextColor().getBitmap()));
+                            } else {
+                                mBtnColor.setBackgroundColor(mGraffitiView.getSelectedTextColor().getColor());
+                            }
+                            mPaintSizeBar.setProgress((int) (mGraffitiView.getSelectedTextSize() + 0.5f));
+                        } else {
+                            mSelectedTextEditContainer.setVisibility(View.GONE);
+                            mEditContainer.setVisibility(View.VISIBLE);
+                            if (mGraffitiView.getColor().getType() == GraffitiView.GraffitiColor.Type.BITMAP) {
+                                mBtnColor.setBackgroundDrawable(new BitmapDrawable(mGraffitiView.getColor().getBitmap()));
+                            } else {
+                                mBtnColor.setBackgroundColor(mGraffitiView.getColor().getColor());
+                            }
+
+                            mPaintSizeBar.setProgress((int) (mGraffitiView.getTextSize() + 0.5f));
+                        }
+                    }
+
+                    @Override
+                    public void onEditText(boolean showDialog, String string) {
+
+                    }
                 });
-        mGraffitiView.setPaintSize(mGraffitiParams.mPaintSize);
         mGraffitiView.setIsDrawableOutside(mGraffitiParams.mIsDrawableOutside);
         mFrameLayout.addView(mGraffitiView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mOnClickListener = new GraffitiOnClickListener();
@@ -256,6 +294,7 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.btn_pen_hand).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_pen_copy).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_pen_eraser).setOnClickListener(mOnClickListener);
+        findViewById(R.id.btn_pen_text).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_hand_write).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_arrow).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_line).setOnClickListener(mOnClickListener);
@@ -265,6 +304,11 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.btn_fill_rect).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_clear).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_undo).setOnClickListener(mOnClickListener);
+        findViewById(R.id.graffiti_text_edit).setOnClickListener(mOnClickListener);
+        findViewById(R.id.graffiti_text_remove).setOnClickListener(mOnClickListener);
+        mShapeModeContainer = findViewById(R.id.bar_shape_mode);
+        mSelectedTextEditContainer = findViewById(R.id.graffiti_text_edit_container);
+        mEditContainer = findViewById(R.id.graffiti_edit_container);
         mBtnHidePanel = findViewById(R.id.graffiti_btn_hide_panel);
         mBtnHidePanel.setOnClickListener(mOnClickListener);
         findViewById(R.id.graffiti_btn_finish).setOnClickListener(mOnClickListener);
@@ -286,8 +330,18 @@ public class GraffitiActivity extends Activity {
 
         mPaintSizeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (progress == 0) {
+                    mPaintSizeBar.setProgress(1);
+                    return;
+                }
                 mPaintSizeView.setText("" + progress);
-                mGraffitiView.setPaintSize(progress);
+                if (mGraffitiView.isSelectedText()) {
+                    mGraffitiView.setSelectedTextSize(progress);
+                } else if (mGraffitiView.getPen() == GraffitiView.Pen.TEXT) {
+                    mGraffitiView.setTextSize(progress);
+                } else {
+                    mGraffitiView.setPaintSize(progress);
+                }
             }
 
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -296,7 +350,6 @@ public class GraffitiActivity extends Activity {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
-        mPaintSizeBar.setProgress((int) mGraffitiView.getPaintSize());
 
         ScaleOnTouchListener onTouchListener = new ScaleOnTouchListener();
         findViewById(R.id.btn_amplifier).setOnTouchListener(onTouchListener);
@@ -457,13 +510,24 @@ public class GraffitiActivity extends Activity {
         public void onClick(View v) {
             mDone = false;
             if (v.getId() == R.id.btn_pen_hand) {
+                mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
+                mShapeModeContainer.setVisibility(View.VISIBLE);
                 mGraffitiView.setPen(GraffitiView.Pen.HAND);
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_copy) {
+                mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
+                mShapeModeContainer.setVisibility(View.VISIBLE);
                 mGraffitiView.setPen(GraffitiView.Pen.COPY);
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_eraser) {
+                mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
+                mShapeModeContainer.setVisibility(View.VISIBLE);
                 mGraffitiView.setPen(GraffitiView.Pen.ERASER);
+                mDone = true;
+            } else if (v.getId() == R.id.btn_pen_text) {
+                mPaintSizeBar.setProgress((int) (mGraffitiView.getTextSize() + 0.5f));
+                mShapeModeContainer.setVisibility(View.GONE);
+                mGraffitiView.setPen(GraffitiView.Pen.TEXT);
                 mDone = true;
             }
             if (mDone) {
@@ -495,13 +559,21 @@ public class GraffitiActivity extends Activity {
                         new ColorPickerDialog.OnColorChangedListener() {
                             public void colorChanged(int color) {
                                 mBtnColor.setBackgroundColor(color);
-                                mGraffitiView.setColor(color);
+                                if (mGraffitiView.isSelectedText()) {
+                                    mGraffitiView.setSelectedTextColor(color);
+                                } else {
+                                    mGraffitiView.setColor(color);
+                                }
                             }
 
                             @Override
                             public void colorChanged(Drawable color) {
                                 mBtnColor.setBackgroundDrawable(color);
-                                mGraffitiView.setColor(ImageUtils.getBitmapFromDrawable(color));
+                                if (mGraffitiView.isSelectedText()) {
+                                    mGraffitiView.setSelectedTextColor(ImageUtils.getBitmapFromDrawable(color));
+                                } else {
+                                    mGraffitiView.setColor(ImageUtils.getBitmapFromDrawable(color));
+                                }
                             }
                         }).show();
                 mDone = true;
@@ -552,6 +624,18 @@ public class GraffitiActivity extends Activity {
                 if (mIsMovingPic) {
                     Toast.makeText(getApplicationContext(), R.string.graffiti_moving_pic, Toast.LENGTH_SHORT).show();
                 }
+                mDone = true;
+            }
+            if (mDone) {
+                return;
+            }
+
+
+            if (v.getId() == R.id.graffiti_text_edit) {
+                mGraffitiView.editSelectedText();
+                mDone = true;
+            } else if (v.getId() == R.id.graffiti_text_remove) {
+                mGraffitiView.removeSelectedText();
                 mDone = true;
             }
             if (mDone) {
@@ -774,9 +858,8 @@ public class GraffitiActivity extends Activity {
 
         /**
          * 初始化的画笔大小
-         * 默认为30px
          */
-        public float mPaintSize = 30;
+        public float mPaintSize = -1;
 
         public static final Creator<GraffitiParams> CREATOR = new Creator<GraffitiParams>() {
             @Override

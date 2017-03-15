@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/graffiti_text_edit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="50dp"
+        android:background="#88000000"
+        android:padding="10dp"
+        android:textColor="#ffffff"
+        android:textSize="26dp"
+        />
+
+    <FrameLayout
+        android:layout_gravity="bottom"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#ffffff"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        >
+
+        <TextView
+            android:id="@+id/graffiti_text_cancel_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom|left"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="@string/graffiti_cancel"
+            android:textColor="#232323"
+            android:textSize="16dp"/>
+
+        <TextView
+            android:id="@+id/graffiti_text_enter_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom|right"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="@string/graffiti_enter"
+            android:textColor="#232323"
+            android:textSize="16dp"/>
+    </FrameLayout>
+</FrameLayout>
