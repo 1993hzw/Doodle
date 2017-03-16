@@ -157,14 +157,14 @@ public class GraffitiActivity extends Activity {
             mGraffitiParams = getIntent().getExtras().getParcelable(KEY_PARAMS);
         }
         if (mGraffitiParams == null) {
-            LogUtil.d("TAG", "mGraffitiParams is null!");
+            LogUtil.e("TAG", "mGraffitiParams is null!");
             this.finish();
             return;
         }
 
         mImagePath = mGraffitiParams.mImagePath;
         if (mImagePath == null) {
-            LogUtil.d("TAG", "mImagePath is null!");
+            LogUtil.e("TAG", "mImagePath is null!");
             this.finish();
             return;
         }
@@ -177,6 +177,7 @@ public class GraffitiActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         mBitmap = ImageUtils.createBitmapFromPath(mImagePath, this);
         if (mBitmap == null) {
+            LogUtil.e("TAG", "bitmap is null!");
             this.finish();
             return;
         }
@@ -250,6 +251,7 @@ public class GraffitiActivity extends Activity {
                         } else {
                             mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
                         }
+                        mPaintSizeBar.setMax((int) (Math.min(mGraffitiView.getBitmapWidthOnView(), mGraffitiView.getBitmapHeightOnView()) / 3 * mGraffitiView.getPixelUnit()));
 
                         findViewById(R.id.btn_pen_hand).performClick();
                         findViewById(R.id.btn_hand_write).performClick();

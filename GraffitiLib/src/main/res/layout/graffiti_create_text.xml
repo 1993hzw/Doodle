@@ -22,6 +22,7 @@
         android:background="#ffffff"
         android:paddingLeft="5dp"
         android:paddingRight="5dp"
+        android:clickable="true"
         >
 
         <TextView

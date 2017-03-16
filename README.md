@@ -5,7 +5,7 @@
 
   * 设置画笔及形状
 
-    画笔可以选择手绘、仿制、橡皮擦，其中仿制功能跟PS中的类似，复制图片中的某处地方。形状可以选择手绘、箭头、直线、圆、矩形等。画笔的底色可以选择颜色，或者选择一张画布。
+    画笔可以选择手绘、仿制、橡皮擦、文字，其中仿制功能跟PS中的类似，复制图片中的某处地方。形状可以选择手绘、箭头、直线、圆、矩形等。画笔的底色可以选择颜色，或者选择一张画布。
 
   * 撤销及清屏
 
@@ -99,9 +99,9 @@ public static class GraffitiParams implements Parcelable {
 
 ### 界面
 
- ![IMG](http://s2.sinaimg.cn/orignal/003eBWOtzy77pGDrx8Rc1&690)
- ![IMG](http://s7.sinaimg.cn/orignal/003eBWOtzy77pGDrA8ea6&690)
- ![IMG](http://s8.sinaimg.cn/orignal/003eBWOtzy77pGEXU7dc7&690)
+ ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/01.png)
+ ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/02.png)
+ ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/03.png)
 
 
 
@@ -118,6 +118,11 @@ public static class GraffitiParams implements Parcelable {
 
 
 ### 更新日志
+
+  * 2017-03-16 v4.1(5)
+
+  (1)加入文字功能，支持输入文字并对文字进行编辑、旋转等．
+
 
   * 2017-02-18 v4.0(4)
 
