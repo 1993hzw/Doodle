@@ -696,6 +696,7 @@ public class GraffitiView extends View {
     }
 
     private void resetPaint(Pen pen, Paint paint, Matrix matrix, GraffitiColor color, int rotateDegree) {
+        mPaint.setColor(Color.BLACK);
         switch (pen) { // 设置画笔
             case HAND:
             case TEXT:
@@ -1405,7 +1406,8 @@ public class GraffitiView extends View {
      */
     public void clear() {
         mPathStack.clear();
-//        mPathStackBackup.clear();
+        mTextStack.clear();
+        mUndoStack.clear();
         initCanvas();
         invalidate();
     }
@@ -1633,6 +1635,7 @@ public class GraffitiView extends View {
     public int getBitmapWidthOnView() {
         return mPrivateWidth;
     }
+
     /**
      * 图片在适应屏幕时的尺寸
      */
@@ -1767,8 +1770,10 @@ public class GraffitiView extends View {
         mGraffitiListener.onSelectedText(false);
         invalidate();
     }
+
     /**
      * 1dp在图片在适应屏幕时的像素点数
+     *
      * @return 根据此值可以获取相对于当前图片的像素单位，比如文字的大小默认为30*getPixelUnit()，那么在所有涂鸦图片上的默认大小在视觉上看到的大小都一样。
      */
     public float getPixelUnit() {
