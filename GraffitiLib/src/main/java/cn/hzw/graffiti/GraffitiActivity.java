@@ -187,7 +187,7 @@ public class GraffitiActivity extends Activity {
 
         // /storage/emulated/0/DCIM/Graffiti/1479369280029.jpg
         mGraffitiView = new GraffitiView(this, mBitmap, mGraffitiParams.mEraserPath, mGraffitiParams.mEraserImageIsResizeable,
-                new GraffitiView.GraffitiListener() {
+                new GraffitiListener() {
                     @Override
                     public void onSaved(Bitmap bitmap, Bitmap bitmapEraser) { // 保存图片
                         if (bitmapEraser != null) {
@@ -251,7 +251,7 @@ public class GraffitiActivity extends Activity {
                         } else {
                             mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
                         }
-                        mPaintSizeBar.setMax((int) (Math.min(mGraffitiView.getBitmapWidthOnView(), mGraffitiView.getBitmapHeightOnView()) / 3 * mGraffitiView.getPixelUnit()));
+                        mPaintSizeBar.setMax((int) (Math.min(mGraffitiView.getBitmapWidthOnView(), mGraffitiView.getBitmapHeightOnView()) / 3 * DrawUtil.GRAFFITI_PIXEL_UNIT));
 
                         findViewById(R.id.btn_pen_hand).performClick();
                         findViewById(R.id.btn_hand_write).performClick();
@@ -261,7 +261,7 @@ public class GraffitiActivity extends Activity {
                     public void onSelectedText(boolean selected) {
                         if (selected) {
                             mSelectedTextEditContainer.setVisibility(View.VISIBLE);
-                            if (mGraffitiView.getSelectedTextColor().getType() == GraffitiView.GraffitiColor.Type.BITMAP) {
+                            if (mGraffitiView.getSelectedTextColor().getType() == GraffitiColor.Type.BITMAP) {
                                 mBtnColor.setBackgroundDrawable(new BitmapDrawable(mGraffitiView.getSelectedTextColor().getBitmap()));
                             } else {
                                 mBtnColor.setBackgroundColor(mGraffitiView.getSelectedTextColor().getColor());
@@ -270,7 +270,7 @@ public class GraffitiActivity extends Activity {
                         } else {
                             mSelectedTextEditContainer.setVisibility(View.GONE);
                             mEditContainer.setVisibility(View.VISIBLE);
-                            if (mGraffitiView.getColor().getType() == GraffitiView.GraffitiColor.Type.BITMAP) {
+                            if (mGraffitiView.getColor().getType() == GraffitiColor.Type.BITMAP) {
                                 mBtnColor.setBackgroundDrawable(new BitmapDrawable(mGraffitiView.getColor().getBitmap()));
                             } else {
                                 mBtnColor.setBackgroundColor(mGraffitiView.getColor().getColor());
@@ -321,9 +321,9 @@ public class GraffitiActivity extends Activity {
         mBtnColor = findViewById(R.id.btn_set_color);
         mBtnColor.setOnClickListener(mOnClickListener);
         mSettingsPanel = findViewById(R.id.graffiti_panel);
-        if (mGraffitiView.getGraffitiColor().getType() == GraffitiView.GraffitiColor.Type.COLOR) {
+        if (mGraffitiView.getGraffitiColor().getType() == GraffitiColor.Type.COLOR) {
             mBtnColor.setBackgroundColor(mGraffitiView.getGraffitiColor().getColor());
-        } else if (mGraffitiView.getGraffitiColor().getType() == GraffitiView.GraffitiColor.Type.BITMAP) {
+        } else if (mGraffitiView.getGraffitiColor().getType() == GraffitiColor.Type.BITMAP) {
             mBtnColor.setBackgroundDrawable(new BitmapDrawable(mGraffitiView.getGraffitiColor().getBitmap()));
         }
 
@@ -823,7 +823,7 @@ public class GraffitiActivity extends Activity {
         public boolean mSavePathIsDir;
         /**
          * 　橡皮擦底图，如果为null，则底图为当前图片路径
-         * {@link GraffitiView#GraffitiView(Context, Bitmap, String, boolean, GraffitiView.GraffitiListener)}
+         * {@link GraffitiView#GraffitiView(Context, Bitmap, String, boolean, GraffitiListener)}
          */
         public String mEraserPath;
 

@@ -11,6 +11,8 @@ import cn.forward.androids.utils.LogUtil;
  */
 public class DrawUtil {
 
+    public static float GRAFFITI_PIXEL_UNIT = 1;
+
     public static void drawArrow(Canvas canvas, float sx, float sy, float ex,
                                  float ey, Paint paint) {
         float arrowSize = paint.getStrokeWidth();
@@ -133,5 +135,73 @@ public class DrawUtil {
         LogUtil.i("hzw", "[" + px1 + "," + py1 + "]:[" + px2 + "," + py2 + "] = " + angle);
 
         return angle;
+    }
+
+    // xy为在涂鸦中旋转后的坐标，该函数逆向计算出未旋转前的坐标
+    public static float[] restoreRotatePointInGriffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
+        int degree = nowDegree - oldDegree;
+        if (degree != 0) {
+            float px = mOriginalPivotX, py = mOriginalPivotY;
+            if (oldDegree == 90 || oldDegree == 270) { //　交换中心点的xy坐标
+                float t = px;
+                px = py;
+                py = t;
+            }
+            if (Math.abs(degree) == 90 || Math.abs(degree) == 270) {
+                x -= (py - px);
+                y -= -(py - px);
+            }
+
+            float[] coords = rotatePoint(-degree, x,
+                    y, px, py);
+
+            return coords;
+        }
+        return new float[]{x, y};
+    }
+
+    // 顺时针旋转
+    public static float[] rotatePoint(int degree, float x, float y, float px, float py) {
+        float[] coords = new float[2];
+        /*角度变成弧度*/
+        float radian = (float) (degree * Math.PI / 180);
+        coords[0] = (float) ((x - px) * Math.cos(radian) - (y - py) * Math.sin(radian) + px);
+        coords[1] = (float) ((x - px) * Math.sin(radian) + (y - py) * Math.cos(radian) + py);
+
+        return coords;
+    }
+
+    public static float[] rotatePointInGriffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
+        int degree = nowDegree - oldDegree;
+        if (degree != 0) {
+            float px = mOriginalPivotX, py = mOriginalPivotY;
+            if (oldDegree == 90 || oldDegree == 270) { //　交换中心点的xy坐标
+                float t = px;
+                px = py;
+                py = t;
+            }
+
+            float[] coords = rotatePoint(degree, x,
+                    y, px, py);
+            if (Math.abs(degree) == 90 || Math.abs(degree) == 270) {
+                coords[0] += (py - px);
+                coords[1] += -(py - px);
+            }
+            return coords;
+        }
+        return new float[]{x, y};
+    }
+
+    /**
+     * 1dp在图片在适应屏幕时的像素点数
+     *
+     * @return 根据此值可以获取相对于当前图片的像素单位，比如文字的大小默认为30*getPixelUnit()，那么在所有涂鸦图片上的默认大小在视觉上看到的大小都一样。
+     */
+    public static float getGraffitiPixelUnit() {
+        return GRAFFITI_PIXEL_UNIT;
+    }
+
+    public static void setGraffitiPixelUnit(float graffitiPixelUnit) {
+        DrawUtil.GRAFFITI_PIXEL_UNIT = graffitiPixelUnit;
     }
 }
