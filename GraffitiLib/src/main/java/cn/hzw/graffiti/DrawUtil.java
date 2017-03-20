@@ -171,7 +171,7 @@ public class DrawUtil {
         return coords;
     }
 
-    public static float[] rotatePointInGriffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
+    public static float[] rotatePointInGraffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
         int degree = nowDegree - oldDegree;
         if (degree != 0) {
             float px = mOriginalPivotX, py = mOriginalPivotY;
@@ -182,8 +182,8 @@ public class DrawUtil {
             }
 
             float[] coords = rotatePoint(degree, x,
-                    y, px, py);
-            if (Math.abs(degree) == 90 || Math.abs(degree) == 270) {
+                    y, px, py); // 绕（px,py）旋转
+            if (Math.abs(degree) == 90 || Math.abs(degree) == 270) { // 偏移
                 coords[0] += (py - px);
                 coords[1] += -(py - px);
             }
@@ -203,5 +203,9 @@ public class DrawUtil {
 
     public static void setGraffitiPixelUnit(float graffitiPixelUnit) {
         DrawUtil.GRAFFITI_PIXEL_UNIT = graffitiPixelUnit;
+    }
+
+    public static void main(String[] args){
+
     }
 }

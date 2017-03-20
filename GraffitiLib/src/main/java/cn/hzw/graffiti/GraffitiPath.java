@@ -4,7 +4,7 @@ import android.graphics.Matrix;
 import android.graphics.Path;
 
 import static cn.hzw.graffiti.DrawUtil.rotatePoint;
-import static cn.hzw.graffiti.DrawUtil.rotatePointInGriffiti;
+import static cn.hzw.graffiti.DrawUtil.rotatePointInGraffiti;
 
 /**
  * Created by huangziwei on 2017/3/16.
@@ -48,12 +48,12 @@ public class GraffitiPath implements Undoable {
 
     public float[] getDxDy(int currentDegree) {
 
-        return rotatePointInGriffiti(currentDegree, mRotateDegree, mDx, mDy, mPivotX, mPivotY);
+        return rotatePointInGraffiti(currentDegree, mRotateDegree, mDx, mDy, mPivotX, mPivotY);
     }
 
     public float[] getSxSy(int currentDegree) {
 
-        return rotatePointInGriffiti(currentDegree, mRotateDegree, mSx, mSy, mPivotX, mPivotY);
+        return rotatePointInGraffiti(currentDegree, mRotateDegree, mSx, mSy, mPivotX, mPivotY);
     }
 
     public Matrix getMatrix(int currentDegree) {

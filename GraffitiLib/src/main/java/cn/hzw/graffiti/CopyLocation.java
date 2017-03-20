@@ -4,7 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import static cn.hzw.graffiti.DrawUtil.drawCircle;
-import static cn.hzw.graffiti.DrawUtil.rotatePointInGriffiti;
+import static cn.hzw.graffiti.DrawUtil.rotatePointInGraffiti;
 
 /**
  * 仿制的定位器
@@ -121,17 +121,17 @@ public class CopyLocation {
 
     public void rotatePosition(int originalDegree, int mRotateDegree, float mOriginalPivotX, float mOriginalPivotY) {
         // 旋转仿制图标的位置
-        float[] coords = rotatePointInGriffiti(mRotateDegree, originalDegree, this.mX,
+        float[] coords = rotatePointInGraffiti(mRotateDegree, originalDegree, this.mX,
                 this.mY, mOriginalPivotX, mOriginalPivotY);
         this.mX = coords[0];
         this.mY = coords[1];
 
-        coords = rotatePointInGriffiti(mRotateDegree, originalDegree, this.mCopyStartX,
+        coords = rotatePointInGraffiti(mRotateDegree, originalDegree, this.mCopyStartX,
                 this.mCopyStartY, mOriginalPivotX, mOriginalPivotY);
         this.mCopyStartX = coords[0];
         this.mCopyStartY = coords[1];
 
-        coords = rotatePointInGriffiti(mRotateDegree, originalDegree, this.mTouchStartX,
+        coords = rotatePointInGraffiti(mRotateDegree, originalDegree, this.mTouchStartX,
                 this.mTouchStartY, mOriginalPivotX, mOriginalPivotY);
         this.mTouchStartX = coords[0];
         this.mTouchStartY = coords[1];

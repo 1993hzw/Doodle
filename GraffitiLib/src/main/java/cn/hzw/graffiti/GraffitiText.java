@@ -63,7 +63,7 @@ public class GraffitiText implements Undoable {
     }
 
     public float[] getXy(int currentDegree) {
-        return rotatePointInGriffiti(currentDegree, mRotateDegree, mX, mY, mPivotX, mPivotY);
+        return rotatePointInGraffiti(currentDegree, mRotateDegree, mX, mY, mPivotX, mPivotY);
     }
 
     public void setText(String text) {
