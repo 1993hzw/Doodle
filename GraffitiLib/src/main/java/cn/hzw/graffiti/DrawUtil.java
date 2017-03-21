@@ -138,7 +138,7 @@ public class DrawUtil {
     }
 
     // xy为在涂鸦中旋转后的坐标，该函数逆向计算出未旋转前的坐标
-    public static float[] restoreRotatePointInGriffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
+    public static float[] restoreRotatePointInGraffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
         int degree = nowDegree - oldDegree;
         if (degree != 0) {
             float px = mOriginalPivotX, py = mOriginalPivotY;

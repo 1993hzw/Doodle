@@ -116,6 +116,8 @@ public static class GraffitiParams implements Parcelable {
 
   [android图片涂鸦，具有设置画笔，撤销，缩放移动等功能(二)](http://blog.csdn.net/u012964944/article/details/52769273)
 
+  [android图片涂鸦——旋转与文字功能的实现原理](http://blog.csdn.net/u012964944/article/details/62889219)
+
 
 ### 更新日志
 
