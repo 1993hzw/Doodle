@@ -93,6 +93,12 @@ public static class GraffitiParams implements Parcelable {
 ```
 
 ### 依赖
+```
+dependencies {
+    compile 'com.forward.androids:androids:1.1'
+}
+```
+
   * [Androids](https://github.com/1993hzw/Androids)
   * [ImageSelector](https://github.com/1993hzw/ImageSelector)
 
