@@ -95,7 +95,7 @@ public static class GraffitiParams implements Parcelable {
 ### 依赖
 ```
 dependencies {
-    compile 'com.forward.androids:androids:1.1'
+    compile 'com.forward.androids:androids:1.1.1'
 }
 ```
 
