@@ -443,9 +443,9 @@ public class GraffitiView extends View {
 
         mCopyLocation.rotatePosition(originalDegree, mRotateDegree, mOriginalPivotX, mOriginalPivotY);
 
-        mBitmap = ImageUtils.rotate(getContext(), mBitmap, r, true);
+        mBitmap = ImageUtils.rotate(mBitmap, r, true);
         if (mBitmapEraser != null) {
-            mBitmapEraser = ImageUtils.rotate(getContext(), mBitmapEraser, r, true);
+            mBitmapEraser = ImageUtils.rotate(mBitmapEraser, r, true);
         }
         setBG();
 
