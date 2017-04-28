@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 import cn.forward.androids.utils.LogUtil;
 import cn.hzw.graffiti.GraffitiActivity;
+import cn.hzw.graffiti.GraffitiParams;
 import cn.hzw.imageselector.ImageLoader;
 import cn.hzw.imageselector.ImageSelectorActivity;
 
@@ -47,7 +48,7 @@ public class MainActivity extends Activity {
                 LogUtil.d("Graffiti", list.get(0));
 
                 // 涂鸦参数
-                GraffitiActivity.GraffitiParams params = new GraffitiActivity.GraffitiParams();
+                GraffitiParams params = new GraffitiParams();
                 // 图片路径
                 params.mImagePath = list.get(0);
 
