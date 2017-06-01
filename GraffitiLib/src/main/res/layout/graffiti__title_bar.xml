@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
              android:background="#232323"
@@ -11,14 +12,15 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <TextView
+        <cn.forward.androids.views.MaskImageView
             android:id="@+id/graffiti_btn_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:text="返回"
-            android:textColor="#ffffff"
-            android:textSize="18dp"/>
+            android:layout_width="@dimen/title_bar_height"
+            android:layout_height="match_parent"
+            android:scaleType="centerInside"
+            android:src="@drawable/graffiti_btn_back"
+            android:visibility="visible"
+            app:miv_is_ignore_alpha="true"
+            app:miv_mask_color="#a8a8a8"/>
 
         <FrameLayout
             android:layout_width="1dp"
@@ -59,13 +61,15 @@
                 android:visibility="visible"/>
         </FrameLayout>
 
-        <ImageView
+        <cn.forward.androids.views.MaskImageView
             android:id="@+id/graffiti_btn_finish"
             android:layout_width="@dimen/title_bar_height"
-            android:layout_height="@dimen/title_bar_height"
+            android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:src="@drawable/graffiti_btn_finish"
-            android:visibility="visible"/>
+            android:visibility="visible"
+            app:miv_is_ignore_alpha="true"
+            app:miv_mask_color="#a8a8a8"/>
     </LinearLayout>
 
 </FrameLayout>

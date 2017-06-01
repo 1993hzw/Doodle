@@ -43,6 +43,20 @@ public class GraffitiActivity extends Activity {
 ```
 
 ```java
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+   if (requestCode == REQ_CODE_GRAFFITI) {
+        if (resultCode == GraffitiActivity.RESULT_OK) {
+        // 获取涂鸦后的图片
+            String path = data.getStringExtra(GraffitiActivity.KEY_IMAGE_PATH);
+            ...
+        } else if (resultCode == GraffitiActivity.RESULT_ERROR) {
+           ...
+        }
+    }
+}
+```
+
+```java
  /**
  * 涂鸦参数
  */
@@ -95,7 +109,7 @@ public static class GraffitiParams implements Parcelable {
 ### 依赖
 ```
 dependencies {
-    compile 'com.forward.androids:androids:1.1.1'
+    compile 'com.forward.androids:androids:1.1.4'
 }
 ```
 

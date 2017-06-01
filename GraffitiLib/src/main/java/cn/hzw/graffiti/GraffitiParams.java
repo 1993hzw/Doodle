@@ -1,10 +1,12 @@
 package cn.hzw.graffiti;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.view.View;
 
 /**
  * 涂鸦参数
@@ -106,5 +108,33 @@ public class GraffitiParams implements Parcelable {
     @Override
     public int describeContents() {
         return 0;
+    }
+
+    private static DialogInterceptor sDialogInterceptor;
+
+    /**
+     * 设置涂鸦中对话框的拦截器，如点击返回按钮（或返回键）弹出保存对话框，可以进行拦截，弹出自定义的对话框
+     * 切记：需要自行处理内存泄漏的问题！！！
+     */
+    public static void setDialogInterceptor(DialogInterceptor interceptor) {
+        sDialogInterceptor = interceptor;
+    }
+
+    public static DialogInterceptor getDialogInterceptor() {
+        return sDialogInterceptor;
+    }
+
+    public enum DialogType {
+        SAVE, CLEAR_ALL, COLOR_PICKER;
+    }
+
+    public interface DialogInterceptor {
+        /**
+         * @param activity
+         * @param graffitiView
+         * @param dialogType   对话框类型
+         * @return 返回true表示拦截
+         */
+        boolean onShow(Activity activity, GraffitiView graffitiView, DialogType dialogType);
     }
 }

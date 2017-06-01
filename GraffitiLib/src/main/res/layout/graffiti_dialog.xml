@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:id="@+id/dialog_bg"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:background="#88000000"
+             android:fitsSystemWindows="true"
+             android:paddingBottom="10dp"
+             android:paddingTop="10dp"
+             app:injectListener="true">
+
+    <cn.forward.androids.views.SLinearLayout
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
+        android:clickable="true"
+        android:minWidth="280dp"
+        android:orientation="vertical"
+        android:paddingBottom="3.5dp"
+        android:paddingTop="0dp"
+        app:sel_background="#ffffff"
+        app:sel_background_corners="5dp">
+
+        <TextView
+            android:id="@+id/dialog_title"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:ellipsize="middle"
+            android:gravity="center"
+            android:maxLines="1"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:singleLine="true"
+            android:text=""
+            android:textColor="#2b2b2b"
+            android:textSize="20dp"
+            android:textStyle="bold"/>
+
+        <FrameLayout
+            android:id="@+id/dialog_list_title_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#dfdfdf"
+            />
+
+        <TextView
+            android:id="@+id/dialog_enter_msg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:minWidth="50dp"
+            android:padding="20dp"
+            android:textColor="#2b2b2b"
+            android:textSize="16dp"
+            />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+
+            <cn.forward.androids.views.STextView
+                android:id="@+id/dialog_enter_btn_01"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text=""
+                android:textColor="#bebebe"
+                android:textSize="20dp"
+                app:injectListener="true"
+                app:stv_text_color_pressed="#88bebebe"/>
+
+            <cn.forward.androids.views.STextView
+                android:id="@+id/dialog_enter_btn_02"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text=""
+                android:textColor="#11cfff"
+                android:textSize="20dp"
+                app:injectListener="true"
+                app:stv_text_color_pressed="#8811cfff"/>
+        </LinearLayout>
+    </cn.forward.androids.views.SLinearLayout>
+</FrameLayout>
