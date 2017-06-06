@@ -1,14 +1,49 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
+
+def getLocalProperty(String key) {
+    if (!localPropertiesFile().exists()) {
+        return null
+    }
+
+    Properties properties = new Properties()
+    properties.load(localPropertiesFile().newDataInputStream())
+    return properties.getProperty(key)
+}
+
+def localPropertiesFile() {
+    return project.rootProject.file('local.properties');
+}
+
+def isForUpload2Maven() {
+    return getLocalProperty("for.upload") == "true"
+}
+
 buildscript {
     repositories {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0'
+        classpath 'com.android.tools.build:gradle:2.2.3'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
+
+        File file = project.rootProject.file('local.properties')
+        if (file.exists()) {
+            Properties properties = new Properties()
+            properties.load(file.newDataInputStream())
+            boolean upload2maven = properties.getProperty("for.upload") == "true"
+            if (upload2maven) {
+                println 'upload2maven:true'
+                //用于上传Maven生成的文件到Bintray
+                classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
+                //用于打包Maven所需文件
+                classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
+            } else {
+                println 'upload2maven:false'
+            }
+        }
     }
 }
 

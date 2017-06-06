@@ -21,3 +21,7 @@ android {
 dependencies {
     compile 'com.forward.androids:androids:1.1.4'
 }
+
+if (isForUpload2Maven()) {
+    apply from: "https://raw.githubusercontent.com/1993hzw/common/master/bintrayUpload.gradle"
+}
