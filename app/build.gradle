@@ -22,7 +22,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(':GraffitiLib')
+    compile project(':graffiti')
 //    compile project(':ImageSelctorLib-release')
     compile 'cn.hzw.imageselector:library:1.0'
 }

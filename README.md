@@ -20,6 +20,10 @@
     为了更细微地涂鸦，涂鸦过程中可以设置出现放大器．
 
 ### 使用
+```
+compile 'com.hzw.graffiti:graffiti:4.2'
+```
+
 
 ```java
 /**

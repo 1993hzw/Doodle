@@ -1,1 +1,1 @@
-include ':app', ':GraffitiLib'
+include ':app', ':graffiti'
