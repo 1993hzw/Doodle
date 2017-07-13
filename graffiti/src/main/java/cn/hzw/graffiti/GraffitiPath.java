@@ -18,7 +18,7 @@ public class GraffitiPath implements Undoable {
     Path mPath; // 画笔的路径
     float mSx, mSy; // 映射后的起始坐标，（手指点击）
     float mDx, mDy; // 映射后的终止坐标，（手指抬起）
-    Matrix mMatrix = new Matrix(); //　图片的偏移矩阵
+    private Matrix mMatrix = new Matrix(); //　图片的偏移矩阵
     int mRotateDegree = 0; // 旋转的角度（围绕图片中心旋转）
     float mPivotX, mPivotY;
     CopyLocation mCopy;

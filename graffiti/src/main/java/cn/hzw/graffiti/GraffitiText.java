@@ -16,8 +16,8 @@ public class GraffitiText implements Undoable {
     private String mText;
     private float mSize;
     private GraffitiColor mColor;
-    private float mTextRotate;
-    private int mRotateDegree;
+    private float mTextRotate; // 文字的旋转角度
+    private int mRotateDegree; // 图片的旋转角度
     float mPivotX, mPivotY;
     private float mX, mY;
 

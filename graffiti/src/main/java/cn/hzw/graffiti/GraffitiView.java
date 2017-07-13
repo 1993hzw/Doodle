@@ -771,22 +771,30 @@ public class GraffitiView extends View {
         return -graffitiY * (mPrivateScale * mScale) + touchY - mCentreTranY;
     }
 
-    private void addPath(GraffitiPath path) {
+    public CopyOnWriteArrayList<GraffitiPath> getPathStack() {
+        return mPathStack;
+    }
+
+    public CopyOnWriteArrayList<GraffitiText> getTextStack() {
+        return mTextStack;
+    }
+
+    public final void addPath(GraffitiPath path) {
         mPathStack.add(path);
         mUndoStack.add(path);
     }
 
-    private void removePath(GraffitiPath path) {
+    public final void removePath(GraffitiPath path) {
         mPathStack.remove(path);
         mUndoStack.remove(path);
     }
 
-    private void addText(GraffitiText text) {
+    public final void addText(GraffitiText text) {
         mTextStack.add(text);
         mUndoStack.add(text);
     }
 
-    private void removeText(GraffitiText text) {
+    public final void removeText(GraffitiText text) {
         mTextStack.remove(text);
         mUndoStack.remove(text);
     }
@@ -1324,4 +1332,11 @@ public class GraffitiView extends View {
         invalidate();
     }
 
+    public float getOriginalPivotX() {
+        return mOriginalPivotX;
+    }
+
+    public float getOriginalPivotY() {
+        return mOriginalPivotY;
+    }
 }
