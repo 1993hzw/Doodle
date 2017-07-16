@@ -341,7 +341,6 @@ public class GraffitiView extends View {
                                     getCopyLocation());
                         }
                         addPath(path);
-                        draw(mBitmapCanvas, path); // 保存到图片中
                         mIsPainting = false;
                     }
                 }
@@ -782,11 +781,15 @@ public class GraffitiView extends View {
     public final void addPath(GraffitiPath path) {
         mPathStack.add(path);
         mUndoStack.add(path);
+        draw(mBitmapCanvas, path); // 保存到图片中
     }
 
     public final void removePath(GraffitiPath path) {
         mPathStack.remove(path);
         mUndoStack.remove(path);
+        initCanvas();
+        draw(mBitmapCanvas, mPathStack);
+        invalidate();
     }
 
     public final void addText(GraffitiText text) {
