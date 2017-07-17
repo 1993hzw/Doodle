@@ -379,8 +379,8 @@ public class GraffitiActivity extends Activity {
                     return;
                 }
                 if (graffitiText == null) {
-                    mGraffitiView.addSelectableItem(new GraffitiText(text, mGraffitiView.getPaintSize(), mGraffitiView.getColor().copy(),
-                            0, mGraffitiView.getRotateDegree(), x, y, mGraffitiView.getOriginalPivotX(), mGraffitiView.getOriginalPivotY()));
+                    mGraffitiView.addSelectableItem(new GraffitiText(mGraffitiView.getPen(), text, mGraffitiView.getPaintSize(), mGraffitiView.getColor().copy(),
+                            0, mGraffitiView.getGraffitiRotateDegree(), x, y, mGraffitiView.getOriginalPivotX(), mGraffitiView.getOriginalPivotY()));
                 } else {
                     graffitiText.setText(text);
                 }
@@ -431,8 +431,8 @@ public class GraffitiActivity extends Activity {
                 Bitmap bitmap = ImageUtils.createBitmapFromPath(pathList.get(0), mGraffitiView.getWidth() / 4, mGraffitiView.getHeight() / 4);
 
                 if (graffitiBitmap == null) {
-                    mGraffitiView.addSelectableItem(new GraffitiBitmap(bitmap, mGraffitiView.getPaintSize(), mGraffitiView.getColor().copy(),
-                            0, mGraffitiView.getRotateDegree(), x, y, mGraffitiView.getOriginalPivotX(), mGraffitiView.getOriginalPivotY()));
+                    mGraffitiView.addSelectableItem(new GraffitiBitmap(mGraffitiView.getPen(), bitmap, mGraffitiView.getPaintSize(), mGraffitiView.getColor().copy(),
+                            0, mGraffitiView.getGraffitiRotateDegree(), x, y, mGraffitiView.getOriginalPivotX(), mGraffitiView.getOriginalPivotY()));
                 } else {
                     graffitiBitmap.setBitmap(bitmap);
                 }
@@ -634,7 +634,7 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.graffiti_btn_rotate).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mGraffitiView.rotate(mGraffitiView.getRotateDegree() + 90);
+                mGraffitiView.rotate(mGraffitiView.getGraffitiRotateDegree() + 90);
             }
         });
     }

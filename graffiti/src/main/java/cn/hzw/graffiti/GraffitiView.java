@@ -230,9 +230,9 @@ public class GraffitiView extends View {
                 if (isPenSelectable()) {
                     mIsRotatingSelectedItem = false;
                     if (mSelectedItem != null) {
-                        if (mSelectedItem.isCanRotate(mRotateDegree, toX(mTouchX), toY(mTouchY))) {
+                        if (mSelectedItem.isCanRotate(mGraffitiRotateDegree, toX(mTouchX), toY(mTouchY))) {
                             mIsRotatingSelectedItem = true;
-                            float[] xy = mSelectedItem.getXy(mRotateDegree);
+                            float[] xy = mSelectedItem.getXy(mGraffitiRotateDegree);
                             mRotateTextDiff = mSelectedItem.getItemRotate() -
                                     computeAngle(xy[0], xy[1], toX(mTouchX), toY(mTouchY));
                         }
@@ -242,10 +242,10 @@ public class GraffitiView extends View {
                         GraffitiSelectableItem item;
                         for (int i = mSelectableStack.size() - 1; i >= 0; i--) {
                             item = mSelectableStack.get(i);
-                            if (item.isInIt(mRotateDegree, toX(mTouchX), toY(mTouchY), mPen)) {
+                            if (item.isInIt(mGraffitiRotateDegree, toX(mTouchX), toY(mTouchY), mPen)) {
                                 found = true;
                                 mSelectedItem = item;
-                                float[] xy = item.getXy(mRotateDegree);
+                                float[] xy = item.getXy(mGraffitiRotateDegree);
                                 mSelectedItemX = xy[0];
                                 mSelectedItemY = xy[1];
                                 mGraffitiListener.onSelectedItem(mSelectedItem, true);
@@ -325,11 +325,11 @@ public class GraffitiView extends View {
                                     toY(mLastTouchY),
                                     toX((mTouchX + mLastTouchX) / 2),
                                     toY((mTouchY + mLastTouchY) / 2));
-                            path = GraffitiPath.toPath(mPen, mShape, mPaintSize, mColor.copy(), mCurrPath, mRotateDegree, mOriginalPivotX, mOriginalPivotY,
+                            path = GraffitiPath.toPath(mPen, mShape, mPaintSize, mColor.copy(), mCurrPath, mGraffitiRotateDegree, mOriginalPivotX, mOriginalPivotY,
                                     getCopyLocation());
                         } else {  // 画图形
                             path = GraffitiPath.toShape(mPen, mShape, mPaintSize, mColor.copy(),
-                                    toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX), toY(mTouchY), mRotateDegree, mOriginalPivotX, mOriginalPivotY,
+                                    toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX), toY(mTouchY), mGraffitiRotateDegree, mOriginalPivotX, mOriginalPivotY,
                                     getCopyLocation());
                         }
                         addPath(path);
@@ -348,13 +348,13 @@ public class GraffitiView extends View {
 
                     if (isPenSelectable()) {
                         if (mIsRotatingSelectedItem) {
-                            float[] xy = mSelectedItem.getXy(mRotateDegree);
+                            float[] xy = mSelectedItem.getXy(mGraffitiRotateDegree);
                             mSelectedItem.setItemRotate(mRotateTextDiff + computeAngle(
                                     xy[0], xy[1], toX(mTouchX), toY(mTouchY)
                             ));
                         } else {
                             if (mSelectedItem != null) {
-                                mSelectedItem.setXy(mRotateDegree,
+                                mSelectedItem.setXy(mGraffitiRotateDegree,
                                         mSelectedItemX + toX(mTouchX) - toX(mTouchDownX),
                                         mSelectedItemY + toY(mTouchY) - toY(mTouchDownY));
                             }
@@ -401,10 +401,10 @@ public class GraffitiView extends View {
                 onTouchEvent(event);
     }
 
-    private int mRotateDegree = 0; // 相对于初始图片旋转的角度
+    private int mGraffitiRotateDegree = 0; // 相对于初始图片旋转的角度
 
-    public int getRotateDegree() {
-        return mRotateDegree;
+    public int getGraffitiRotateDegree() {
+        return mGraffitiRotateDegree;
     }
 
     /**
@@ -425,14 +425,14 @@ public class GraffitiView extends View {
             degree = 0;
         }
 
-        if (degree == mRotateDegree) {
+        if (degree == mGraffitiRotateDegree) {
             return;
         }
-        int r = degree - mRotateDegree;
-        int originalDegree = mRotateDegree;
-        mRotateDegree = degree;
+        int r = degree - mGraffitiRotateDegree;
+        int originalDegree = mGraffitiRotateDegree;
+        mGraffitiRotateDegree = degree;
 
-        mCopyLocation.rotatePosition(originalDegree, mRotateDegree, mOriginalPivotX, mOriginalPivotY);
+        mCopyLocation.rotatePosition(originalDegree, mGraffitiRotateDegree, mOriginalPivotX, mOriginalPivotY);
 
         mBitmap = ImageUtils.rotate(mBitmap, r, true);
         if (mBitmapEraser != null) {
@@ -565,11 +565,11 @@ public class GraffitiView extends View {
             mPaint.setStrokeWidth(mPaintSize);
             if (mShape == Shape.HAND_WRITE) { // 手写
                 draw(canvas, mPen, mPaint, path, mPen == Pen.ERASER ? mShaderMatrixEraser : mShaderMatrix,
-                        mColor, mRotateDegree);
+                        mColor, mGraffitiRotateDegree);
             } else {  // 画图形
                 draw(canvas, mPen, mShape, mPaint,
                         toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX + span), toY(mTouchY + span),
-                        mPen == Pen.ERASER ? mShaderMatrixEraser : mShaderMatrix, mColor, mRotateDegree);
+                        mPen == Pen.ERASER ? mShaderMatrixEraser : mShaderMatrix, mColor, mGraffitiRotateDegree);
             }
         }
         canvas.restore();
@@ -630,12 +630,12 @@ public class GraffitiView extends View {
     private void draw(Canvas canvas, GraffitiPath path) {
         mPaint.setStrokeWidth(path.mStrokeWidth);
         if (path.mShape == Shape.HAND_WRITE) { // 手写
-            draw(canvas, path.mPen, mPaint, path.getPath(mRotateDegree), path.getMatrix(mRotateDegree), path.mColor, path.mRotateDegree);
+            draw(canvas, path.mPen, mPaint, path.getPath(mGraffitiRotateDegree), path.getMatrix(mGraffitiRotateDegree), path.mColor, path.mRotateDegree);
         } else { // 画图形
-            float[] sxy = path.getSxSy(mRotateDegree);
-            float[] dxy = path.getDxDy(mRotateDegree);
+            float[] sxy = path.getSxSy(mGraffitiRotateDegree);
+            float[] dxy = path.getDxDy(mGraffitiRotateDegree);
             draw(canvas, path.mPen, path.mShape, mPaint,
-                    sxy[0], sxy[1], dxy[0], dxy[1], path.getMatrix(mRotateDegree), path.mColor, path.mRotateDegree);
+                    sxy[0], sxy[1], dxy[0], dxy[1], path.getMatrix(mGraffitiRotateDegree), path.mColor, path.mRotateDegree);
         }
     }
 
@@ -643,13 +643,13 @@ public class GraffitiView extends View {
     private void draw(Canvas canvas, GraffitiSelectableItem selectableItem) {
         canvas.save();
 
-        float[] xy = selectableItem.getXy(mRotateDegree); // 获取旋转图片后文字的起始坐标
+        float[] xy = selectableItem.getXy(mGraffitiRotateDegree); // 获取旋转图片后文字的起始坐标
         canvas.translate(xy[0], xy[1]); // 把坐标系平移到文字矩形范围
-        canvas.rotate(mRotateDegree - selectableItem.getGraffitiRotate() + selectableItem.getItemRotate(), 0, 0); // 旋转坐标系
+        canvas.rotate(mGraffitiRotateDegree - selectableItem.getGraffitiRotate() + selectableItem.getItemRotate(), 0, 0); // 旋转坐标系
 
         // 在变换后的坐标系中画出文字
         if (selectableItem == mSelectedItem) {
-            Rect rect = selectableItem.getBounds(mRotateDegree);
+            Rect rect = selectableItem.getBounds(mGraffitiRotateDegree);
             mPaint.setShader(null);
             // Rect
             /*if (selectableItem.getColor().getType() == GraffitiColor.Type.COLOR) {
@@ -697,15 +697,15 @@ public class GraffitiView extends View {
                 mShaderMatrixColor.reset();
 
                 if (color.getType() == GraffitiColor.Type.BITMAP) { // 旋转底图
-                    if (mRotateDegree != 0) {
+                    if (mGraffitiRotateDegree != 0) {
                         float px = mOriginalPivotX, py = mOriginalPivotY;
-                        if (mRotateDegree == 90 || mRotateDegree == 270) { //　交换中心点的xy坐标
+                        if (mGraffitiRotateDegree == 90 || mGraffitiRotateDegree == 270) { //　交换中心点的xy坐标
                             float t = px;
                             px = py;
                             py = t;
                         }
-                        mShaderMatrixColor.postRotate(mRotateDegree, px, py);
-                        if (Math.abs(mRotateDegree) == 90 || Math.abs(mRotateDegree) == 270) {
+                        mShaderMatrixColor.postRotate(mGraffitiRotateDegree, px, py);
+                        if (Math.abs(mGraffitiRotateDegree) == 90 || Math.abs(mGraffitiRotateDegree) == 270) {
                             mShaderMatrixColor.postTranslate((py - px), -(py - px));
                         }
                     }
@@ -815,11 +815,11 @@ public class GraffitiView extends View {
             if (mEraserImageIsResizeable) {
                 mShaderMatrixEraser.preScale(mBitmap.getWidth() * 1f / mBitmapEraser.getWidth(), mBitmap.getHeight() * 1f / mBitmapEraser.getHeight());
             } else {
-                if (mRotateDegree == 90) {
+                if (mGraffitiRotateDegree == 90) {
                     mShaderMatrixEraser.preTranslate(mBitmap.getWidth() - mBitmapEraser.getWidth(), 0);
-                } else if (mRotateDegree == 180) {
+                } else if (mGraffitiRotateDegree == 180) {
                     mShaderMatrixEraser.preTranslate(mBitmap.getWidth() - mBitmapEraser.getWidth(), mBitmap.getHeight() - mBitmapEraser.getHeight());
-                } else if (mRotateDegree == 270) {
+                } else if (mGraffitiRotateDegree == 270) {
                     mShaderMatrixEraser.preTranslate(0, mBitmap.getHeight() - mBitmapEraser.getHeight());
                 }
             }
@@ -934,7 +934,7 @@ public class GraffitiView extends View {
      * 是否有修改
      */
     public boolean isModified() {
-        return mUndoStack.size() != 0 || mRotateDegree != 0;
+        return mUndoStack.size() != 0 || mGraffitiRotateDegree != 0;
     }
 
     /**

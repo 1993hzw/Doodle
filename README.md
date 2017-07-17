@@ -21,7 +21,7 @@
 
 ### 使用
 ```
-compile 'com.hzw.graffiti:graffiti:4.2'
+compile 'com.hzw.graffiti:graffiti:4.3'
 ```
 
 
@@ -144,6 +144,10 @@ dependencies {
 
 
 ### 更新日志
+
+* 2017-07-17 v4.3(8)
+
+  (1)增加贴图功能.
 
  * 2017-03-16 v4.2(7)
 
