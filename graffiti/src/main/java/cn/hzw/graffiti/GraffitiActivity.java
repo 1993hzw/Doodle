@@ -459,6 +459,7 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.btn_undo).setOnClickListener(mOnClickListener);
         findViewById(R.id.graffiti_selectable_edit).setOnClickListener(mOnClickListener);
         findViewById(R.id.graffiti_selectable_remove).setOnClickListener(mOnClickListener);
+        findViewById(R.id.graffiti_selectable_top).setOnClickListener(mOnClickListener);
         mShapeModeContainer = findViewById(R.id.bar_shape_mode);
         mSelectedTextEditContainer = findViewById(R.id.graffiti_selectable_edit_container);
         mEditContainer = findViewById(R.id.graffiti_edit_container);
@@ -799,6 +800,9 @@ public class GraffitiActivity extends Activity {
                 mDone = true;
             } else if (v.getId() == R.id.graffiti_selectable_remove) {
                 mGraffitiView.removeSelectedItem();
+                mDone = true;
+            } else if (v.getId() == R.id.graffiti_selectable_top) {
+                mGraffitiView.topSelectedItem();
                 mDone = true;
             }
             if (mDone) {

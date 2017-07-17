@@ -54,7 +54,7 @@ public class ImageSelectorView extends FrameLayout implements View.OnClickListen
 
     public ImageSelectorView(Context context, boolean isMultipleChoice, int maxCount, final List<String> pathList, ImageSelectorListener listener) {
         super(context);
-        View view = LayoutInflater.from(getContext()).inflate(R.layout.activity_image_selector, null);
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.graffit_layout_image_selector, null);
         addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         mIsMultipleChoice = isMultipleChoice;

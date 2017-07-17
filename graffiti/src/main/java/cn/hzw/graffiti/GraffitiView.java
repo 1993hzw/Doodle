@@ -791,6 +791,12 @@ public class GraffitiView extends View {
         mUndoStack.remove(item);
     }
 
+    public final void topSelectableItem(GraffitiSelectableItem item) {
+        removeSelectableItem(item);
+        mSelectableStack.add(item);
+        mUndoStack.add(item);
+    }
+
     private void initCanvas() {
         if (mGraffitiBitmap != null) {
             mGraffitiBitmap.recycle();
@@ -1202,6 +1208,14 @@ public class GraffitiView extends View {
         GraffitiSelectableItem oldItem = mSelectedItem;
         mSelectedItem = null;
         mGraffitiListener.onSelectedItem(oldItem, false);
+        invalidate();
+    }
+
+    public void topSelectedItem() {
+        if (mSelectedItem == null) {
+            throw new NullPointerException("Selected item is null!");
+        }
+        topSelectableItem(mSelectedItem);
         invalidate();
     }
 

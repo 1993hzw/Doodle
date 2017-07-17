@@ -73,7 +73,7 @@ public class ImageSelectorAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null) {
-            convertView = View.inflate(mContext, R.layout.imageselector_item, null);
+            convertView = View.inflate(mContext, R.layout.graffiti_imageselector_item, null);
             holder = new ViewHolder();
             holder.mImage = (ImageView) convertView.findViewById(R.id.image);
             holder.mImageSelected = (ImageView) convertView.findViewById(R.id.image_selected);

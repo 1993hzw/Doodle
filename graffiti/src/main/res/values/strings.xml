@@ -9,4 +9,8 @@
     <string name="graffiti_cancel">取消</string>
     <string name="graffiti_success">成功</string>
     <string name="graffiti_failed">失败</string>
+
+    <string name="graffiti_edit">编辑</string>
+    <string name="graffiti_remove">移除</string>
+    <string name="graffiti_top">置顶</string>
 </resources>

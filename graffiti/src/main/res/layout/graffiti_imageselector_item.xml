@@ -21,6 +21,6 @@
         android:layout_marginRight="10dp"
         android:layout_marginTop="10dp"
         android:scaleType="fitXY"
-        android:src="@drawable/imageselector_image_selected"
+        android:src="@drawable/graffiti_imageselector_image_selected"
         />
 </RelativeLayout>

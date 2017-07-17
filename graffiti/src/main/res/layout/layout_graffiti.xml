@@ -381,7 +381,18 @@
                     android:layout_weight="1"
                     android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
                     android:gravity="center"
-                    android:text="编辑"
+                    android:text="@string/graffiti_edit"
+                    android:textColor="#ffffff"
+                    android:textSize="16dp"/>
+
+                <TextView
+                    android:id="@+id/graffiti_selectable_top"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
+                    android:gravity="center"
+                    android:text="@string/graffiti_top"
                     android:textColor="#ffffff"
                     android:textSize="16dp"/>
 
@@ -392,7 +403,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
                     android:gravity="center"
-                    android:text="移除"
+                    android:text="@string/graffiti_remove"
                     android:textColor="#ffffff"
                     android:textSize="16dp"/>
             </LinearLayout>

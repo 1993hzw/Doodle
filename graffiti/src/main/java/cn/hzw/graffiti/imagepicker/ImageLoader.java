@@ -38,7 +38,7 @@ public class ImageLoader {
         mImageLoaderGroup = new ImageLoaderGroup(context, memoryCacheSize, 25 * 1024 * 1024);
         mImageLoaderGroup.addImageLoader(new LocalImagerLoader(context));
         ImageLoaderConfig config = mImageLoaderGroup.getImageLoaderConfig();
-        config.setLoadingDrawable(context.getResources().getDrawable(R.drawable.imageselector_loading));
+        config.setLoadingDrawable(context.getResources().getDrawable(R.drawable.graffit_imageselector_loading));
         config.setLoadFailedDrawable(new ColorDrawable(Color.RED));
     }
 
