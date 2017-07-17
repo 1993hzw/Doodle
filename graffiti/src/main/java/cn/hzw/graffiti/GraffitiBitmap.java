@@ -1,19 +1,24 @@
 package cn.hzw.graffiti;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
-import static cn.hzw.graffiti.DrawUtil.*;
+import static cn.hzw.graffiti.DrawUtil.GRAFFITI_PIXEL_UNIT;
+import static cn.hzw.graffiti.DrawUtil.restoreRotatePointInGraffiti;
+import static cn.hzw.graffiti.DrawUtil.rotatePoint;
+import static cn.hzw.graffiti.DrawUtil.rotatePointInGraffiti;
 
 /**
  * Created by huangziwei on 2017/3/16.
  */
 
-public class GraffitiText implements Undoable, GraffitiSelectableItem {
+public class GraffitiBitmap implements Undoable, GraffitiSelectableItem {
+
 
     private final static Paint sPaint = new Paint();
-    private String mText;
+    private Bitmap mBitmap;
     private float mSize;
     private GraffitiColor mColor;
     private float mTextRotate; // 文字的旋转角度
@@ -23,14 +28,17 @@ public class GraffitiText implements Undoable, GraffitiSelectableItem {
 
     private Rect mRect = new Rect();
 
-    public GraffitiText(String mText, float mSize, GraffitiColor mColor, int mTextRotate, int mRotateDegree, float mX, float mY, float px, float py) {
-        this.mText = mText;
-        this.mSize = mSize;
-        this.mColor = mColor;
-        this.mTextRotate = mTextRotate;
-        this.mRotateDegree = mRotateDegree;
-        this.mX = mX;
-        this.mY = mY;
+    private Rect mSrcRect = new Rect();
+    private Rect mDstRect = new Rect();
+
+    public GraffitiBitmap(Bitmap bitmap, float size, GraffitiColor color, int textRotate, int rotateDegree, float x, float y, float px, float py) {
+        this.mBitmap = bitmap;
+        this.mSize = size;
+        this.mColor = color;
+        this.mTextRotate = textRotate;
+        this.mRotateDegree = rotateDegree;
+        this.mX = x;
+        this.mY = y;
         this.mPivotX = px;
         this.mPivotY = py;
 
@@ -38,13 +46,14 @@ public class GraffitiText implements Undoable, GraffitiSelectableItem {
     }
 
     private void resetBounds() {
-        sPaint.setTextSize(mSize);
-        sPaint.setStyle(Paint.Style.FILL);
-        sPaint.getTextBounds(mText, 0, mText.length(), mRect);
+        mRect.set(0, 0, (int) mSize, (int) (mSize * mBitmap.getHeight() / mBitmap.getWidth()));
         mRect.left -= 10 * GRAFFITI_PIXEL_UNIT;
         mRect.top -= 10 * GRAFFITI_PIXEL_UNIT;
         mRect.right += 10 * GRAFFITI_PIXEL_UNIT;
         mRect.bottom += 10 * GRAFFITI_PIXEL_UNIT;
+
+        mSrcRect.set(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
+        mDstRect.set(0, 0, (int) mSize, (int) (mSize * mBitmap.getHeight()) / mBitmap.getWidth());
     }
 
     public float getSize() {
@@ -66,13 +75,13 @@ public class GraffitiText implements Undoable, GraffitiSelectableItem {
         return rotatePointInGraffiti(currentDegree, mRotateDegree, mX, mY, mPivotX, mPivotY);
     }
 
-    public void setText(String text) {
-        mText = text;
+    public void setBitmap(Bitmap bitmap) {
+        mBitmap = bitmap;
         resetBounds();
     }
 
-    public String getText() {
-        return mText;
+    public Bitmap getBitmap() {
+        return mBitmap;
     }
 
     public GraffitiColor getColor() {
@@ -102,7 +111,7 @@ public class GraffitiText implements Undoable, GraffitiSelectableItem {
     // 判断xy是否在文字范围内
     @Override
     public boolean isInIt(int currentRotate, float x, float y, GraffitiView.Pen pen) {
-        if (pen != GraffitiView.Pen.TEXT) {
+        if (pen != GraffitiView.Pen.BITMAP) {
             return false;
         }
         float[] xy = getXy(currentRotate);
@@ -129,9 +138,7 @@ public class GraffitiText implements Undoable, GraffitiSelectableItem {
 
     @Override
     public void draw(Canvas canvas, GraffitiView graffitiView, Paint paint) {
-        paint.setTextSize(getSize());
-        paint.setStyle(Paint.Style.FILL);
-        canvas.drawText(getText(), 0, 0, paint);
+        canvas.drawBitmap(mBitmap, mSrcRect, mDstRect, null);
     }
 
 }

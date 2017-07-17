@@ -1,9 +1,6 @@
 package cn.hzw.graffiti;
 
-import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
@@ -14,15 +11,8 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.os.Build;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -49,6 +39,7 @@ public class GraffitiView extends View {
         COPY, // 仿制
         ERASER, // 橡皮擦
         TEXT, // 文本
+        BITMAP, // 贴图
     }
 
     /**
@@ -68,7 +59,6 @@ public class GraffitiView extends View {
     public static final int ERROR_SAVE = -2;
 
     private static final float VALUE = 1f;
-    private final int TIME_SPAN = 80;
 
     private GraffitiListener mGraffitiListener;
 
@@ -115,7 +105,7 @@ public class GraffitiView extends View {
     // 保存涂鸦操作，便于撤销
     private CopyOnWriteArrayList<Undoable> mUndoStack = new CopyOnWriteArrayList<Undoable>();
     private CopyOnWriteArrayList<GraffitiPath> mPathStack = new CopyOnWriteArrayList<GraffitiPath>();
-    private CopyOnWriteArrayList<GraffitiText> mTextStack = new CopyOnWriteArrayList<>();
+    private CopyOnWriteArrayList<GraffitiSelectableItem> mSelectableStack = new CopyOnWriteArrayList<>();
 
     private Pen mPen;
     private Shape mShape;
@@ -132,12 +122,11 @@ public class GraffitiView extends View {
     private int mAmplifierHorizonX; // 放大器的位置的x坐标，使其水平居中
 
     // 当前选择的文字信息
-    private GraffitiText mSelectedText;
-    private float mSelectedTextX, mSelectedTextY;
-    private boolean mIsRotatingText;
-    private float mRotateTextDiff; // 开始旋转图片时的差值
+    private GraffitiSelectableItem mSelectedItem;
 
-    private float mTextSize;
+    private float mSelectedItemX, mSelectedItemY;
+    private boolean mIsRotatingSelectedItem;
+    private float mRotateTextDiff; // 开始旋转图片时的差值（当前图片与触摸点的角度）
 
     public GraffitiView(Context context, Bitmap bitmap, GraffitiListener listener) {
         this(context, bitmap, null, true, listener);
@@ -238,35 +227,38 @@ public class GraffitiView extends View {
                 mTouchDownX = mTouchX = mLastTouchX = event.getX();
                 mTouchDownY = mTouchY = mLastTouchY = event.getY();
 
-                if (mPen == Pen.TEXT) {
-                    mIsRotatingText = false;
-                    if (mSelectedText != null) {
-                        if (mSelectedText.isCanRotate(mRotateDegree, toX(mTouchX), toY(mTouchY))) {
-                            mIsRotatingText = true;
-                            float[] xy = mSelectedText.getXy(mRotateDegree);
-                            mRotateTextDiff = mSelectedText.getTextRotate() -
+                if (isPenSelectable()) {
+                    mIsRotatingSelectedItem = false;
+                    if (mSelectedItem != null) {
+                        if (mSelectedItem.isCanRotate(mRotateDegree, toX(mTouchX), toY(mTouchY))) {
+                            mIsRotatingSelectedItem = true;
+                            float[] xy = mSelectedItem.getXy(mRotateDegree);
+                            mRotateTextDiff = mSelectedItem.getItemRotate() -
                                     computeAngle(xy[0], xy[1], toX(mTouchX), toY(mTouchY));
                         }
                     }
-                    if (!mIsRotatingText) {
+                    if (!mIsRotatingSelectedItem) {
                         boolean found = false;
-                        for (GraffitiText text : mTextStack) {
-                            if (text.isInIt(mRotateDegree, toX(mTouchX), toY(mTouchY))) {
+                        GraffitiSelectableItem item;
+                        for (int i = mSelectableStack.size() - 1; i >= 0; i--) {
+                            item = mSelectableStack.get(i);
+                            if (item.isInIt(mRotateDegree, toX(mTouchX), toY(mTouchY), mPen)) {
                                 found = true;
-                                mSelectedText = text;
-                                float[] xy = text.getXy(mRotateDegree);
-                                mSelectedTextX = xy[0];
-                                mSelectedTextY = xy[1];
-                                mGraffitiListener.onSelectedText(true);
+                                mSelectedItem = item;
+                                float[] xy = item.getXy(mRotateDegree);
+                                mSelectedItemX = xy[0];
+                                mSelectedItemY = xy[1];
+                                mGraffitiListener.onSelectedItem(mSelectedItem, true);
                                 break;
                             }
                         }
                         if (!found) {
-                            if (mSelectedText != null) { // 取消选定
-                                mSelectedText = null;
-                                mGraffitiListener.onSelectedText(false);
-                            } else { // 新建文本
-                                createText(null, toX(mTouchX), toY(mTouchY));
+                            if (mSelectedItem != null) { // 取消选定
+                                GraffitiSelectableItem old = mSelectedItem;
+                                mSelectedItem = null;
+                                mGraffitiListener.onSelectedItem(old, false);
+                            } else {
+                                mGraffitiListener.onCreateSelectableItem(mPen, toX(mTouchX), toY(mTouchY));
                             }
                         }
                     }
@@ -310,8 +302,8 @@ public class GraffitiView extends View {
                     mTouchY += VALUE;
                 }
 
-                if (mPen == Pen.TEXT) {
-                    mIsRotatingText = false;
+                if (isPenSelectable()) {
+                    mIsRotatingSelectedItem = false;
                 } else {
                     if (mIsPainting) {
                         if (mPen == Pen.COPY) {
@@ -354,17 +346,17 @@ public class GraffitiView extends View {
                     mTouchX = event.getX();
                     mTouchY = event.getY();
 
-                    if (mPen == Pen.TEXT) {
-                        if (mIsRotatingText) {
-                            float[] xy = mSelectedText.getXy(mRotateDegree);
-                            mSelectedText.setTextRotate(mRotateTextDiff + computeAngle(
+                    if (isPenSelectable()) {
+                        if (mIsRotatingSelectedItem) {
+                            float[] xy = mSelectedItem.getXy(mRotateDegree);
+                            mSelectedItem.setItemRotate(mRotateTextDiff + computeAngle(
                                     xy[0], xy[1], toX(mTouchX), toY(mTouchY)
                             ));
                         } else {
-                            if (mSelectedText != null) {
-                                mSelectedText.setXy(mRotateDegree,
-                                        mSelectedTextX + toX(mTouchX) - toX(mTouchDownX),
-                                        mSelectedTextY + toY(mTouchY) - toY(mTouchDownY));
+                            if (mSelectedItem != null) {
+                                mSelectedItem.setXy(mRotateDegree,
+                                        mSelectedItemX + toX(mTouchX) - toX(mTouchDownX),
+                                        mSelectedItemY + toY(mTouchY) - toY(mTouchDownY));
                             }
                         }
                     } else {
@@ -492,7 +484,6 @@ public class GraffitiView extends View {
         DrawUtil.setGraffitiPixelUnit(Util.dp2px(getContext(), 1) / mPrivateScale);
 
         mPaintSize = 30 * GRAFFITI_PIXEL_UNIT;
-        mTextSize = 30 * GRAFFITI_PIXEL_UNIT;
 
         invalidate();
     }
@@ -588,8 +579,8 @@ public class GraffitiView extends View {
             mCopyLocation.drawItSelf(canvas, mPaintSize);
         }
 
-        for (GraffitiText text : mTextStack) {
-            draw(canvas, text);
+        for (GraffitiSelectableItem item : mSelectableStack) {
+            draw(canvas, item);
         }
     }
 
@@ -649,31 +640,31 @@ public class GraffitiView extends View {
     }
 
     // 画出文字
-    private void draw(Canvas canvas, GraffitiText text) {
+    private void draw(Canvas canvas, GraffitiSelectableItem selectableItem) {
         canvas.save();
 
-        float[] xy = text.getXy(mRotateDegree); // 获取旋转图片后文字的起始坐标
+        float[] xy = selectableItem.getXy(mRotateDegree); // 获取旋转图片后文字的起始坐标
         canvas.translate(xy[0], xy[1]); // 把坐标系平移到文字矩形范围
-        canvas.rotate(mRotateDegree - text.getRotateDegree() + text.getTextRotate(), 0, 0); // 旋转坐标系
+        canvas.rotate(mRotateDegree - selectableItem.getGraffitiRotate() + selectableItem.getItemRotate(), 0, 0); // 旋转坐标系
 
         // 在变换后的坐标系中画出文字
-        if (text == mSelectedText) {
-            Rect rect = text.getBounds(mRotateDegree);
+        if (selectableItem == mSelectedItem) {
+            Rect rect = selectableItem.getBounds(mRotateDegree);
             mPaint.setShader(null);
             // Rect
-            if (text.getColor().getType() == GraffitiColor.Type.COLOR) {
+            /*if (selectableItem.getColor().getType() == GraffitiColor.Type.COLOR) {
                 mPaint.setColor(Color.argb(126,
-                        255 - Color.red(text.getColor().getColor()),
-                        255 - Color.green(text.getColor().getColor()),
-                        255 - Color.blue(text.getColor().getColor())));
-            } else {
-                mPaint.setColor(0x88888888);
-            }
+                        255 - Color.red(selectableItem.getColor().getColor()),
+                        255 - Color.green(selectableItem.getColor().getColor()),
+                        255 - Color.blue(selectableItem.getColor().getColor())));
+            } else {*/
+            mPaint.setColor(0x88888888);
+//            }
             mPaint.setStyle(Paint.Style.FILL);
             mPaint.setStrokeWidth(1);
             canvas.drawRect(rect, mPaint);
             // border
-            if (mIsRotatingText) {
+            if (mIsRotatingSelectedItem) {
                 mPaint.setColor(0x88ffd700);
             } else {
                 mPaint.setColor(0x88888888);
@@ -685,15 +676,13 @@ public class GraffitiView extends View {
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setStrokeWidth(4 * GRAFFITI_PIXEL_UNIT);
             canvas.drawLine(rect.right, rect.top + rect.height() / 2,
-                    rect.right + (GraffitiText.getTextCanRotateBound() - 16) * GRAFFITI_PIXEL_UNIT, rect.top + rect.height() / 2, mPaint);
-            canvas.drawCircle(rect.right + (GraffitiText.getTextCanRotateBound() - 8) * GRAFFITI_PIXEL_UNIT, rect.top + rect.height() / 2, 8 * GRAFFITI_PIXEL_UNIT, mPaint);
-
+                    rect.right + (GraffitiSelectableItem.ITEM_CAN_ROTATE_BOUND - 16) * GRAFFITI_PIXEL_UNIT, rect.top + rect.height() / 2, mPaint);
+            canvas.drawCircle(rect.right + (GraffitiSelectableItem.ITEM_CAN_ROTATE_BOUND - 8) * GRAFFITI_PIXEL_UNIT, rect.top + rect.height() / 2, 8 * GRAFFITI_PIXEL_UNIT, mPaint);
 
         }
-        resetPaint(Pen.TEXT, mPaint, null, text.getColor(), text.getRotateDegree());
-        mPaint.setTextSize(text.getSize());
-        mPaint.setStyle(Paint.Style.FILL);
-        canvas.drawText(text.getText(), 0, 0, mPaint);
+        resetPaint(Pen.TEXT, mPaint, null, selectableItem.getColor(), selectableItem.getGraffitiRotate());
+
+        selectableItem.draw(canvas, this, mPaint);
 
         canvas.restore();
 
@@ -774,8 +763,8 @@ public class GraffitiView extends View {
         return mPathStack;
     }
 
-    public CopyOnWriteArrayList<GraffitiText> getTextStack() {
-        return mTextStack;
+    public CopyOnWriteArrayList<GraffitiSelectableItem> getSelectedItemStack() {
+        return mSelectableStack;
     }
 
     public final void addPath(GraffitiPath path) {
@@ -792,14 +781,14 @@ public class GraffitiView extends View {
         invalidate();
     }
 
-    public final void addText(GraffitiText text) {
-        mTextStack.add(text);
-        mUndoStack.add(text);
+    public final void addSelectableItem(GraffitiSelectableItem item) {
+        mSelectableStack.add(item);
+        mUndoStack.add((Undoable) item);
     }
 
-    public final void removeText(GraffitiText text) {
-        mTextStack.remove(text);
-        mUndoStack.remove(text);
+    public final void removeSelectableItem(GraffitiSelectableItem item) {
+        mSelectableStack.remove(item);
+        mUndoStack.remove(item);
     }
 
     private void initCanvas() {
@@ -892,104 +881,8 @@ public class GraffitiView extends View {
         return null;
     }
 
-    private void createText(final GraffitiText graffitiText, final float x, final float y) {
-        Activity activity = (Activity) getContext();
-
-        boolean fullScreen = (activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
-        Dialog dialog = null;
-        if (fullScreen) {
-            dialog = new Dialog(activity,
-                    android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
-        } else {
-            dialog = new Dialog(activity,
-                    android.R.style.Theme_Translucent_NoTitleBar);
-        }
-        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        dialog.show();
-
-        ViewGroup container = (ViewGroup) View.inflate(getContext(), R.layout.graffiti_create_text, null);
-        final Dialog finalDialog = dialog;
-        container.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finalDialog.dismiss();
-            }
-        });
-        dialog.setContentView(container);
-
-        final EditText textView = (EditText) container.findViewById(R.id.graffiti_text_edit);
-        final View cancelBtn = container.findViewById(R.id.graffiti_text_cancel_btn);
-        final TextView enterBtn = (TextView) container.findViewById(R.id.graffiti_text_enter_btn);
-
-        textView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String text = (textView.getText() + "").trim();
-                if (TextUtils.isEmpty(text)) {
-                    enterBtn.setEnabled(false);
-                    enterBtn.setTextColor(0xffb3b3b3);
-                } else {
-                    enterBtn.setEnabled(true);
-                    enterBtn.setTextColor(0xff232323);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-        textView.setText(graffitiText == null ? "" : graffitiText.getText());
-
-        cancelBtn.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cancelBtn.setSelected(true);
-                finalDialog.dismiss();
-            }
-        });
-
-        enterBtn.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finalDialog.dismiss();
-            }
-        });
-
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                if (cancelBtn.isSelected()) {
-                    mGraffitiListener.onEditText(false, null);
-                    return;
-                }
-                String text = (textView.getText() + "").trim();
-                if (TextUtils.isEmpty(text)) {
-                    mGraffitiListener.onEditText(false, null);
-                    return;
-                }
-                if (graffitiText == null) {
-                    addText(new GraffitiText(text, mTextSize, mColor.copy(),
-                            0, mRotateDegree, x, y, mOriginalPivotX, mOriginalPivotY));
-                } else {
-                    graffitiText.setText(text);
-                }
-                mGraffitiListener.onEditText(false, text);
-                invalidate();
-            }
-        });
-
-        if (graffitiText == null) {
-            mGraffitiListener.onEditText(true, null);
-        } else {
-            mGraffitiListener.onEditText(true, graffitiText.getText());
-        }
-
+    public boolean isPenSelectable() {
+        return mPen == Pen.TEXT || mPen == Pen.BITMAP;
     }
 
     // ========================= api ================================
@@ -999,11 +892,11 @@ public class GraffitiView extends View {
      */
     public void save() {
 
-        mSelectedText = null;
+        mSelectedItem = null;
 
         // 保存的时候，把文字画上去
-        for (GraffitiText text : mTextStack) {
-            draw(mBitmapCanvas, text);
+        for (GraffitiSelectableItem item : mSelectableStack) {
+            draw(mBitmapCanvas, item);
         }
         mGraffitiListener.onSaved(mGraffitiBitmap, mBitmapEraser);
     }
@@ -1013,7 +906,7 @@ public class GraffitiView extends View {
      */
     public void clear() {
         mPathStack.clear();
-        mTextStack.clear();
+        mSelectableStack.clear();
         mUndoStack.clear();
         initCanvas();
         invalidate();
@@ -1026,9 +919,9 @@ public class GraffitiView extends View {
         if (mUndoStack.size() > 0) {
             Undoable undoable = mUndoStack.remove(mUndoStack.size() - 1);
             mPathStack.remove(undoable);
-            mTextStack.remove(undoable);
-            if (undoable == mSelectedText) {
-                mSelectedText = null;
+            mSelectableStack.remove(undoable);
+            if (undoable == mSelectedItem) {
+                mSelectedItem = null;
             }
 
             initCanvas();
@@ -1129,13 +1022,15 @@ public class GraffitiView extends View {
         if (pen == null) {
             throw new RuntimeException("Pen can't be null");
         }
+        Pen old = mPen;
         mPen = pen;
         resetMatrix();
 
-        if (mPen != Pen.TEXT) {
-            if (mSelectedText != null) {
-                mSelectedText = null;
-                mGraffitiListener.onSelectedText(false);
+        if (!isPenSelectable() || old != mPen) {
+            if (mSelectedItem != null) {
+                GraffitiSelectableItem oldItem = mSelectedItem;
+                mSelectedItem = null;
+                mGraffitiListener.onSelectedItem(oldItem, false);
             }
         }
 
@@ -1250,88 +1145,63 @@ public class GraffitiView extends View {
         return mPrivateHeight;
     }
 
-
-    public float getTextSize() {
-        return mTextSize;
-    }
-
-    public void setTextSize(float size) {
-        mTextSize = size;
-    }
-
-    public float getSelectedTextSize() {
-        if (mSelectedText == null) {
-            throw new NullPointerException("Selected text is null!");
+    public float getSelectedItemSize() {
+        if (mSelectedItem == null) {
+            throw new NullPointerException("Selected item is null!");
         }
-        return mSelectedText.getSize();
+        return mSelectedItem.getSize();
     }
 
-    public void setSelectedTextSize(float selectedTextSize) {
-        if (mSelectedText == null) {
-            throw new NullPointerException("Selected text is null!");
+    public void setSelectedItemSize(float selectedTextSize) {
+        if (mSelectedItem == null) {
+            throw new NullPointerException("Selected item is null!");
         }
-        mSelectedText.setSize(selectedTextSize);
+        mSelectedItem.setSize(selectedTextSize);
         invalidate();
     }
 
-    public void setSelectedTextColor(int color) {
-        if (mSelectedText == null) {
-            throw new NullPointerException("Selected text is null!");
+    public void setSelectedItemColor(int color) {
+        if (mSelectedItem == null) {
+            throw new NullPointerException("Selected item is null!");
         }
-        mSelectedText.getColor().setColor(color);
+        mSelectedItem.getColor().setColor(color);
         invalidate();
     }
 
-    public void setSelectedTextColor(Bitmap bitmap) {
-        if (mSelectedText == null) {
-            throw new NullPointerException("Selected text is null!");
+    public void setSelectedItemColor(Bitmap bitmap) {
+        if (mSelectedItem == null) {
+            throw new NullPointerException("Selected item is null!");
         }
         if (mBitmap == null) {
             return;
         }
-        mSelectedText.getColor().setColor(bitmap);
+        mSelectedItem.getColor().setColor(bitmap);
         invalidate();
     }
 
-    public GraffitiColor getSelectedTextColor() {
-        if (mSelectedText == null) {
-            throw new NullPointerException("Selected text is null!");
+    public GraffitiColor getSelectedItemColor() {
+        if (mSelectedItem == null) {
+            throw new NullPointerException("Selected item is null!");
         }
-        return mSelectedText.getColor();
+        return mSelectedItem.getColor();
     }
 
-    public boolean isSelectedText() {
-        return mSelectedText != null;
+    public boolean isSelectedItem() {
+        return mSelectedItem != null;
     }
 
-    public String getSelectedText() {
-        if (mSelectedText == null) {
-            return null;
-        }
-        return mSelectedText.getText();
+    public GraffitiSelectableItem getSelectedItem() {
+        return mSelectedItem;
     }
 
-    public void setSelectedText(String text) {
-        if (mSelectedText == null) {
-            throw new NullPointerException("Selected text is null!");
+    public void removeSelectedItem() {
+        if (mSelectedItem == null) {
+            throw new NullPointerException("Selected item is null!");
         }
-        mSelectedText.setText(text);
-    }
-
-    public void editSelectedText() {
-        if (mSelectedText == null) {
-            throw new NullPointerException("Selected text is null!");
-        }
-        createText(mSelectedText, -1, -1);
-    }
-
-    public void removeSelectedText() {
-        if (mSelectedText == null) {
-            throw new NullPointerException("Selected text is null!");
-        }
-        removeText(mSelectedText);
-        mSelectedText = null;
-        mGraffitiListener.onSelectedText(false);
+        removeSelectableItem(mSelectedItem);
+        GraffitiSelectableItem oldItem = mSelectedItem;
+        mSelectedItem = null;
+        mGraffitiListener.onSelectedItem(oldItem, false);
         invalidate();
     }
 

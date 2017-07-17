@@ -85,6 +85,16 @@
                         android:textColor="#000000"
                         android:textSize="13dp"
                         android:visibility="visible"/>
+                    <Button
+                        android:id="@+id/btn_pen_bitmap"
+                        android:layout_width="50dp"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/graffiti_btn_effect_round"
+                        android:scaleType="centerCrop"
+                        android:text="贴图"
+                        android:textColor="#000000"
+                        android:textSize="13dp"
+                        android:visibility="visible"/>
 
                     <FrameLayout
                         android:layout_width="wrap_content"
@@ -341,7 +351,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/graffiti_text_edit_container"
+                android:id="@+id/graffiti_selectable_edit_container"
                 android:layout_width="fill_parent"
                 android:layout_height="@dimen/title_bar_height"
                 android:layout_above="@+id/graffiti_edit_container"
@@ -351,7 +361,7 @@
                 android:visibility="gone">
 
                 <TextView
-                    android:id="@+id/graffiti_text_edit"
+                    android:id="@+id/graffiti_selectable_edit"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -362,7 +372,7 @@
                     android:textSize="16dp"/>
 
                 <TextView
-                    android:id="@+id/graffiti_text_remove"
+                    android:id="@+id/graffiti_selectable_remove"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"

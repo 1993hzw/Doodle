@@ -11,6 +11,7 @@ import cn.forward.androids.utils.LogUtil;
  */
 public class DrawUtil {
 
+    // 涂鸦系统中的单位，根据图片居中时缩放倍数决定。一单位在视觉上的尺寸相同
     public static float GRAFFITI_PIXEL_UNIT = 1;
 
     public static void drawArrow(Canvas canvas, float sx, float sy, float ex,
