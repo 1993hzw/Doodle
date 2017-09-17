@@ -70,9 +70,13 @@ public class GraffitiView extends View {
     private int mOriginalWidth, mOriginalHeight; // 初始图片的尺寸
     private float mOriginalPivotX, mOriginalPivotY; // 图片选择中心
 
-    private float mPrivateScale; // 图片适应屏幕（mScale=1）时的缩放倍数
-    private int mPrivateHeight, mPrivateWidth;// 图片在缩放mPrivateScale倍数的情况下，适应屏幕（mScale=1）时的大小（肉眼看到的在屏幕上的大小）
-    private float mCentreTranX, mCentreTranY;// 图片在缩放mPrivateScale倍数的情况下，居中（mScale=1）时的偏移（肉眼看到的在屏幕上的偏移）
+    private float mPrivateScale; // 图片适应屏幕时的缩放倍数
+    private int mPrivateHeight, mPrivateWidth;// 图片适应屏幕时的大小（View窗口坐标系上的大小）
+    private float mCentreTranX, mCentreTranY;// 图片在适应屏幕时，位于居中位置的偏移（View窗口坐标系上的偏移）
+
+    private float mScale = 1; // 在适应屏幕时的缩放基础上的缩放倍数 （ 图片真实的缩放倍数为 mPrivateScale*mScale ）
+    private float mTransX = 0, mTransY = 0; // 图片在适应屏幕且处于居中位置的基础上的偏移量（ 图片真实偏移量为mCentreTranX + mTransX，View窗口坐标系上的偏移）
+
 
     private BitmapShader mBitmapShader; // 主要用于盖章和橡皮擦（未设置底图）
     private BitmapShader mBitmapShaderEraser; // 橡皮擦底图，当未设置橡皮擦底图时，mBitmapShaderEraser = mBitmapShader
@@ -84,15 +88,6 @@ public class GraffitiView extends View {
     private int mTouchMode; // 触摸模式，用于判断单点或多点触摸
     private float mPaintSize;
     private GraffitiColor mColor; // 画笔底色
-    private float mScale; // 图片在相对于居中时的缩放倍数 （ 图片真实的缩放倍数为 mPrivateScale*mScale ）
-
-    private float mTransX = 0, mTransY = 0; // 图片在相对于居中时且在缩放mScale倍数的情况下的偏移量 （ 图片真实偏移量为　(mCentreTranX + mTransX)/mPrivateScale*mScale ）
-
-/*
-      明白下面一点，对于理解涂鸦坐标系很重要：
-      假设不考虑任何缩放，图片就是肉眼看到的那么大，此时图片的大小width =  mPrivateWidth * mScale ,
-      偏移量x = mCentreTranX + mTransX，而view的大小为width = getWidth()。height和偏移量y以此类推。
-*/
 
     private boolean mIsPainting = false; // 是否正在绘制
     private boolean isJustDrawOriginal; // 是否只绘制原图
@@ -142,12 +137,6 @@ public class GraffitiView extends View {
      */
     public GraffitiView(Context context, Bitmap bitmap, String eraser, boolean eraserImageIsResizeable, GraffitiListener listener) {
         super(context);
-
-       /* //[11,18)对硬件加速支持不完整，clipPath时会crash
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            setLayerType(LAYER_TYPE_SOFTWARE, null);
-        }*/
 
         // 关闭硬件加速，因为bitmap的Canvas不支持硬件加速
         if (Build.VERSION.SDK_INT >= 11) {
@@ -524,11 +513,12 @@ public class GraffitiView extends View {
     }
 
     private void doDraw(Canvas canvas) {
-        float left = (mCentreTranX + mTransX) / (mPrivateScale * mScale);
-        float top = (mCentreTranY + mTransY) / (mPrivateScale * mScale);
+        float left = mCentreTranX + mTransX;
+        float top = mCentreTranY + mTransY;
+
         // 画布和图片共用一个坐标系，只需要处理屏幕坐标系到图片（画布）坐标系的映射关系
-        canvas.scale(mPrivateScale * mScale, mPrivateScale * mScale); // 缩放画布
         canvas.translate(left, top); // 偏移画布
+        canvas.scale(mPrivateScale * mScale, mPrivateScale * mScale); // 缩放画布
 
         canvas.save();
         if (!mIsDrawableOutside) { // 裁剪绘制区域为图片区域
