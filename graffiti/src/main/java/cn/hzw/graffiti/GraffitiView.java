@@ -68,7 +68,7 @@ public class GraffitiView extends View {
     private Canvas mBitmapCanvas;
 
     private int mOriginalWidth, mOriginalHeight; // 初始图片的尺寸
-    private float mOriginalPivotX, mOriginalPivotY; // 图片选择中心
+    private float mOriginalPivotX, mOriginalPivotY; // 图片中心
 
     private float mPrivateScale; // 图片适应屏幕时的缩放倍数
     private int mPrivateHeight, mPrivateWidth;// 图片适应屏幕时的大小（View窗口坐标系上的大小）
@@ -734,6 +734,20 @@ public class GraffitiView extends View {
     }
 
     /**
+     * 将图片坐标x转换成屏幕触摸坐标
+     */
+    public final float toTouchX(float x) {
+        return x * ((mPrivateScale * mScale)) + mCentreTranX + mTransX;
+    }
+
+    /**
+     * 将图片坐标y转换成屏幕触摸坐标
+     */
+    public final float toTouchY(float y) {
+        return y * ((mPrivateScale * mScale)) + mCentreTranY + mTransY;
+    }
+
+    /**
      * 坐标换算
      * （公式由toX()中的公式推算出）
      *
@@ -781,7 +795,11 @@ public class GraffitiView extends View {
         mUndoStack.remove(item);
     }
 
-    public final void topSelectableItem(GraffitiSelectableItem item) {
+    /**
+     * 置顶
+     * @param item
+     */
+    public final void  topSelectableItem(GraffitiSelectableItem item) {
         removeSelectableItem(item);
         mSelectableStack.add(item);
         mUndoStack.add(item);
@@ -994,15 +1012,33 @@ public class GraffitiView extends View {
     }
 
     /**
-     * 缩放倍数，图片真实的缩放倍数为 mPrivateScale*mScale
+     * 围绕某个点缩放
+     * 图片真实的缩放倍数为 mPrivateScale*mScale
      *
      * @param scale
+     * @param pivotX 缩放的中心点
+     * @param pivotY
      */
-    public void setScale(float scale) {
+    public void setScale(float scale, float pivotX, float pivotY) {
+        float touchX = toTouchX(pivotX);
+        float touchY = toTouchY(pivotY);
         this.mScale = scale;
+
+        // 缩放后，偏移图片，以产生围绕某个点缩放的效果
+        mTransX = toTransX(touchX, pivotX);
+        mTransY = toTransY(touchY, pivotY);
+
         judgePosition();
         resetMatrix();
         invalidate();
+    }
+
+    /**
+     * 围绕图片原点（0，0）缩放
+     * @param scale
+     */
+    public void setScale(float scale) {
+        setScale(scale, 0, 0);
     }
 
     public float getScale() {

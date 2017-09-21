@@ -3,6 +3,7 @@ package cn.hzw.graffiti;
 import android.graphics.Bitmap;
 
 /**
+ * 涂鸦框架相关的回调
  * Created by huangziwei on 2017/3/17.
  */
 
@@ -36,6 +37,12 @@ public interface GraffitiListener {
      */
     void onSelectedItem(GraffitiSelectableItem selectableItem, boolean selected);
 
+    /**
+     * 新建一个可选的item
+     * @param pen
+     * @param x
+     * @param y
+     */
     void onCreateSelectableItem(GraffitiView.Pen pen, float x, float y);
 
 }
