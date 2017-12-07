@@ -48,7 +48,7 @@ GraffitiActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_GRAF
 ### 依赖
 ```
 dependencies {
-    compile 'com.forward.androids:androids:1.1.4'
+    compile 'com.forward.androids:androids:1.1.7'
 }
 ```
 
@@ -159,11 +159,11 @@ public static class GraffitiParams implements Parcelable {
 
 ### 更新日志
 
-* 2017-07-17 v4.3.1(9)
+ * 2017-07-17 v4.3.1(9)
 
    （1)修复：切换横竖屏时异常
 
-* 2017-07-17 v4.3(8)
+ * 2017-07-17 v4.3(8)
 
   (1)增加贴图功能.
 
