@@ -201,8 +201,8 @@ public class GraffitiView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         setBG();
-        mCopyLocation.updateLocation(toX(w / 2), toY(h / 2));
         if (!mReady) {
+            mCopyLocation.updateLocation(toX(w / 2), toY(h / 2));
             mGraffitiListener.onReady();
             mReady = true;
         }
@@ -421,17 +421,14 @@ public class GraffitiView extends View {
         int originalDegree = mGraffitiRotateDegree;
         mGraffitiRotateDegree = degree;
 
-        mCopyLocation.rotatePosition(originalDegree, mGraffitiRotateDegree, mOriginalPivotX, mOriginalPivotY);
-
         mBitmap = ImageUtils.rotate(mBitmap, r, true);
         if (mBitmapEraser != null) {
             mBitmapEraser = ImageUtils.rotate(mBitmapEraser, r, true);
         }
         setBG();
 
-        if (mPathStack.size() > 0) {
-            draw(mBitmapCanvas, mPathStack);
-        }
+        mCopyLocation.rotatePosition(originalDegree, mGraffitiRotateDegree, mOriginalPivotX, mOriginalPivotY);
+
         invalidate();
 
     }
@@ -465,6 +462,10 @@ public class GraffitiView extends View {
         initCanvas();
         resetMatrix();
 
+        if (mPathStack.size() > 0) {
+            draw(mBitmapCanvas, mPathStack);
+        }
+
         mAmplifierRadius = Math.min(getWidth(), getHeight()) / 4;
         mAmplifierPath = new Path();
         mAmplifierPath.addCircle(mAmplifierRadius, mAmplifierRadius, mAmplifierRadius, Path.Direction.CCW);
@@ -472,7 +473,9 @@ public class GraffitiView extends View {
 
         DrawUtil.setGraffitiPixelUnit(Util.dp2px(getContext(), 1) / mPrivateScale);
 
-        mPaintSize = 30 * GRAFFITI_PIXEL_UNIT;
+        if (!mReady) { // 只有初始化时才需要设置画笔大小
+            mPaintSize = 30 * GRAFFITI_PIXEL_UNIT;
+        }
 
         invalidate();
     }

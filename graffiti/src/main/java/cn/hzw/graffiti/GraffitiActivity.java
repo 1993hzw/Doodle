@@ -291,6 +291,9 @@ public class GraffitiActivity extends Activity {
     // 添加文字
     private void createGraffitiText(final GraffitiText graffitiText, final float x, final float y) {
         Activity activity = this;
+        if (isFinishing()) {
+            return;
+        }
 
         boolean fullScreen = (activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
         Dialog dialog = null;
@@ -303,6 +306,18 @@ public class GraffitiActivity extends Activity {
         }
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         dialog.show();
+        final Dialog finalDialog1 = dialog;
+        activity.getWindow().getDecorView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+                       finalDialog1.dismiss();
+            }
+        });
 
         ViewGroup container = (ViewGroup) View.inflate(getApplicationContext(), R.layout.graffiti_create_text, null);
         final Dialog finalDialog = dialog;
