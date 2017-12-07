@@ -29,7 +29,7 @@
 
 ### 使用
 ```
-compile 'com.hzw.graffiti:graffiti:4.3'
+compile 'com.hzw.graffiti:graffiti:4.3.1'
 ```
 
 ```
