@@ -18,12 +18,45 @@
   * 放大器
 
     为了更细微地涂鸦，涂鸦过程中可以设置出现放大器．
+    
+    
+### 界面
+
+ ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/01.png)
+ ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/02.png)
+ ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/03.png)
+
 
 ### 使用
 ```
 compile 'com.hzw.graffiti:graffiti:4.3'
 ```
 
+```
+// 涂鸦参数
+GraffitiParams params = new GraffitiParams();
+// 图片路径
+params.mImagePath = list.get(0);
+// 初始画笔大小
+params.mPaintSize = 20;
+// 启动涂鸦页面
+GraffitiActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_GRAFFITI);
+
+```
+
+
+### 依赖
+```
+dependencies {
+    compile 'com.forward.androids:androids:1.1.4'
+}
+```
+
+  * [Androids](https://github.com/1993hzw/Androids)
+  * [ImageSelector](https://github.com/1993hzw/ImageSelector)
+
+
+### 接口说明
 
 ```java
 /**
@@ -110,25 +143,6 @@ public static class GraffitiParams implements Parcelable {
 }
 ```
 
-### 依赖
-```
-dependencies {
-    compile 'com.forward.androids:androids:1.1.4'
-}
-```
-
-  * [Androids](https://github.com/1993hzw/Androids)
-  * [ImageSelector](https://github.com/1993hzw/ImageSelector)
-
-
-### 界面
-
- ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/01.png)
- ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/02.png)
- ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/03.png)
-
-
-
 ### 相关文章
 
   * 功能介绍：
@@ -145,6 +159,10 @@ dependencies {
 
 ### 更新日志
 
+* 2017-07-17 v4.3.1(9)
+
+   （1)修复：切换横竖屏时异常
+
 * 2017-07-17 v4.3(8)
 
   (1)增加贴图功能.
@@ -152,7 +170,9 @@ dependencies {
  * 2017-03-16 v4.2(7)
 
   (1)美化涂鸦界面.
+  
   (2)修复：移动模式中按返回键异常.
+  
   (3)加入到JCenter仓库.
 
 
@@ -169,6 +189,7 @@ dependencies {
   * 2017-01-24 v3.0(3)
 
   (1)合并图片坐标系和画布坐标系，简化原理．
+  
   (2)更新原理介绍的文章．
 
 

@@ -51,9 +51,9 @@ public class MainActivity extends Activity {
                 GraffitiParams params = new GraffitiParams();
                 // 图片路径
                 params.mImagePath = list.get(0);
-
+                // 初始画笔大小
                 params.mPaintSize = 20;
-
+                // 启动涂鸦页面
                 GraffitiActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_GRAFFITI);
             }
         } else if (requestCode == REQ_CODE_GRAFFITI) {
