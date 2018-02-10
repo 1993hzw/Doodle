@@ -19,7 +19,7 @@ android {
 }
 
 dependencies {
-    compile 'com.forward.androids:androids:1.1.4'
+    compile 'com.forward.androids:androids:1.1.8'
 }
 
 if (isForUpload2Maven()) {
