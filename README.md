@@ -48,7 +48,7 @@ GraffitiActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_GRAF
 ### 依赖
 ```groovy
 dependencies {
-    compile 'com.forward.androids:androids:1.1.7'
+    compile 'com.forward.androids:androids:1.1.8'
 }
 ```
 
