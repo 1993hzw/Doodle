@@ -335,7 +335,7 @@ public class GraffitiView extends View {
                     mTouchX = event.getX();
                     mTouchY = event.getY();
 
-                    if (isPenSelectable()) {
+                    if (isPenSelectable()) { //画笔是否是可选择的
                         if (mIsRotatingSelectedItem) {
                             float[] xy = mSelectedItem.getXy(mGraffitiRotateDegree);
                             mSelectedItem.setItemRotate(mRotateTextDiff + computeAngle(
@@ -640,7 +640,7 @@ public class GraffitiView extends View {
         canvas.translate(xy[0], xy[1]); // 把坐标系平移到文字矩形范围
         canvas.rotate(mGraffitiRotateDegree - selectableItem.getGraffitiRotate() + selectableItem.getItemRotate(), 0, 0); // 旋转坐标系
 
-        // 在变换后的坐标系中画出文字
+        // 在变换后的坐标系中画出selectableItem
         if (selectableItem == mSelectedItem) {
             Rect rect = selectableItem.getBounds(mGraffitiRotateDegree);
             mPaint.setShader(null);

@@ -28,12 +28,12 @@ public abstract class GraffitiSelectableItem implements Undoable {
 
     private Rect mRect = new Rect();
 
-    public GraffitiSelectableItem(GraffitiView.Pen pen, float size, GraffitiColor color, int textRotate, int rotateDegree, float x, float y, float px, float py) {
+    public GraffitiSelectableItem(GraffitiView.Pen pen, float size, GraffitiColor color, int itemRotate, int graffitiDegree, float x, float y, float px, float py) {
         this.mPen = pen;
         this.mSize = size;
         this.mColor = color;
-        this.mItemRotate = textRotate;
-        this.mGraffitiDegree = rotateDegree;
+        this.mItemRotate = itemRotate;
+        this.mGraffitiDegree = graffitiDegree;
         this.mX = x;
         this.mY = y;
         this.mPivotX = px;
