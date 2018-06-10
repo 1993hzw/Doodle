@@ -31,6 +31,9 @@ import static cn.hzw.graffiti.DrawUtil.drawRect;
  */
 public class GraffitiView extends View {
 
+    public final static float MAX_SCALE = 4f; // 最大缩放倍数
+    public final static float MIN_SCALE = 0.25f; // 最小缩放倍数
+
     /**
      * 画笔
      */
@@ -76,7 +79,8 @@ public class GraffitiView extends View {
 
     private float mScale = 1; // 在适应屏幕时的缩放基础上的缩放倍数 （ 图片真实的缩放倍数为 mPrivateScale*mScale ）
     private float mTransX = 0, mTransY = 0; // 图片在适应屏幕且处于居中位置的基础上的偏移量（ 图片真实偏移量为mCentreTranX + mTransX，View窗口坐标系上的偏移）
-
+    private float mMinScale = MIN_SCALE; // 最小缩放倍数
+    private float mMaxScale = MAX_SCALE; // 最大缩放倍数
 
     private BitmapShader mBitmapShader; // 主要用于盖章和橡皮擦（未设置底图）
     private BitmapShader mBitmapShaderEraser; // 橡皮擦底图，当未设置橡皮擦底图时，mBitmapShaderEraser = mBitmapShader
@@ -123,6 +127,9 @@ public class GraffitiView extends View {
     private boolean mIsRotatingSelectedItem;
     private float mRotateTextDiff; // 开始旋转图片时的差值（当前图片与触摸点的角度）
 
+    private TouchGestureDetector mTouchGestureDetector;
+    private GraffitiGestureListener mGraffitiGestureListener;
+
     public GraffitiView(Context context, Bitmap bitmap, GraffitiListener listener) {
         this(context, bitmap, null, true, listener);
     }
@@ -130,12 +137,12 @@ public class GraffitiView extends View {
     /**
      * @param context
      * @param bitmap
-     * @param eraser                  橡皮擦的底图，如果涂鸦保存后再次涂鸦，传入涂鸦前的底图，则可以实现擦除涂鸦的效果．
-     * @param eraserImageIsResizeable 橡皮擦底图是否调整大小，如果可以则调整到跟当前涂鸦图片一样的大小．
+     * @param eraserBitmapPath        橡皮擦的底图，如果涂鸦保存后再次涂鸦，传入涂鸦前的底图，则可以实现擦除涂鸦的效果．
+     * @param eraserImageIsResizeable 橡皮擦底图是否调整大小，如果是则调整到跟当前涂鸦图片一样的大小．
      * @param listener
      * @
      */
-    public GraffitiView(Context context, Bitmap bitmap, String eraser, boolean eraserImageIsResizeable, GraffitiListener listener) {
+    public GraffitiView(Context context, Bitmap bitmap, String eraserBitmapPath, boolean eraserImageIsResizeable, GraffitiListener listener) {
         super(context);
 
         // 关闭硬件加速，因为bitmap的Canvas不支持硬件加速
@@ -152,8 +159,8 @@ public class GraffitiView extends View {
             throw new RuntimeException("Bitmap is null!!!");
         }
 
-        if (eraser != null) {
-            mBitmapEraser = ImageUtils.createBitmapFromPath(eraser, getContext());
+        if (eraserBitmapPath != null) {
+            mBitmapEraser = ImageUtils.createBitmapFromPath(eraserBitmapPath, getContext());
         }
         mEraserImageIsResizeable = eraserImageIsResizeable;
 
@@ -195,6 +202,10 @@ public class GraffitiView extends View {
         mAmplifierPaint.setStrokeJoin(Paint.Join.ROUND);
         mAmplifierPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
         mAmplifierPaint.setStrokeWidth(Util.dp2px(getContext(), 10));
+
+        mGraffitiGestureListener = new GraffitiGestureListener(this);
+        mTouchGestureDetector = new TouchGestureDetector(getContext(), mGraffitiGestureListener);
+
     }
 
     @Override
@@ -208,8 +219,50 @@ public class GraffitiView extends View {
         }
     }
 
+    private boolean mHasScaledOnTouchEvent = false; // 当前事件序列中缩放过
+    private long mTouchDownTime = 0;
+    private final long MIN_GRAFFITI_TIME = 500;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                mHasScaledOnTouchEvent = false;
+                mTouchDownTime = System.currentTimeMillis();
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                mHasScaledOnTouchEvent = false;
+                break;
+        }
+
+        mTouchGestureDetector.onTouchEvent(event);// 首先判断手势，比如双指缩放
+
+        if (mHasScaledOnTouchEvent || // 当前序列缩放过，则不能涂鸦，只能等到下一个事件序列
+                mGraffitiGestureListener.isScaling()) {
+            if (!mHasScaledOnTouchEvent) { // 开始缩放，取消涂鸦
+                mHasScaledOnTouchEvent = true;
+                MotionEvent fixedEvent = MotionEvent.obtain(event);
+                if (System.currentTimeMillis() - mTouchDownTime > MIN_GRAFFITI_TIME) {
+                    fixedEvent.setAction(MotionEvent.ACTION_CANCEL);
+                } else { // 短时间内马上缩放说明没有涂鸦意图，放弃涂鸦
+                    fixedEvent.setAction(MotionEvent.ACTION_HOVER_EXIT); // 放弃涂鸦
+                }
+                doGraffitiTouchEvent(fixedEvent);
+            }
+            return true;
+        }
+
+        return doGraffitiTouchEvent(event);
+    }
+
+    /**
+     * 处理涂鸦事件
+     *
+     * @param event
+     * @return
+     */
+    private boolean doGraffitiTouchEvent(MotionEvent event) {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 mTouchMode = 1;
@@ -328,6 +381,9 @@ public class GraffitiView extends View {
 
                 invalidate();
                 return true;
+            case MotionEvent.ACTION_HOVER_EXIT: // 用于判断放弃涂鸦
+                mIsPainting = false;
+                return true;
             case MotionEvent.ACTION_MOVE:
                 if (mTouchMode < 2) { // 单点滑动
                     mLastTouchX = mTouchX;
@@ -385,9 +441,7 @@ public class GraffitiView extends View {
                 invalidate();
                 return true;
         }
-        return super.
-
-                onTouchEvent(event);
+        return false;
     }
 
     private int mGraffitiRotateDegree = 0; // 相对于初始图片旋转的角度
@@ -800,9 +854,10 @@ public class GraffitiView extends View {
 
     /**
      * 置顶
+     *
      * @param item
      */
-    public final void  topSelectableItem(GraffitiSelectableItem item) {
+    public final void topSelectableItem(GraffitiSelectableItem item) {
         removeSelectableItem(item);
         mSelectableStack.add(item);
         mUndoStack.add(item);
@@ -1023,6 +1078,12 @@ public class GraffitiView extends View {
      * @param pivotY
      */
     public void setScale(float scale, float pivotX, float pivotY) {
+        if (scale < mMinScale) {
+            scale = mMinScale;
+        } else if (scale > mMaxScale) {
+            scale = mMaxScale;
+        }
+
         float touchX = toTouchX(pivotX);
         float touchY = toTouchY(pivotY);
         this.mScale = scale;
@@ -1038,6 +1099,7 @@ public class GraffitiView extends View {
 
     /**
      * 围绕图片原点（0，0）缩放
+     *
      * @param scale
      */
     public void setScale(float scale) {
@@ -1255,4 +1317,23 @@ public class GraffitiView extends View {
     public float getOriginalPivotY() {
         return mOriginalPivotY;
     }
+
+    public void setMinScale(float minScale) {
+        mMinScale = minScale;
+        setScale(mScale);
+    }
+
+    public float getMinScale() {
+        return mMinScale;
+    }
+
+    public void setMaxScale(float maxScale) {
+        mMaxScale = maxScale;
+        setScale(mScale);
+    }
+
+    public float getMaxScale() {
+        return mMaxScale;
+    }
+
 }

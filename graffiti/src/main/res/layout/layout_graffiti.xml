@@ -315,18 +315,6 @@
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/btn_move_pic"
-                    android:layout_width="@dimen/title_bar_height"
-                    android:layout_height="@dimen/title_bar_height"
-                    android:layout_marginBottom="12dp"
-                    android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
-
-                    android:text="M"
-                    android:textColor="#ffffff"
-                    android:textSize="16dp"
-                    android:textStyle="bold"/>
-
-                <Button
                     android:id="@+id/btn_centre_pic"
                     android:layout_width="@dimen/title_bar_height"
                     android:layout_height="@dimen/title_bar_height"
@@ -336,22 +324,6 @@
                     android:textColor="#ffffff"
                     android:textSize="16dp"
                     android:textStyle="bold"/>
-
-                <ImageView
-                    android:id="@+id/btn_amplifier"
-                    android:layout_width="@dimen/title_bar_height"
-                    android:layout_height="@dimen/title_bar_height"
-                    android:layout_marginBottom="5dp"
-                    android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
-                    android:src="@drawable/graffiti_btn_add"/>
-
-                <ImageView
-                    android:id="@+id/btn_reduce"
-                    android:layout_width="@dimen/title_bar_height"
-                    android:layout_height="@dimen/title_bar_height"
-                    android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
-                    android:src="@drawable/graffiti_btn_sub"
-                    android:textSize="20dp"/>
 
                 <ImageView
                     android:id="@+id/graffiti_btn_rotate"

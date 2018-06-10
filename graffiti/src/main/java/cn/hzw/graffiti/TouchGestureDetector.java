@@ -31,6 +31,10 @@ public class TouchGestureDetector {
         return ret;
     }
 
+    public boolean isScaleInProgress() {
+        return mScaleGestureDetector.isInProgress();
+    }
+
     public static abstract class OnTouchGestureListener implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener, ScaleGestureDetector.OnScaleGestureListener {
 
         @Override

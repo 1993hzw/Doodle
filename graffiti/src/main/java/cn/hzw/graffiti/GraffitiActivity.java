@@ -106,14 +106,7 @@ public class GraffitiActivity extends Activity {
 
     private View mBtnColor;
 
-    private boolean mIsMovingPic = false; // 是否是平移缩放模式
-
-    private boolean mIsScaling;
-    private final float mMaxScale = 4f; // 最大缩放倍数
-    private final float mMinScale = 0.25f; // 最小缩放倍数
-    private final int TIME_SPAN = 40;
-
-    private View mBtnMovePic, mBtnHidePanel, mSettingsPanel;
+    private View mBtnHidePanel, mSettingsPanel;
     private View mShapeModeContainer;
     private View mSelectedTextEditContainer;
     private View mEditContainer;
@@ -126,9 +119,6 @@ public class GraffitiActivity extends Activity {
     private Runnable mHideDelayRunnable;
     // 触摸屏幕超过一定时间才判断为需要显示设置面板
     private Runnable mShowDelayRunnable;
-
-
-    private TouchGestureDetector mTouchGestureDetector;
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -283,7 +273,8 @@ public class GraffitiActivity extends Activity {
         mGraffitiView.setIsDrawableOutside(mGraffitiParams.mIsDrawableOutside);
         mFrameLayout.addView(mGraffitiView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mOnClickListener = new GraffitiOnClickListener();
-        mTouchGestureDetector = new TouchGestureDetector(this, new GraffitiGestureListener());
+        mGraffitiView.setMinScale(mGraffitiParams.mMinScale);
+        mGraffitiView.setMaxScale(mGraffitiParams.mMaxScale);
 
         initView();
     }
@@ -315,7 +306,7 @@ public class GraffitiActivity extends Activity {
 
             @Override
             public void onViewDetachedFromWindow(View v) {
-                       finalDialog1.dismiss();
+                finalDialog1.dismiss();
             }
         });
 
@@ -474,8 +465,6 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.graffiti_btn_finish).setOnClickListener(mOnClickListener);
         findViewById(R.id.graffiti_btn_back).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_centre_pic).setOnClickListener(mOnClickListener);
-        mBtnMovePic = findViewById(R.id.btn_move_pic);
-        mBtnMovePic.setOnClickListener(mOnClickListener);
         mBtnColor = findViewById(R.id.btn_set_color);
         mBtnColor.setOnClickListener(mOnClickListener);
         mSettingsPanel = findViewById(R.id.graffiti_panel);
@@ -509,11 +498,6 @@ public class GraffitiActivity extends Activity {
             }
         });
 
-        //  放大缩小按钮监听
-        ScaleOnTouchListener onTouchListener = new ScaleOnTouchListener();
-        findViewById(R.id.btn_amplifier).setOnTouchListener(onTouchListener);
-        findViewById(R.id.btn_reduce).setOnTouchListener(onTouchListener);
-
         // 添加涂鸦的触摸监听器，移动图片位置
         mGraffitiView.setOnTouchListener(new View.OnTouchListener() {
 
@@ -541,12 +525,7 @@ public class GraffitiActivity extends Activity {
                     mGraffitiView.setAmplifierScale(-1);
                 }
 
-                if (!mIsMovingPic) { // 非移动缩放模式
-                    return false;  // 交给下一层的涂鸦View处理
-                }
-                // 处理手势
-                mTouchGestureDetector.onTouchEvent(event);
-                return true;
+                return false;
             }
         });
 
@@ -717,13 +696,6 @@ public class GraffitiActivity extends Activity {
             } else if (v.getId() == R.id.btn_centre_pic) {
                 mGraffitiView.centrePic();
                 mDone = true;
-            } else if (v.getId() == R.id.btn_move_pic) {
-                v.setSelected(!v.isSelected());
-                mIsMovingPic = v.isSelected();
-                if (mIsMovingPic) {
-                    Toast.makeText(getApplicationContext(), R.string.graffiti_moving_pic, Toast.LENGTH_SHORT).show();
-                }
-                mDone = true;
             }
             if (mDone) {
                 return;
@@ -774,78 +746,8 @@ public class GraffitiActivity extends Activity {
 
     @Override
     public void onBackPressed() { // 返回键监听
-
-        if (mBtnMovePic.isSelected()) { // 当前是移动缩放模式，则退出该模式
-            mBtnMovePic.performClick();
-            return;
-        } else { // 退出涂鸦
-            findViewById(R.id.graffiti_btn_back).performClick();
-        }
-
+        findViewById(R.id.graffiti_btn_back).performClick();
     }
-
-    /**
-     * 放大缩小
-     */
-    private class ScaleOnTouchListener implements View.OnTouchListener {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                case MotionEvent.ACTION_DOWN:
-                    if (v.getId() == R.id.btn_amplifier) {
-                        scalePic(0.05f);
-                    } else if (v.getId() == R.id.btn_reduce) {
-                        scalePic(-0.05f);
-                    }
-                    v.setSelected(true);
-                    break;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    mIsScaling = false;
-                    v.setSelected(false);
-                    break;
-            }
-            return true;
-        }
-    }
-
-    /**
-     * 缩放
-     *
-     * @param scaleStep 缩放步进
-     */
-    private void scalePic(final float scaleStep) {
-        if (mIsScaling)
-            return;
-        mIsScaling = true;
-
-        final float x = mGraffitiView.toX(mGraffitiView.getWidth() / 2);
-        final float y = mGraffitiView.toY(mGraffitiView.getHeight() / 2);
-
-        final Runnable task = new Runnable() {
-            public void run() {
-                if (!mIsScaling)
-                    return;
-                float scale = mGraffitiView.getScale();
-                scale += scaleStep;
-                if (scale > mMaxScale) {
-                    scale = mMaxScale;
-                    mIsScaling = false;
-                } else if (scale < mMinScale) {
-                    scale = mMinScale;
-                    mIsScaling = false;
-                }
-                // 围绕屏幕中心缩放
-                mGraffitiView.setScale(scale, x, y);
-
-                if (mIsScaling) {
-                    ThreadUtil.getInstance().runOnMainThread(this, TIME_SPAN);
-                }
-            }
-        };
-        task.run();
-    }
-
 
     private void showView(View view) {
         if (view.getVisibility() == View.VISIBLE) {
@@ -872,65 +774,11 @@ public class GraffitiActivity extends Activity {
         view.setVisibility(View.GONE);
 
         if (view == mSettingsPanel
-                && !mBtnHidePanel.isSelected() && !mBtnMovePic.isSelected()) {
+                && !mBtnHidePanel.isSelected()) {
             // 当设置面板隐藏时才显示放大器
             mGraffitiView.setAmplifierScale(mGraffitiParams.mAmplifierScale);
         } else if ((view == mSettingsPanel && mGraffitiView.getAmplifierScale() > 0)) {
             mGraffitiView.setAmplifierScale(-1);
-        }
-    }
-
-    private class GraffitiGestureListener extends TouchGestureDetector.OnTouchGestureListener {
-
-        private Float mLastFocusX;
-        private Float mLastFocusY;
-        // 手势操作相关
-        private float mToucheCentreXOnGraffiti, mToucheCentreYOnGraffiti, mTouchCentreX, mTouchCentreY;
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            mGraffitiView.setTrans(mGraffitiView.getTransX() - distanceX, mGraffitiView.getTransY() - distanceY);
-            return true;
-        }
-
-        @Override
-        public boolean onScaleBegin(ScaleGestureDetector detector) {
-            mLastFocusX = null;
-            mLastFocusY = null;
-            return true;
-        }
-
-        // 手势缩放
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-
-            // 屏幕上的焦点
-            mTouchCentreX = detector.getFocusX();
-            mTouchCentreY = detector.getFocusY();
-            // 对应的图片上的焦点
-            mToucheCentreXOnGraffiti = mGraffitiView.toX(mTouchCentreX);
-            mToucheCentreYOnGraffiti = mGraffitiView.toY(mTouchCentreY);
-
-            if (mLastFocusX != null && mLastFocusY != null) { // 焦点改变
-                final float dx = mTouchCentreX - mLastFocusX;
-                final float dy = mTouchCentreY - mLastFocusY;
-                // 移动图片
-                mGraffitiView.setTrans(mGraffitiView.getTransX() + dx, mGraffitiView.getTransY() + dy);
-            }
-
-            // 缩放图片
-            float scale = mGraffitiView.getScale() * detector.getScaleFactor();
-            if (scale > mMaxScale) {
-                scale = mMaxScale;
-            } else if (scale < mMinScale) {
-                scale = mMinScale;
-            }
-            mGraffitiView.setScale(scale, mToucheCentreXOnGraffiti, mToucheCentreYOnGraffiti);
-
-            mLastFocusX = mTouchCentreX;
-            mLastFocusY = mTouchCentreY;
-
-            return true;
         }
     }
 

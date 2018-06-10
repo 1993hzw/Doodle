@@ -67,6 +67,12 @@ public class GraffitiParams implements Parcelable {
      */
     public float mPaintSize = -1;
 
+    /**
+     * 画布的最小/最大缩放倍数
+     */
+    public float mMinScale = GraffitiView.MIN_SCALE;
+    public float mMaxScale = GraffitiView.MAX_SCALE;
+
     public static final Creator<GraffitiParams> CREATOR = new Creator<GraffitiParams>() {
         @Override
         public GraffitiParams createFromParcel(Parcel in) {
@@ -81,6 +87,8 @@ public class GraffitiParams implements Parcelable {
             params.mAmplifierScale = in.readFloat();
             params.mIsFullScreen = in.readInt() == 1;
             params.mPaintSize = in.readFloat();
+            params.mMinScale = in.readFloat();
+            params.mMaxScale = in.readFloat();
 
             return params;
         }
@@ -103,6 +111,8 @@ public class GraffitiParams implements Parcelable {
         dest.writeFloat(mAmplifierScale);
         dest.writeInt(mIsFullScreen ? 1 : 0);
         dest.writeFloat(mPaintSize);
+        dest.writeFloat(mMinScale);
+        dest.writeFloat(mMaxScale);
     }
 
     @Override
