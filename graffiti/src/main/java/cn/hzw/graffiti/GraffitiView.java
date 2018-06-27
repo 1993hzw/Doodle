@@ -8,18 +8,18 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.Shader;
 import android.os.Build;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import cn.forward.androids.TouchGestureDetector;
 import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.Util;
 
-import static cn.hzw.graffiti.DrawUtil.GRAFFITI_PIXEL_UNIT;
 import static cn.hzw.graffiti.DrawUtil.computeAngle;
 import static cn.hzw.graffiti.DrawUtil.drawArrow;
 import static cn.hzw.graffiti.DrawUtil.drawCircle;
@@ -89,7 +89,6 @@ public class GraffitiView extends View {
     private CopyLocation mCopyLocation; // 仿制的定位器
 
     private Paint mPaint;
-    private int mTouchMode; // 触摸模式，用于判断单点或多点触摸
     private float mPaintSize;
     private GraffitiColor mColor; // 画笔底色
 
@@ -109,7 +108,6 @@ public class GraffitiView extends View {
     private Pen mPen;
     private Shape mShape;
 
-    private float mTouchDownX, mTouchDownY, mLastTouchX, mLastTouchY, mTouchX, mTouchY;
     private Matrix mShaderMatrix; // 仿制图片的变化矩阵
     private Matrix mShaderMatrixEraser; // 橡皮擦底图的变化矩阵
     private Matrix mShaderMatrixColor; // 画笔图片底图的变化矩阵
@@ -127,8 +125,7 @@ public class GraffitiView extends View {
     private boolean mIsRotatingSelectedItem;
     private float mRotateTextDiff; // 开始旋转图片时的差值（当前图片与触摸点的角度）
 
-    private TouchGestureDetector mTouchGestureDetector;
-    private GraffitiGestureListener mGraffitiGestureListener;
+    private float mGraffitiSizeUnit = 1; // 长度单位，不同大小的图片的长度单位不一样。该单位的意义同dp的作用类似，独立于图片之外的单位长度
 
     public GraffitiView(Context context, Bitmap bitmap, GraffitiListener listener) {
         this(context, bitmap, null, true, listener);
@@ -203,9 +200,6 @@ public class GraffitiView extends View {
         mAmplifierPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
         mAmplifierPaint.setStrokeWidth(Util.dp2px(getContext(), 10));
 
-        mGraffitiGestureListener = new GraffitiGestureListener(this);
-        mTouchGestureDetector = new TouchGestureDetector(getContext(), mGraffitiGestureListener);
-
     }
 
     @Override
@@ -219,177 +213,137 @@ public class GraffitiView extends View {
         }
     }
 
-    private boolean mHasScaledOnTouchEvent = false; // 当前事件序列中缩放过
-    private long mTouchDownTime = 0;
-    private final long MIN_GRAFFITI_TIME = 500;
+    private TouchGestureDetector mTouchGestureDetector;
+    private float mTouchX, mTouchY;
+    private float mLastTouchX, mLastTouchY;
+    private float mTouchDownX, mTouchDownY;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (mTouchGestureDetector == null) {
+            mTouchGestureDetector = new TouchGestureDetector(getContext(), new TouchGestureDetector.OnTouchGestureListener() {
 
-        switch (event.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN:
-                mHasScaledOnTouchEvent = false;
-                mTouchDownTime = System.currentTimeMillis();
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                mHasScaledOnTouchEvent = false;
-                break;
-        }
+                boolean mIsBeginScroll = false;
 
-        mTouchGestureDetector.onTouchEvent(event);// 首先判断手势，比如双指缩放
+                // 缩放相关
+                private Float mLastFocusX;
+                private Float mLastFocusY;
+                private float mTouchCentreX, mTouchCentreY;
 
-        if (mHasScaledOnTouchEvent || // 当前序列缩放过，则不能涂鸦，只能等到下一个事件序列
-                mGraffitiGestureListener.isScaling()) {
-            if (!mHasScaledOnTouchEvent) { // 开始缩放，取消涂鸦
-                mHasScaledOnTouchEvent = true;
-                MotionEvent fixedEvent = MotionEvent.obtain(event);
-                if (System.currentTimeMillis() - mTouchDownTime > MIN_GRAFFITI_TIME) {
-                    fixedEvent.setAction(MotionEvent.ACTION_CANCEL);
-                } else { // 短时间内马上缩放说明没有涂鸦意图，放弃涂鸦
-                    fixedEvent.setAction(MotionEvent.ACTION_HOVER_EXIT); // 放弃涂鸦
-                }
-                doGraffitiTouchEvent(fixedEvent);
-            }
-            return true;
-        }
-
-        return doGraffitiTouchEvent(event);
-    }
-
-    /**
-     * 处理涂鸦事件
-     *
-     * @param event
-     * @return
-     */
-    private boolean doGraffitiTouchEvent(MotionEvent event) {
-        switch (event.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN:
-                mTouchMode = 1;
-                mTouchDownX = mTouchX = mLastTouchX = event.getX();
-                mTouchDownY = mTouchY = mLastTouchY = event.getY();
-
-                if (isPenSelectable()) {
-                    mIsRotatingSelectedItem = false;
-                    if (mSelectedItem != null) {
-                        if (mSelectedItem.isCanRotate(mGraffitiRotateDegree, toX(mTouchX), toY(mTouchY))) {
-                            mIsRotatingSelectedItem = true;
-                            float[] xy = mSelectedItem.getXy(mGraffitiRotateDegree);
-                            mRotateTextDiff = mSelectedItem.getItemRotate() -
-                                    computeAngle(xy[0], xy[1], toX(mTouchX), toY(mTouchY));
-                        }
-                    }
-                    if (!mIsRotatingSelectedItem) {
-                        boolean found = false;
-                        GraffitiSelectableItem item;
-                        for (int i = mSelectableStack.size() - 1; i >= 0; i--) {
-                            item = mSelectableStack.get(i);
-                            if (item.isInIt(mGraffitiRotateDegree, toX(mTouchX), toY(mTouchY), mPen)) {
-                                found = true;
-                                mSelectedItem = item;
-                                float[] xy = item.getXy(mGraffitiRotateDegree);
-                                mSelectedItemX = xy[0];
-                                mSelectedItemY = xy[1];
-                                mGraffitiListener.onSelectedItem(mSelectedItem, true);
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            if (mSelectedItem != null) { // 取消选定
-                                GraffitiSelectableItem old = mSelectedItem;
-                                mSelectedItem = null;
-                                mGraffitiListener.onSelectedItem(old, false);
-                            } else {
-                                mGraffitiListener.onCreateSelectableItem(mPen, toX(mTouchX), toY(mTouchY));
-                            }
-                        }
-                    }
-                } else {
-                    // 点击copy
-                    if (mPen == Pen.COPY && mCopyLocation.isInIt(toX(mTouchX), toY(mTouchY), mPaintSize)) {
-                        mCopyLocation.setRelocating(true);
-                        mCopyLocation.setCopying(false);
-                    } else {
-                        if (mPen == Pen.COPY) {
-                            if (!mCopyLocation.isCopying()) {
-                                mCopyLocation.setStartPosition(toX(mTouchX), toY(mTouchY));
-                                resetMatrix();
-                            }
-                            mCopyLocation.setCopying(true);
-                        }
-                        mCopyLocation.setRelocating(false);
-                        mCurrPath = new Path();
-                        mCurrPath.moveTo(toX(mTouchDownX), toY(mTouchDownY));
-                        if (mShape == Shape.HAND_WRITE) { // 手写
-
-                        } else {  // 画图形
-
-                        }
-                        mIsPainting = true;
-                    }
-                }
-                invalidate();
-                return true;
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                mTouchMode = 0;
-                mLastTouchX = mTouchX;
-                mLastTouchY = mTouchY;
-                mTouchX = event.getX();
-                mTouchY = event.getY();
-
-                // 为了仅点击时也能出现绘图，必须移动path
-                if (mTouchDownX == mTouchX && mTouchDownY == mTouchY & mTouchDownX == mLastTouchX && mTouchDownY == mLastTouchY) {
-                    mTouchX += VALUE;
-                    mTouchY += VALUE;
+                @Override
+                public boolean onDown(MotionEvent e) {
+                    mIsBeginScroll = true;
+                    mTouchX = mTouchDownX = e.getX();
+                    mTouchY = mTouchDownY = e.getY();
+                    return true;
                 }
 
-                if (isPenSelectable()) {
-                    mIsRotatingSelectedItem = false;
-                } else {
-                    if (mIsPainting) {
-                        if (mPen == Pen.COPY) {
-                            if (mCopyLocation.isRelocating()) { // 正在定位location
-                                mCopyLocation.updateLocation(toX(mTouchX), toY(mTouchY));
-                                mCopyLocation.setRelocating(false);
-                            } else {
-                                mCopyLocation.updateLocation(mCopyLocation.getCopyStartX() + toX(mTouchX) - mCopyLocation.getTouchStartX(),
-                                        mCopyLocation.getCopyStartY() + toY(mTouchY) - mCopyLocation.getTouchStartY());
-                            }
-                        }
-
-                        GraffitiPath path = null;
-
-                        // 把操作记录到加入的堆栈中
-                        if (mShape == Shape.HAND_WRITE) { // 手写
-                            mCurrPath.quadTo(
-                                    toX(mLastTouchX),
-                                    toY(mLastTouchY),
-                                    toX((mTouchX + mLastTouchX) / 2),
-                                    toY((mTouchY + mLastTouchY) / 2));
-                            path = GraffitiPath.toPath(mPen, mShape, mPaintSize, mColor.copy(), mCurrPath, mGraffitiRotateDegree, mOriginalPivotX, mOriginalPivotY,
-                                    getCopyLocation());
-                        } else {  // 画图形
-                            path = GraffitiPath.toShape(mPen, mShape, mPaintSize, mColor.copy(),
-                                    toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX), toY(mTouchY), mGraffitiRotateDegree, mOriginalPivotX, mOriginalPivotY,
-                                    getCopyLocation());
-                        }
-                        addPath(path);
-                        mIsPainting = false;
-                    }
-                }
-
-                invalidate();
-                return true;
-            case MotionEvent.ACTION_HOVER_EXIT: // 用于判断放弃涂鸦
-                mIsPainting = false;
-                return true;
-            case MotionEvent.ACTION_MOVE:
-                if (mTouchMode < 2) { // 单点滑动
-                    mLastTouchX = mTouchX;
-                    mLastTouchY = mTouchY;
+                /**
+                 * 开始滚动
+                 * @param event
+                 */
+                @Override
+                public void onScrollBegin(MotionEvent event) {
                     mTouchX = event.getX();
                     mTouchY = event.getY();
+
+                    if (isPenSelectable()) {
+                        // 判断是否点中选择区域
+                        mIsRotatingSelectedItem = false;
+                        if (mSelectedItem != null) {
+                            float[] xy = mSelectedItem.getXy(mGraffitiRotateDegree);
+                            mSelectedItemX = xy[0];
+                            mSelectedItemY = xy[1];
+                            // 旋转
+                            if (mSelectedItem.isCanRotate(GraffitiView.this, mGraffitiRotateDegree, toX(mTouchX), toY(mTouchY))) {
+                                mIsRotatingSelectedItem = true;
+                                mRotateTextDiff = mSelectedItem.getItemRotate() -
+                                        computeAngle(xy[0], xy[1], toX(mTouchX), toY(mTouchY));
+                            }
+                        }
+                    } else {
+                        // 点击copy
+                        if (mPen == Pen.COPY && mCopyLocation.isInIt(toX(mTouchX), toY(mTouchY), mPaintSize)) {
+                            mCopyLocation.setRelocating(true);
+                            mCopyLocation.setCopying(false);
+                        } else {
+                            if (mPen == Pen.COPY) {
+                                if (!mCopyLocation.isCopying()) {
+                                    mCopyLocation.setStartPosition(toX(mTouchX), toY(mTouchY));
+                                    resetMatrix();
+                                }
+                                mCopyLocation.setCopying(true);
+                            }
+                            mCopyLocation.setRelocating(false);
+                            mCurrPath = new Path();
+                            mCurrPath.moveTo(toX(mTouchX), toY(mTouchY));
+                            if (mShape == Shape.HAND_WRITE) { // 手写
+
+                            } else {  // 画图形
+
+                            }
+                            mIsPainting = true;
+                        }
+                    }
+                }
+
+                @Override
+                public void onScrollEnd(MotionEvent e) {
+                    // 为了仅点击时也能出现绘图，必须移动path
+                    if (mTouchDownX == mTouchX && mTouchDownY == mTouchY & mTouchDownX == mLastTouchX && mTouchDownY == mLastTouchY) {
+                        mTouchX += VALUE;
+                        mTouchY += VALUE;
+                    }
+
+                    if (isPenSelectable()) {
+                        mIsRotatingSelectedItem = false;
+                    } else {
+                        if (mIsPainting) {
+                            if (mPen == Pen.COPY) {
+                                if (mCopyLocation.isRelocating()) { // 正在定位location
+                                    mCopyLocation.updateLocation(toX(mTouchX), toY(mTouchY));
+                                    mCopyLocation.setRelocating(false);
+                                } else {
+                                    mCopyLocation.updateLocation(mCopyLocation.getCopyStartX() + toX(mTouchX) - mCopyLocation.getTouchStartX(),
+                                            mCopyLocation.getCopyStartY() + toY(mTouchY) - mCopyLocation.getTouchStartY());
+                                }
+                            }
+
+                            GraffitiPath path = null;
+
+                            // 把操作记录到加入的堆栈中
+                            if (mShape == Shape.HAND_WRITE) { // 手写
+                                mCurrPath.quadTo(
+                                        toX(mLastTouchX),
+                                        toY(mLastTouchY),
+                                        toX((mTouchX + mLastTouchX) / 2),
+                                        toY((mTouchY + mLastTouchY) / 2));
+                                path = GraffitiPath.toPath(mPen, mShape, mPaintSize, mColor.copy(), mCurrPath, mGraffitiRotateDegree, mOriginalPivotX, mOriginalPivotY,
+                                        getCopyLocation());
+                            } else {  // 画图形
+                                path = GraffitiPath.toShape(mPen, mShape, mPaintSize, mColor.copy(),
+                                        toX(mTouchDownX), toY(mTouchDownY), toX(mTouchX), toY(mTouchY), mGraffitiRotateDegree, mOriginalPivotX, mOriginalPivotY,
+                                        getCopyLocation());
+                            }
+                            addPath(path);
+                            mIsPainting = false;
+                        }
+                    }
+
+                    invalidate();
+                }
+
+                @Override
+                public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                    if (mIsBeginScroll) { // 标志开始滚动
+                        mIsBeginScroll = false;
+                        onScrollBegin(e1);
+                    }
+
+                    mLastTouchX = mTouchX;
+                    mLastTouchY = mTouchY;
+                    mTouchX = e2.getX();
+                    mTouchY = e2.getY();
 
                     if (isPenSelectable()) { //画笔是否是可选择的
                         if (mIsRotatingSelectedItem) {
@@ -424,25 +378,90 @@ public class GraffitiView extends View {
                             }
                         }
                     }
-                } else { // 多点
-
+                    invalidate();
+                    return true;
                 }
 
-                invalidate();
-                return true;
-            case MotionEvent.ACTION_POINTER_UP:
-                mTouchMode -= 1;
 
-                invalidate();
-                return true;
-            case MotionEvent.ACTION_POINTER_DOWN:
-                mTouchMode += 1;
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    if (isPenSelectable()) {
+                        boolean found = false;
+                        GraffitiSelectableItem item;
+                        for (int i = mSelectableStack.size() - 1; i >= 0; i--) {
+                            item = mSelectableStack.get(i);
+                            if (item.isInIt(GraffitiView.this, toX(mTouchX), toY(mTouchY))) {
+                                found = true;
+                                mSelectedItem = item;
+                                float[] xy = item.getXy(mGraffitiRotateDegree);
+                                mSelectedItemX = xy[0];
+                                mSelectedItemY = xy[1];
+                                mGraffitiListener.onSelectedItem(mSelectedItem, true);
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            if (mSelectedItem != null) { // 取消选定
+                                GraffitiSelectableItem old = mSelectedItem;
+                                mSelectedItem = null;
+                                mGraffitiListener.onSelectedItem(old, false);
+                            } else {
+                                mGraffitiListener.onCreateSelectableItem(mPen, toX(mTouchX), toY(mTouchY));
+                            }
+                        }
+                    } else {
 
-                invalidate();
-                return true;
+                    }
+                    invalidate();
+                    return true;
+                }
+
+                @Override
+                public boolean onScaleBegin(ScaleGestureDetector detector) {
+                    mLastFocusX = null;
+                    mLastFocusY = null;
+                    return true;
+                }
+
+                @Override
+                public boolean onScale(ScaleGestureDetector detector) {
+                    // 屏幕上的焦点
+                    mTouchCentreX = detector.getFocusX();
+                    mTouchCentreY = detector.getFocusY();
+
+                    if (mLastFocusX != null && mLastFocusY != null) { // 焦点改变
+                        final float dx = mTouchCentreX - mLastFocusX;
+                        final float dy = mTouchCentreY - mLastFocusY;
+                        // 移动图片
+                        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                            GraffitiView.this.setTransX(GraffitiView.this.getTransX() + dx);
+                            GraffitiView.this.setTransY(GraffitiView.this.getTransY() + dy);
+                        }
+                    }
+
+                    if (detector.getScaleFactor() > 0.1f) {
+                        // 缩放图片
+                        float scale = GraffitiView.this.getScale() * detector.getScaleFactor();
+                        GraffitiView.this.setScale(scale, toX(mTouchCentreX), toY(mTouchCentreY));
+                    }
+
+                    mLastFocusX = mTouchCentreX;
+                    mLastFocusY = mTouchCentreY;
+
+                    return true;
+                }
+
+            });
+
+            mTouchGestureDetector.setScaleSpanSlop(1);
+            mTouchGestureDetector.setScaleMinSpan(1);
+            mTouchGestureDetector.setIsLongpressEnabled(false);
+            mTouchGestureDetector.setIsScrollAfterScaled(false);
         }
-        return false;
+
+        return mTouchGestureDetector.onTouchEvent(event);
     }
+
 
     private int mGraffitiRotateDegree = 0; // 相对于初始图片旋转的角度
 
@@ -525,10 +544,10 @@ public class GraffitiView extends View {
         mAmplifierPath.addCircle(mAmplifierRadius, mAmplifierRadius, mAmplifierRadius, Path.Direction.CCW);
         mAmplifierHorizonX = (int) (Math.min(getWidth(), getHeight()) / 2 - mAmplifierRadius);
 
-        DrawUtil.setGraffitiPixelUnit(Util.dp2px(getContext(), 1) / mPrivateScale);
+        mGraffitiSizeUnit = Util.dp2px(getContext(), 1) / mPrivateScale;
 
         if (!mReady) { // 只有初始化时才需要设置画笔大小
-            mPaintSize = 30 * GRAFFITI_PIXEL_UNIT;
+            mPaintSize = 30 * mGraffitiSizeUnit;
         }
 
         invalidate();
@@ -686,7 +705,7 @@ public class GraffitiView extends View {
         }
     }
 
-    // 画出文字
+    // 画出GraffitiSelectableItem
     private void draw(Canvas canvas, GraffitiSelectableItem selectableItem) {
         canvas.save();
 
@@ -696,39 +715,10 @@ public class GraffitiView extends View {
 
         // 在变换后的坐标系中画出selectableItem
         if (selectableItem == mSelectedItem) {
-            Rect rect = selectableItem.getBounds(mGraffitiRotateDegree);
-            mPaint.setShader(null);
-            // Rect
-            /*if (selectableItem.getColor().getType() == GraffitiColor.Type.COLOR) {
-                mPaint.setColor(Color.argb(126,
-                        255 - Color.red(selectableItem.getColor().getColor()),
-                        255 - Color.green(selectableItem.getColor().getColor()),
-                        255 - Color.blue(selectableItem.getColor().getColor())));
-            } else {*/
-            mPaint.setColor(0x88888888);
-//            }
-            mPaint.setStyle(Paint.Style.FILL);
-            mPaint.setStrokeWidth(1);
-            canvas.drawRect(rect, mPaint);
-            // border
-            if (mIsRotatingSelectedItem) {
-                mPaint.setColor(0x88ffd700);
-            } else {
-                mPaint.setColor(0x88888888);
-            }
-            mPaint.setStyle(Paint.Style.STROKE);
-            mPaint.setStrokeWidth(2 * GRAFFITI_PIXEL_UNIT);
-            canvas.drawRect(rect, mPaint);
-            // rotate
-            mPaint.setStyle(Paint.Style.STROKE);
-            mPaint.setStrokeWidth(4 * GRAFFITI_PIXEL_UNIT);
-            canvas.drawLine(rect.right, rect.top + rect.height() / 2,
-                    rect.right + (GraffitiSelectableItem.ITEM_CAN_ROTATE_BOUND - 16) * GRAFFITI_PIXEL_UNIT, rect.top + rect.height() / 2, mPaint);
-            canvas.drawCircle(rect.right + (GraffitiSelectableItem.ITEM_CAN_ROTATE_BOUND - 8) * GRAFFITI_PIXEL_UNIT, rect.top + rect.height() / 2, 8 * GRAFFITI_PIXEL_UNIT, mPaint);
-
+            selectableItem.drawSelectedBackground(canvas, this, mPaint);
         }
-        resetPaint(Pen.TEXT, mPaint, null, selectableItem.getColor(), selectableItem.getGraffitiRotate());
 
+        resetPaint(Pen.TEXT, mPaint, null, selectableItem.getColor(), selectableItem.getGraffitiRotate());
         selectableItem.draw(canvas, this, mPaint);
 
         canvas.restore();
@@ -1249,11 +1239,11 @@ public class GraffitiView extends View {
         return mSelectedItem.getSize();
     }
 
-    public void setSelectedItemSize(float selectedTextSize) {
+    public void setSelectedItemSize(float selectedItemSize) {
         if (mSelectedItem == null) {
             throw new NullPointerException("Selected item is null!");
         }
-        mSelectedItem.setSize(selectedTextSize);
+        mSelectedItem.setSize(selectedItemSize);
         invalidate();
     }
 
@@ -1289,6 +1279,15 @@ public class GraffitiView extends View {
 
     public GraffitiSelectableItem getSelectedItem() {
         return mSelectedItem;
+    }
+
+    /**
+     * 是否正在旋转item
+     *
+     * @return
+     */
+    public boolean isRotatingSelectedItem() {
+        return mIsRotatingSelectedItem;
     }
 
     public void removeSelectedItem() {
@@ -1336,4 +1335,7 @@ public class GraffitiView extends View {
         return mMaxScale;
     }
 
+    public float getGraffitiSizeUnit() {
+        return mGraffitiSizeUnit;
+    }
 }

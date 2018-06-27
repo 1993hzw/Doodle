@@ -230,7 +230,7 @@ public class GraffitiActivity extends Activity {
                                 : mGraffitiView.getPaintSize());
                         mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
                         mPaintSizeBar.setMax((int) (Math.min(mGraffitiView.getBitmapWidthOnView(),
-                                mGraffitiView.getBitmapHeightOnView()) / 3 * DrawUtil.GRAFFITI_PIXEL_UNIT));
+                                mGraffitiView.getBitmapHeightOnView()) / mGraffitiView.getGraffitiSizeUnit()));
                         mPaintSizeView.setText("" + mPaintSizeBar.getProgress());
                         // 选择画笔
                         findViewById(R.id.btn_pen_hand).performClick();
@@ -376,7 +376,7 @@ public class GraffitiActivity extends Activity {
                     return;
                 }
                 if (graffitiText == null) {
-                    mGraffitiView.addSelectableItem(new GraffitiText(mGraffitiView.getPen(), text, mGraffitiView.getPaintSize(), mGraffitiView.getColor().copy(),
+                    mGraffitiView.addSelectableItem(new GraffitiText(text, mGraffitiView.getPaintSize(), mGraffitiView.getColor().copy(),
                             0, mGraffitiView.getGraffitiRotateDegree(), x, y, mGraffitiView.getOriginalPivotX(), mGraffitiView.getOriginalPivotY()));
                 } else {
                     graffitiText.setText(text);
@@ -428,7 +428,7 @@ public class GraffitiActivity extends Activity {
                 Bitmap bitmap = ImageUtils.createBitmapFromPath(pathList.get(0), mGraffitiView.getWidth() / 4, mGraffitiView.getHeight() / 4);
 
                 if (graffitiBitmap == null) {
-                    mGraffitiView.addSelectableItem(new GraffitiBitmap(mGraffitiView.getPen(), bitmap, mGraffitiView.getPaintSize(), mGraffitiView.getColor().copy(),
+                    mGraffitiView.addSelectableItem(new GraffitiBitmap(bitmap, mGraffitiView.getPaintSize(), mGraffitiView.getColor().copy(),
                             0, mGraffitiView.getGraffitiRotateDegree(), x, y, mGraffitiView.getOriginalPivotX(), mGraffitiView.getOriginalPivotY()));
                 } else {
                     graffitiBitmap.setBitmap(bitmap);
@@ -580,19 +580,19 @@ public class GraffitiActivity extends Activity {
         public void onClick(View v) {
             mDone = false;
             if (v.getId() == R.id.btn_pen_hand) {
-                mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
                 mShapeModeContainer.setVisibility(View.VISIBLE);
                 mGraffitiView.setPen(GraffitiView.Pen.HAND);
+                mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_copy) {
-                mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
                 mShapeModeContainer.setVisibility(View.VISIBLE);
                 mGraffitiView.setPen(GraffitiView.Pen.COPY);
+                mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_eraser) {
-                mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
                 mShapeModeContainer.setVisibility(View.VISIBLE);
                 mGraffitiView.setPen(GraffitiView.Pen.ERASER);
+                mPaintSizeBar.setProgress((int) (mGraffitiView.getPaintSize() + 0.5f));
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_text) {
                 mShapeModeContainer.setVisibility(View.GONE);

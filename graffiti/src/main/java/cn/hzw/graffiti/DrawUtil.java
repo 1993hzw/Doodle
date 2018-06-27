@@ -12,7 +12,7 @@ import cn.forward.androids.utils.LogUtil;
 public class DrawUtil {
 
     // 涂鸦系统中的单位，根据图片居中时缩放倍数决定。一单位在视觉上的尺寸相同
-    public static float GRAFFITI_PIXEL_UNIT = 1;
+//    public static float GRAFFITI_PIXEL_UNIT = 1;
 
     public static void drawArrow(Canvas canvas, float sx, float sy, float ex,
                                  float ey, Paint paint) {
@@ -198,13 +198,13 @@ public class DrawUtil {
      *
      * @return 根据此值可以获取相对于当前图片的像素单位，比如文字的大小默认为30*getPixelUnit()，那么在所有涂鸦图片上的默认大小在视觉上看到的大小都一样。
      */
-    public static float getGraffitiPixelUnit() {
+   /* public static float getGraffitiPixelUnit() {
         return GRAFFITI_PIXEL_UNIT;
     }
 
     public static void setGraffitiPixelUnit(float graffitiPixelUnit) {
         DrawUtil.GRAFFITI_PIXEL_UNIT = graffitiPixelUnit;
-    }
+    }*/
 
     public static void main(String[] args){
 

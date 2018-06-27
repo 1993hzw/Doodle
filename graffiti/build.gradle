@@ -19,7 +19,8 @@ android {
 }
 
 dependencies {
-    compile 'com.forward.androids:androids:1.1.8'
+    // https://github.com/1993hzw/Androids
+    compile 'com.forward.androids:androids:1.2.1'
 }
 
 if (isForUpload2Maven()) {
