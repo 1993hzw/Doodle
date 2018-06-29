@@ -91,8 +91,8 @@ public class GraffitiPath extends GraffitiItemBase {
         return path;
     }
 
-
-    protected void doDraw(IGraffiti graffiti, Canvas canvas) {
+    @Override
+    protected void doDraw(Canvas canvas) {
         mPaint.setStrokeWidth(getSize());
         mPaint.setStyle(Paint.Style.STROKE);
         getColor().initColor(mPaint, null);
@@ -100,8 +100,8 @@ public class GraffitiPath extends GraffitiItemBase {
         if (getShape() == IGraffiti.Shape.HAND_WRITE) { // 手写
             canvas.drawPath(mPath, mPaint);
         } else { // 画图形
-            mLocationTemp = getSxSy(graffiti.getRotate());
-            mLocationTemp2 = getDxDy(graffiti.getRotate());
+            mLocationTemp = getSxSy(getGraffiti().getRotate());
+            mLocationTemp2 = getDxDy(getGraffiti().getRotate());
             draw(canvas, mPaint, getShape(), mLocationTemp.x, mLocationTemp.y, mLocationTemp2.x, mLocationTemp2.y);
         }
     }

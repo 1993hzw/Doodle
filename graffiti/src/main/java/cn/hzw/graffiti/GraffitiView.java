@@ -23,6 +23,7 @@ import static cn.hzw.graffiti.util.DrawUtil.computeAngle;
 import static cn.hzw.graffiti.util.DrawUtil.drawCircle;
 
 /**
+ * 涂鸦框架
  * Created by huangziwei on 2016/9/3.
  */
 public class GraffitiView extends View implements IGraffiti {
@@ -432,7 +433,7 @@ public class GraffitiView extends View implements IGraffiti {
 
         if (mPathStack.size() > 0) {
             for (IGraffitiItem item : mPathStack) {
-                item.draw(this, mBitmapCanvas);
+                item.draw(mBitmapCanvas);
             }
         }
 
@@ -540,7 +541,7 @@ public class GraffitiView extends View implements IGraffiti {
             if (mPen == IGraffiti.Pen.ERASER || mPen == IGraffiti.Pen.COPY) {
                 graffitiPath.getColor().setColor(mBitmap); // 图片底色为原图
             }
-            graffitiPath.draw(this, canvas);
+            graffitiPath.draw(canvas);
 
 
         }
@@ -552,7 +553,7 @@ public class GraffitiView extends View implements IGraffiti {
         }
 
         for (IGraffitiSelectableItem item : mSelectableStack) {
-            item.draw(this, canvas);
+            item.draw(canvas);
         }
     }
 
@@ -719,7 +720,7 @@ public class GraffitiView extends View implements IGraffiti {
 
         // 保存的时候，把文字画上去
         for (IGraffitiSelectableItem item : mSelectableStack) {
-            item.draw(this, mBitmapCanvas);
+            item.draw(mBitmapCanvas);
         }
         mGraffitiListener.onSaved(mGraffitiBitmap);
     }
@@ -1037,7 +1038,7 @@ public class GraffitiView extends View implements IGraffiti {
         }
         mItemStack.add(graffitiItem);
         if (!(graffitiItem instanceof IGraffitiSelectableItem)) {
-            graffitiItem.draw(this, mBitmapCanvas); // 保存到图片中
+            graffitiItem.draw(mBitmapCanvas); // 保存到图片中
         }
         invalidate();
     }
@@ -1051,8 +1052,11 @@ public class GraffitiView extends View implements IGraffiti {
         if (!(graffitiItem instanceof IGraffitiSelectableItem)) {
             initCanvas();
             for (IGraffitiItem item : mPathStack) {
-                item.draw(this, mBitmapCanvas);
+                item.draw(mBitmapCanvas);
             }
+        } else if (graffitiItem == mSelectedItem) {
+            mSelectedItem = null;
+            mGraffitiListener.onSelectedItem((IGraffitiSelectableItem) graffitiItem, false);
         }
         invalidate();
     }

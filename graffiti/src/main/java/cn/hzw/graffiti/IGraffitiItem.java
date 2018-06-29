@@ -29,7 +29,7 @@ public interface IGraffitiItem {
 
     public void setColor(GraffitiColor color);
 
-    public void draw(IGraffiti graffiti, Canvas canvas);
+    public void draw(Canvas canvas);
 
     /**
      * 设置在当前涂鸦中的左上角位置

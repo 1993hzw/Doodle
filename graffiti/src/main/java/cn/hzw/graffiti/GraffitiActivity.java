@@ -241,9 +241,9 @@ public class GraffitiActivity extends Activity {
                             if (mGraffiti.getColor().getType() == GraffitiColor.Type.BITMAP) {
                                 mBtnColor.setBackgroundDrawable(new BitmapDrawable(mGraffiti.getColor().getBitmap()));
                             } else {
-                                mBtnColor.setBackgroundColor(mGraffiti.getColor().getColor());
+                                mBtnColor.setBackgroundColor(selectableItem.getColor().getColor());
                             }
-                            mPaintSizeBar.setProgress((int) (mGraffiti.getSize() + 0.5f));
+                            mPaintSizeBar.setProgress((int) (selectableItem.getSize() + 0.5f));
                         } else {
                             mSelectedTextEditContainer.setVisibility(View.GONE);
                             mEditContainer.setVisibility(View.VISIBLE);

@@ -32,7 +32,6 @@ public class GraffitiBitmap extends GraffitiSelectableItemBase {
         return mBitmap;
     }
 
-
     @Override
     public void resetBounds(Rect rect) {
         if (mBitmap == null) {
@@ -47,7 +46,7 @@ public class GraffitiBitmap extends GraffitiSelectableItemBase {
     }
 
     @Override
-    public void doDraw(IGraffiti graffiti, Canvas canvas) {
+    public void doDraw(Canvas canvas) {
         canvas.drawBitmap(mBitmap, mSrcRect, mDstRect, null);
     }
 

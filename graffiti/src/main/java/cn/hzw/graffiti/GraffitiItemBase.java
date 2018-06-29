@@ -43,6 +43,9 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
     @Override
     public void setGraffiti(IGraffiti graffiti) {
         mGraffiti = graffiti;
+        if (graffiti == null) {
+            return;
+        }
         mGraffitiRotate = graffiti.getRotate();
         mOriginalPivotX = graffiti.getOriginalBitmapWidth() / 2;
         mOriginalPivotY = graffiti.getOriginalBitmapHeight() / 2;
@@ -124,22 +127,22 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
     }
 
     @Override
-    public void draw(IGraffiti graffiti, Canvas canvas) {
+    public void draw(Canvas canvas) {
         canvas.save();
 
         mLocationTemp = getLocation(); // 获取旋转后的起始坐标
         canvas.translate(mLocationTemp.x, mLocationTemp.y); // 把坐标系平移到文字矩形范围
-        canvas.rotate(graffiti.getRotate() - mGraffitiRotate + mItemRotate, 0, 0); // 旋转坐标系
+        canvas.rotate(mGraffiti.getRotate() - mGraffitiRotate + mItemRotate, 0, 0); // 旋转坐标系
 
-        if (graffiti.getSelectedItem() == this) {
-            ((IGraffitiSelectableItem) this).drawSelectedBackground(graffiti, canvas);
+        if (mGraffiti.getSelectedItem() == this) {
+            ((IGraffitiSelectableItem) this).drawSelectedBackground(mGraffiti, canvas);
         }
 
-        doDraw(graffiti, canvas);
+        doDraw(canvas);
 
         canvas.restore();
 
     }
 
-    protected abstract void doDraw(IGraffiti graffiti, Canvas canvas);
+    protected abstract void doDraw(Canvas canvas);
 }

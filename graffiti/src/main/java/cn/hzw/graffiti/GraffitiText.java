@@ -12,7 +12,7 @@ import android.text.TextUtils;
 public class GraffitiText extends GraffitiSelectableItemBase {
 
 
-    private final static Paint paint = new Paint();
+    private final Paint mPaint = new Paint();
     private String mText;
 
     public GraffitiText(IGraffiti graffiti, String text, float size, GraffitiColor color, int textRotate, float x, float y) {
@@ -37,17 +37,17 @@ public class GraffitiText extends GraffitiSelectableItemBase {
         if (TextUtils.isEmpty(mText)) {
             return;
         }
-        paint.setTextSize(getSize());
-        paint.setStyle(Paint.Style.FILL);
-        paint.getTextBounds(mText, 0, mText.length(), rect);
+        mPaint.setTextSize(getSize());
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.getTextBounds(mText, 0, mText.length(), rect);
     }
 
     @Override
-    public void doDraw(IGraffiti graffiti, Canvas canvas) {
-        paint.setTextSize(getSize());
-        paint.setColor(getColor().getColor());
-        paint.setStyle(Paint.Style.FILL);
-        canvas.drawText(mText, 0, 0, paint);
+    public void doDraw(Canvas canvas) {
+        getColor().initColor(mPaint, null);
+        mPaint.setTextSize(getSize());
+        mPaint.setStyle(Paint.Style.FILL);
+        canvas.drawText(mText, 0, 0, mPaint);
     }
 
 }
