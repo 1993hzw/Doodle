@@ -9,14 +9,14 @@ import android.text.TextUtils;
  * Created by huangziwei on 2017/3/16.
  */
 
-public class GraffitiText extends GraffitiSelectableItem {
+public class GraffitiText extends GraffitiSelectableItemBase {
 
 
-    private final static Paint sPaint = new Paint();
+    private final static Paint paint = new Paint();
     private String mText;
 
-    public GraffitiText(String text, float size, GraffitiColor color, int textRotate, int rotateDegree, float x, float y, float px, float py) {
-        super(size, color, textRotate, rotateDegree, x, y, px, py);
+    public GraffitiText(String text, float size, GraffitiColor color, int textRotate, int rotateDegree, float x, float y) {
+        super(size, color, textRotate, rotateDegree, x, y);
         this.mText = text;
         resetBounds(getBounds());
     }
@@ -35,13 +35,13 @@ public class GraffitiText extends GraffitiSelectableItem {
         if (TextUtils.isEmpty(mText)) {
             return;
         }
-        sPaint.setTextSize(getSize());
-        sPaint.setStyle(Paint.Style.FILL);
-        sPaint.getTextBounds(mText, 0, mText.length(), rect);
+        paint.setTextSize(getSize());
+        paint.setStyle(Paint.Style.FILL);
+        paint.getTextBounds(mText, 0, mText.length(), rect);
     }
 
     @Override
-    public void draw(Canvas canvas, GraffitiView graffitiView, Paint paint) {
+    public void doDraw(IGraffiti graffiti, Canvas canvas) {
         paint.setTextSize(getSize());
         paint.setStyle(Paint.Style.FILL);
         canvas.drawText(mText, 0, 0, paint);

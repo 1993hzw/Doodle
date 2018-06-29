@@ -35,7 +35,7 @@ public interface GraffitiListener {
      *
      * @param selected 是否选中，false表示从选中变成不选中
      */
-    void onSelectedItem(GraffitiSelectableItem selectableItem, boolean selected);
+    void onSelectedItem(IGraffitiSelectableItem selectableItem, boolean selected);
 
     /**
      * 新建一个可选的item

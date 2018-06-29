@@ -25,17 +25,6 @@ public class GraffitiParams implements Parcelable {
      * 　保存路径是否为目录，如果为目录，则在该目录生成由时间戳组成的图片名称
      */
     public boolean mSavePathIsDir;
-    /**
-     * 　橡皮擦底图，如果为null，则底图为当前图片路径
-     * {@link GraffitiView#GraffitiView(Context, Bitmap, String, boolean, GraffitiListener)}
-     */
-    public String mEraserPath;
-
-    /**
-     * 橡皮擦底图是否调整大小，如果为true则调整到跟当前涂鸦图片一样的大小．
-     * 默认为true
-     */
-    public boolean mEraserImageIsResizeable = true;
 
     /**
      * 触摸时，图片区域外是否绘制涂鸦轨迹
@@ -80,8 +69,6 @@ public class GraffitiParams implements Parcelable {
             params.mImagePath = in.readString();
             params.mSavePath = in.readString();
             params.mSavePathIsDir = in.readInt() == 1;
-            params.mEraserPath = in.readString();
-            params.mEraserImageIsResizeable = in.readInt() == 1;
             params.mIsDrawableOutside = in.readInt() == 1;
             params.mChangePanelVisibilityDelay = in.readLong();
             params.mAmplifierScale = in.readFloat();
@@ -104,8 +91,6 @@ public class GraffitiParams implements Parcelable {
         dest.writeString(mImagePath);
         dest.writeString(mSavePath);
         dest.writeInt(mSavePathIsDir ? 1 : 0);
-        dest.writeString(mEraserPath);
-        dest.writeInt(mEraserImageIsResizeable ? 1 : 0);
         dest.writeInt(mIsDrawableOutside ? 1 : 0);
         dest.writeLong(mChangePanelVisibilityDelay);
         dest.writeFloat(mAmplifierScale);
@@ -141,10 +126,10 @@ public class GraffitiParams implements Parcelable {
     public interface DialogInterceptor {
         /**
          * @param activity
-         * @param graffitiView
+         * @param graffiti
          * @param dialogType   对话框类型
          * @return 返回true表示拦截
          */
-        boolean onShow(Activity activity, GraffitiView graffitiView, DialogType dialogType);
+        boolean onShow(Activity activity, IGraffiti graffiti, DialogType dialogType);
     }
 }

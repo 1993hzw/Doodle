@@ -9,14 +9,14 @@ import android.graphics.Rect;
  * Created by huangziwei on 2017/3/16.
  */
 
-public class GraffitiBitmap extends GraffitiSelectableItem {
+public class GraffitiBitmap extends GraffitiSelectableItemBase {
 
     private Bitmap mBitmap;
     private Rect mSrcRect = new Rect();
     private Rect mDstRect = new Rect();
 
-    public GraffitiBitmap(Bitmap bitmap, float size, GraffitiColor color, int textRotate, int rotateDegree, float x, float y, float px, float py) {
-        super(size, color, textRotate, rotateDegree, x, y, px, py);
+    public GraffitiBitmap(Bitmap bitmap, float size, GraffitiColor color, int textRotate, int rotateDegree, float x, float y) {
+        super(size, color, textRotate, rotateDegree, x, y);
         this.mBitmap = bitmap;
         resetBounds(getBounds());
     }
@@ -45,7 +45,7 @@ public class GraffitiBitmap extends GraffitiSelectableItem {
     }
 
     @Override
-    public void draw(Canvas canvas, GraffitiView graffitiView, Paint paint) {
+    public void doDraw(IGraffiti graffiti, Canvas canvas) {
         canvas.drawBitmap(mBitmap, mSrcRect, mDstRect, null);
     }
 
