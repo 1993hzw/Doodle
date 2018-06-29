@@ -26,11 +26,4 @@ public interface IGraffitiSelectableItem extends IGraffitiItem {
      */
     public boolean isCanRotate(IGraffiti graffiti, float x, float y);
 
-    public void setItemRotate(float degree);
-
-    public float getItemRotate();
-
-    public void setXy(float x, float y);
-
-    public float[] getXy();
 }

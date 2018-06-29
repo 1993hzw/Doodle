@@ -2,9 +2,10 @@ package cn.hzw.graffiti;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.PointF;
 
-import static cn.hzw.graffiti.DrawUtil.drawCircle;
-import static cn.hzw.graffiti.DrawUtil.rotatePointInGraffiti;
+import static cn.hzw.graffiti.util.DrawUtil.drawCircle;
+import static cn.hzw.graffiti.util.DrawUtil.rotatePointInGraffiti;
 
 /**
  * 仿制的定位器
@@ -119,22 +120,24 @@ public class CopyLocation {
         return copyLocation;
     }
 
+    private PointF xy = new PointF();
+
     public void rotatePosition(int originalDegree, int mRotateDegree, float mOriginalPivotX, float mOriginalPivotY) {
         // 旋转仿制图标的位置
-        float[] coords = rotatePointInGraffiti(mRotateDegree, originalDegree, this.mX,
+        PointF coords = rotatePointInGraffiti(xy, mRotateDegree, originalDegree, this.mX,
                 this.mY, mOriginalPivotX, mOriginalPivotY);
-        this.mX = coords[0];
-        this.mY = coords[1];
+        this.mX = coords.x;
+        this.mY = coords.y;
 
-        coords = rotatePointInGraffiti(mRotateDegree, originalDegree, this.mCopyStartX,
+        coords = rotatePointInGraffiti(xy, mRotateDegree, originalDegree, this.mCopyStartX,
                 this.mCopyStartY, mOriginalPivotX, mOriginalPivotY);
-        this.mCopyStartX = coords[0];
-        this.mCopyStartY = coords[1];
+        this.mCopyStartX = coords.x;
+        this.mCopyStartY = coords.y;
 
-        coords = rotatePointInGraffiti(mRotateDegree, originalDegree, this.mTouchStartX,
+        coords = rotatePointInGraffiti(xy, mRotateDegree, originalDegree, this.mTouchStartX,
                 this.mTouchStartY, mOriginalPivotX, mOriginalPivotY);
-        this.mTouchStartX = coords[0];
-        this.mTouchStartY = coords[1];
+        this.mTouchStartX = coords.x;
+        this.mTouchStartY = coords.y;
     }
 
 }

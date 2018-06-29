@@ -1,4 +1,4 @@
-package cn.hzw.graffiti;
+package cn.hzw.graffiti.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import cn.forward.androids.utils.Util;
+import cn.hzw.graffiti.R;
 
 public class ColorPickerDialog extends Dialog {
     private final boolean debug = true;

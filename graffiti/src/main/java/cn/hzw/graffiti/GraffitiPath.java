@@ -1,172 +1,112 @@
 package cn.hzw.graffiti;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PointF;
 
-import static cn.hzw.graffiti.DrawUtil.drawArrow;
-import static cn.hzw.graffiti.DrawUtil.drawCircle;
-import static cn.hzw.graffiti.DrawUtil.drawLine;
-import static cn.hzw.graffiti.DrawUtil.drawRect;
-import static cn.hzw.graffiti.DrawUtil.rotatePoint;
-import static cn.hzw.graffiti.DrawUtil.rotatePointInGraffiti;
+import static cn.hzw.graffiti.util.DrawUtil.drawArrow;
+import static cn.hzw.graffiti.util.DrawUtil.drawCircle;
+import static cn.hzw.graffiti.util.DrawUtil.drawLine;
+import static cn.hzw.graffiti.util.DrawUtil.drawRect;
+import static cn.hzw.graffiti.util.DrawUtil.rotatePointInGraffiti;
 
 /**
  * Created by huangziwei on 2017/3/16.
  */
 
-public class GraffitiPath implements IGraffitiItem {
-    GraffitiView.Pen mPen; // 画笔类型
-    GraffitiView.Shape mShape; // 画笔形状
-    float mStrokeWidth; // 大小
-    GraffitiColor mColor; // 颜色
-    Path mPath; // 画笔的路径
-    float mSx, mSy; // 映射后的起始坐标，（手指点击）
-    float mDx, mDy; // 映射后的终止坐标，（手指抬起）
-    private Matrix mMatrix = new Matrix(); //　图片的偏移矩阵
-    int mRotateDegree = 0; // 旋转的角度（围绕图片中心旋转）
-    float mPivotX, mPivotY;
-    CopyLocation mCopy;
+public class GraffitiPath extends GraffitiItemBase {
+    private Path mPath; // 画笔的路径
+
+    private float mSx, mSy; // 映射后的起始坐标，（手指点击）
+    private float mDx, mDy; // 映射后的终止坐标，（手指抬起）
+
     private Paint mPaint = new Paint();
-    private IGraffiti mGraffiti;
-    private Matrix mShaderMatrixColor = new Matrix(); // 画笔图片底图的变化矩阵
+    private PointF mLocationTemp = new PointF();
+    private PointF mLocationTemp2 = new PointF();
 
-
-    @Override
-    public void setGraffiti(IGraffiti graffiti) {
-        mGraffiti = graffiti;
-        if (graffiti == null) {
-            return;
-        }
-        mPivotX = graffiti.getBitmapWidth() / 2;
-        mPivotY = graffiti.getBitmapHeight() / 2;
-        if (mPen == IGraffiti.Pen.ERASER || mPen == IGraffiti.Pen.COPY) {
-            mColor = new GraffitiColor(graffiti.getBitmap());
-        }
+    public GraffitiPath(IGraffiti graffiti) {
+        super(graffiti);
     }
 
-    public Path getPath(int currentDegree) {
-        int degree = currentDegree - mRotateDegree;
-        if (degree == 0) {
-            return mPath;
-        }
-        Path path = new Path(mPath);
-        Matrix matrix = new Matrix();
-
-        float px = mPivotX, py = mPivotY;
-        if (mRotateDegree == 90 || mRotateDegree == 270) { //　交换中心点的xy坐标
-            float t = px;
-            px = py;
-            py = t;
-        }
-
-        matrix.setRotate(degree, px, py);
-        if (Math.abs(degree) == 90 || Math.abs(degree) == 270) {
-            matrix.postTranslate((py - px), -(py - px));
-        }
-        path.transform(matrix);
-        return path;
+    public GraffitiPath(IGraffiti graffiti, GraffitiPaintAttrs attrs) {
+        super(graffiti, attrs);
     }
 
-    public float[] getDxDy(int currentDegree) {
 
-        return rotatePointInGraffiti(currentDegree, mRotateDegree, mDx, mDy, mPivotX, mPivotY);
+    private PointF getSxSy(int currentDegree) {
+        return rotatePointInGraffiti(mLocationTemp, currentDegree, getGraffitiRotate(), mSx, mSy, getOriginalPivotX(), getOriginalPivotY());
     }
 
-    public float[] getSxSy(int currentDegree) {
-
-        return rotatePointInGraffiti(currentDegree, mRotateDegree, mSx, mSy, mPivotX, mPivotY);
+    private PointF getDxDy(int currentDegree) {
+        return rotatePointInGraffiti(mLocationTemp2, currentDegree, getGraffitiRotate(), mDx, mDy, getOriginalPivotX(), getOriginalPivotY());
     }
 
-    public Matrix getMatrix(int currentDegree) {
-        if (mMatrix == null) {
-            return null;
-        }
-        if (mPen == GraffitiView.Pen.COPY) { // 仿制，加上mCopyLocation记录的偏移
-            mMatrix.reset();
+    public void reset(IGraffiti graffiti, float sx, float sy, float dx, float dy) {
+        setGraffiti(graffiti);
+        setPen(graffiti.getPen());
+        setShape(graffiti.getShape());
+        setSize(graffiti.getSize());
+        setColor(graffiti.getColor());
 
-            int degree = currentDegree - mRotateDegree;
-            if (degree == 0) {
-                mMatrix.postTranslate(mCopy.getTouchStartX() - mCopy.getCopyStartX(), mCopy.getTouchStartY() - mCopy.getCopyStartY());
-                return mMatrix;
-            }
-            float px = mPivotX, py = mPivotY;
-            if (mRotateDegree == 90 || mRotateDegree == 270) { //　交换中心点的xy坐标
-                float t = px;
-                px = py;
-                py = t;
-            }
-            float[] coords = rotatePoint(degree, mCopy.getTouchStartX(), mCopy.getTouchStartY(), px, py);
-            float[] coordsCopy = rotatePoint(degree, mCopy.getCopyStartX(), mCopy.getCopyStartY(), px, py);
-            if (Math.abs(degree) == 90 || Math.abs(degree) == 270) {
-                coords[0] += (py - px);
-                coords[1] += -(py - px);
-                coordsCopy[0] += (py - px);
-                coordsCopy[1] += -(py - px);
-            }
-            mMatrix.postTranslate(coords[0] - coordsCopy[0], coords[1] - coordsCopy[1]);
-            return mMatrix;
-        } else {
-            return mMatrix;
-        }
-
+        this.mSx = sx;
+        this.mSy = sy;
+        this.mDx = dx;
+        this.mDy = dy;
     }
 
-    static GraffitiPath toShape(GraffitiView.Pen pen, GraffitiView.Shape shape, float width, GraffitiColor color,
-                                float sx, float sy, float dx, float dy, int degree, CopyLocation copyLocation) {
-        GraffitiPath path = new GraffitiPath();
-        path.mPen = pen;
-        path.mShape = shape;
-        path.mStrokeWidth = width;
-        path.mColor = color;
+    public void reset(IGraffiti graffiti, Path p) {
+        setGraffiti(graffiti);
+        setPen(graffiti.getPen());
+        setShape(graffiti.getShape());
+        setSize(graffiti.getSize());
+        setColor(graffiti.getColor());
+
+        this.mPath = p;
+    }
+
+
+    public static GraffitiPath toShape(IGraffiti graffiti, float sx, float sy, float dx, float dy) {
+        GraffitiPath path = new GraffitiPath(graffiti);
+        path.setPen(graffiti.getPen());
+        path.setShape(graffiti.getShape());
+        path.setSize(graffiti.getSize());
+        path.setColor(graffiti.getColor());
+
         path.mSx = sx;
         path.mSy = sy;
         path.mDx = dx;
         path.mDy = dy;
-        path.mRotateDegree = degree;
-        path.mCopy = copyLocation;
         return path;
     }
 
-    static GraffitiPath toPath(GraffitiView.Pen pen, GraffitiView.Shape shape, float width, GraffitiColor color, Path p, int degree, CopyLocation copyLocation) {
-        GraffitiPath path = new GraffitiPath();
-        path.mPen = pen;
-        path.mShape = shape;
-        path.mStrokeWidth = width;
-        path.mColor = color;
+    public static GraffitiPath toPath(IGraffiti graffiti, Path p) {
+        GraffitiPath path = new GraffitiPath(graffiti);
+        path.setPen(graffiti.getPen());
+        path.setShape(graffiti.getShape());
+        path.setSize(graffiti.getSize());
+        path.setColor(graffiti.getColor());
+
         path.mPath = p;
-        path.mRotateDegree = degree;
-        path.mCopy = copyLocation;
         return path;
     }
 
-    @Override
-    public void draw(IGraffiti graffiti, Canvas canvas) {
-        mPaint.setStrokeWidth(mStrokeWidth);
-        if (mShape == IGraffiti.Shape.HAND_WRITE) { // 手写
-            draw(canvas, mPen, mPaint, getPath(graffiti.getRotate()), getMatrix(graffiti.getRotate()), mColor);
+
+    protected void doDraw(IGraffiti graffiti, Canvas canvas) {
+        mPaint.setStrokeWidth(getSize());
+        mPaint.setStyle(Paint.Style.STROKE);
+        getColor().initColor(mPaint, null);
+
+        if (getShape() == IGraffiti.Shape.HAND_WRITE) { // 手写
+            canvas.drawPath(mPath, mPaint);
         } else { // 画图形
-            float[] sxy = getSxSy(graffiti.getRotate());
-            float[] dxy = getDxDy(graffiti.getRotate());
-            draw(canvas, mPen, mShape, mPaint,
-                    sxy[0], sxy[1], dxy[0], dxy[1], getMatrix(graffiti.getRotate()), mColor);
+            mLocationTemp = getSxSy(graffiti.getRotate());
+            mLocationTemp2 = getDxDy(graffiti.getRotate());
+            draw(canvas, mPaint, getShape(), mLocationTemp.x, mLocationTemp.y, mLocationTemp2.x, mLocationTemp2.y);
         }
     }
 
-    private void draw(Canvas canvas, IGraffiti.Pen pen, Paint paint, Path path, Matrix matrix, GraffitiColor color) {
-        resetPaint(pen, paint, matrix, color);
-
-        paint.setStyle(Paint.Style.STROKE);
-        canvas.drawPath(path, paint);
-    }
-
-    private void draw(Canvas canvas, IGraffiti.Pen pen, IGraffiti.Shape shape, Paint paint, float sx, float sy, float dx, float dy, Matrix matrix, GraffitiColor color) {
-        resetPaint(pen, paint, matrix, color);
-
-        paint.setStyle(Paint.Style.STROKE);
-
+    private void draw(Canvas canvas, Paint paint, IGraffiti.Shape shape, float sx, float sy, float dx, float dy) {
         switch (shape) { // 绘制图形
             case ARROW:
                 paint.setStyle(Paint.Style.FILL);
@@ -188,41 +128,6 @@ public class GraffitiPath implements IGraffitiItem {
                 break;
             default:
                 throw new RuntimeException("unknown shape:" + shape);
-        }
-    }
-
-    private void resetPaint(IGraffiti.Pen pen, Paint paint, Matrix matrix, GraffitiColor color) {
-        mPaint.setColor(Color.BLACK);
-        switch (pen) { // 设置画笔
-            case HAND:
-            case TEXT:
-                paint.setShader(null);
-                mShaderMatrixColor.reset();
-
-                if (color.getType() == GraffitiColor.Type.BITMAP) { // 旋转底图
-                    if (mGraffiti.getRotate() != 0) {
-                        float px = mPivotX, py = mPivotY;
-                        if (mGraffiti.getRotate() == 90 || mGraffiti.getRotate() == 270) { //　交换中心点的xy坐标
-                            float t = px;
-                            px = py;
-                            py = t;
-                        }
-                        mShaderMatrixColor.postRotate(mGraffiti.getRotate(), px, py);
-                        if (Math.abs(mGraffiti.getRotate()) == 90 || Math.abs(mGraffiti.getRotate()) == 270) {
-                            mShaderMatrixColor.postTranslate((py - px), -(py - px));
-                        }
-                    }
-                }
-
-                color.initColor(paint, mShaderMatrixColor);
-                break;
-            case COPY:
-                // 调整copy图片位置
-                color.initColor(paint, mShaderMatrixColor);
-                break;
-            case ERASER:
-                color.initColor(paint, mShaderMatrixColor);
-                break;
         }
     }
 }

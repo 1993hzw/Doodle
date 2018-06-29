@@ -32,6 +32,8 @@ import java.util.List;
 import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.LogUtil;
 import cn.forward.androids.utils.StatusBarUtil;
+import cn.hzw.graffiti.dialog.ColorPickerDialog;
+import cn.hzw.graffiti.dialog.DialogController;
 import cn.hzw.graffiti.imagepicker.ImageSelectorView;
 
 /**
@@ -168,10 +170,7 @@ public class GraffitiActivity extends Activity {
         mGraffitiView = new GraffitiView(this, mBitmap,
                 new GraffitiListener() {
                     @Override
-                    public void onSaved(Bitmap bitmap, Bitmap bitmapEraser) { // 保存图片为jpg格式
-                        if (bitmapEraser != null) {
-                            bitmapEraser.recycle(); // 回收图片，不再涂鸦，避免内存溢出
-                        }
+                    public void onSaved(Bitmap bitmap) { // 保存图片为jpg格式
                         File graffitiFile = null;
                         File file = null;
                         String savePath = mGraffitiParams.mSavePath;
@@ -375,8 +374,8 @@ public class GraffitiActivity extends Activity {
                     return;
                 }
                 if (graffitiText == null) {
-                    mGraffiti.addItem(new GraffitiText(text, mGraffiti.getSize(), mGraffiti.getColor().copy(),
-                            0, mGraffiti.getRotate(), x, y));
+                    mGraffiti.addItem(new GraffitiText(mGraffiti, text, mGraffiti.getSize(), mGraffiti.getColor().copy(),
+                            0, x, y));
                 } else {
                     graffitiText.setText(text);
                 }
@@ -428,8 +427,8 @@ public class GraffitiActivity extends Activity {
 
                 if (graffitiBitmap == null) {
                     mGraffiti.addItem(
-                            new GraffitiBitmap(bitmap, mGraffiti.getSize(), mGraffiti.getColor().copy(),
-                                    0, mGraffiti.getRotate(), x, y))
+                            new GraffitiBitmap(mGraffiti, bitmap, mGraffiti.getSize(), mGraffiti.getColor().copy(),
+                                    0, x, y))
                     ;
                 } else {
                     graffitiBitmap.setBitmap(bitmap);

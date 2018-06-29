@@ -15,9 +15,11 @@ public class GraffitiBitmap extends GraffitiSelectableItemBase {
     private Rect mSrcRect = new Rect();
     private Rect mDstRect = new Rect();
 
-    public GraffitiBitmap(Bitmap bitmap, float size, GraffitiColor color, int textRotate, int rotateDegree, float x, float y) {
-        super(size, color, textRotate, rotateDegree, x, y);
+    public GraffitiBitmap(IGraffiti graffiti, Bitmap bitmap, float size, GraffitiColor color, int itemRotate, float x, float y) {
+        super(graffiti, itemRotate, x, y);
         this.mBitmap = bitmap;
+        setSize(size);
+        setColor(color);
         resetBounds(getBounds());
     }
 

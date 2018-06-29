@@ -18,6 +18,8 @@ public class GraffitiColor {
     private int mColor;
     private Bitmap mBitmap;
     private Type mType;
+
+    // bitmap相关
     private Shader.TileMode mTileX = Shader.TileMode.MIRROR;
     private Shader.TileMode mTileY = Shader.TileMode.MIRROR;  // 镜像
 

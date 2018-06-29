@@ -15,9 +15,11 @@ public class GraffitiText extends GraffitiSelectableItemBase {
     private final static Paint paint = new Paint();
     private String mText;
 
-    public GraffitiText(String text, float size, GraffitiColor color, int textRotate, int rotateDegree, float x, float y) {
-        super(size, color, textRotate, rotateDegree, x, y);
+    public GraffitiText(IGraffiti graffiti, String text, float size, GraffitiColor color, int textRotate, float x, float y) {
+        super(graffiti, textRotate, x, y);
         this.mText = text;
+        setSize(size);
+        setColor(color);
         resetBounds(getBounds());
     }
 
@@ -43,6 +45,7 @@ public class GraffitiText extends GraffitiSelectableItemBase {
     @Override
     public void doDraw(IGraffiti graffiti, Canvas canvas) {
         paint.setTextSize(getSize());
+        paint.setColor(getColor().getColor());
         paint.setStyle(Paint.Style.FILL);
         canvas.drawText(mText, 0, 0, paint);
     }

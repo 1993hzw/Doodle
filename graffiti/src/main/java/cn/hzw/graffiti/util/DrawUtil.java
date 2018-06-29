@@ -1,8 +1,9 @@
-package cn.hzw.graffiti;
+package cn.hzw.graffiti.util;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PointF;
 
 import cn.forward.androids.utils.LogUtil;
 
@@ -138,8 +139,11 @@ public class DrawUtil {
         return angle;
     }
 
-    // xy为在涂鸦中旋转后的坐标，该函数逆向计算出未旋转前的坐标
-    public static float[] restoreRotatePointInGraffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
+    /**
+     *
+     * xy为在涂鸦中旋转后的坐标，该函数逆向计算出未旋转前的坐标
+     */
+    public static PointF restoreRotatePointInGraffiti(PointF coords, int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
         int degree = nowDegree - oldDegree;
         if (degree != 0) {
             float px = mOriginalPivotX, py = mOriginalPivotY;
@@ -153,26 +157,30 @@ public class DrawUtil {
                 y -= -(py - px);
             }
 
-            float[] coords = rotatePoint(-degree, x,
+            coords = rotatePoint(coords, -degree, x,
                     y, px, py);
 
             return coords;
         }
-        return new float[]{x, y};
+        coords.x = x;
+        coords.y = y;
+        return coords;
     }
 
     // 顺时针旋转
-    public static float[] rotatePoint(int degree, float x, float y, float px, float py) {
-        float[] coords = new float[2];
+    public static PointF rotatePoint(PointF coords, int degree, float x, float y, float px, float py) {
         /*角度变成弧度*/
         float radian = (float) (degree * Math.PI / 180);
-        coords[0] = (float) ((x - px) * Math.cos(radian) - (y - py) * Math.sin(radian) + px);
-        coords[1] = (float) ((x - px) * Math.sin(radian) + (y - py) * Math.cos(radian) + py);
+        coords.x = (float) ((x - px) * Math.cos(radian) - (y - py) * Math.sin(radian) + px);
+        coords.y = (float) ((x - px) * Math.sin(radian) + (y - py) * Math.cos(radian) + py);
 
         return coords;
     }
 
-    public static float[] rotatePointInGraffiti(int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
+    /**
+     * xy为未旋转前的坐标 ，该函数计算出在涂鸦中旋转后的坐标
+     */
+    public static PointF rotatePointInGraffiti(PointF coords, int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
         int degree = nowDegree - oldDegree;
         if (degree != 0) {
             float px = mOriginalPivotX, py = mOriginalPivotY;
@@ -182,15 +190,17 @@ public class DrawUtil {
                 py = t;
             }
 
-            float[] coords = rotatePoint(degree, x,
+            coords = rotatePoint(coords, degree, x,
                     y, px, py); // 绕（px,py）旋转
             if (Math.abs(degree) == 90 || Math.abs(degree) == 270) { // 偏移
-                coords[0] += (py - px);
-                coords[1] += -(py - px);
+                coords.x += (py - px);
+                coords.y += -(py - px);
             }
             return coords;
         }
-        return new float[]{x, y};
+        coords.x = x;
+        coords.y = y;
+        return coords;
     }
 
     /**
@@ -205,8 +215,9 @@ public class DrawUtil {
     public static void setGraffitiPixelUnit(float graffitiPixelUnit) {
         DrawUtil.GRAFFITI_PIXEL_UNIT = graffitiPixelUnit;
     }*/
-
-    public static void main(String[] args){
-
+    public static void main(String[] args) {
+        /*PointF pointF = new PointF(0,0);
+        restoreRotatePointInGraffiti(pointF,90,0,0,0,100,100);
+        System.out.printf(pointF.toString());*/
     }
 }

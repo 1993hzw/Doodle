@@ -1,4 +1,4 @@
-package cn.hzw.graffiti;
+package cn.hzw.graffiti.dialog;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import cn.forward.androids.base.InjectionLayoutInflater;
 import cn.forward.androids.utils.StatusBarUtil;
+import cn.hzw.graffiti.R;
 
 /**
  * Created by huangziwei on 2017/4/21.

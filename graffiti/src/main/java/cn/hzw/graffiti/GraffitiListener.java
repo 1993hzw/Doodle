@@ -12,10 +12,9 @@ public interface GraffitiListener {
     /**
      * 保存图片
      *
-     * @param bitmap       涂鸦后的图片
-     * @param bitmapEraser 橡皮擦底图
+     * @param graffitiBitmap       涂鸦后的图片
      */
-    void onSaved(Bitmap bitmap, Bitmap bitmapEraser);
+    void onSaved(Bitmap graffitiBitmap);
 
     /**
      * 出错

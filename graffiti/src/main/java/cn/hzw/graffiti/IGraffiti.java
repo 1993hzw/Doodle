@@ -122,9 +122,9 @@ public interface IGraffiti {
 
     public boolean isShowOriginal();
 
-    public float getBitmapWidth();
+    public float getOriginalBitmapWidth();
 
-    public float getBitmapHeight();
+    public float getOriginalBitmapHeight();
 
     public Bitmap getBitmap();
 
