@@ -8,19 +8,20 @@ import android.graphics.Rect;
 import static cn.hzw.graffiti.util.DrawUtil.rotatePoint;
 
 /**
- * 可选择的涂鸦条目，例如文字、图片
+ * 可选择的涂鸦item，例如文字、图片
  * Created by huangziwei on 2017/7/16.
  */
 
 public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implements IGraffitiSelectableItem {
 
-    public final static int ITEM_CAN_ROTATE_BOUND = 80;
+    public final static int ITEM_CAN_ROTATE_BOUND = 70;
 
     private Rect mRect = new Rect();
     private Rect mRectTemp = new Rect();
     private Paint paint = new Paint();
 
-    private PointF mLocationTemp = new PointF();
+    private PointF mTemp = new PointF();
+    private boolean mIsRotating = false;
 
     public GraffitiSelectableItemBase(IGraffiti graffiti, int itemRotate, float x, float y) {
         this(graffiti, null, itemRotate, x, y);
@@ -50,55 +51,76 @@ public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implem
      * 是否击中
      */
     @Override
-    public boolean isInIt(IGraffiti graffiti, float x, float y) {
-        int currentRotate = graffiti.getRotate();
-        mLocationTemp = getLocation();
+    public boolean isInIt(float x, float y) {
+        int currentRotate = getGraffiti().getRotate();
+        PointF location = getLocation();
         // 把触摸点转换成在文字坐标系（即以文字起始点作为坐标原点）内的点
-        x = x - mLocationTemp.x;
-        y = y - mLocationTemp.y;
+        x = x - location.x;
+        y = y - location.y;
         // 把变换后相对于矩形的触摸点，还原回未变换前的点，然后判断是否矩形中
-        mLocationTemp = rotatePoint(mLocationTemp, (int) -(currentRotate - getGraffitiRotate() + getItemRotate()), x, y, 0, 0);
+        mTemp = rotatePoint(mTemp, (int) -(currentRotate - getGraffitiRotate() + getItemRotate()), x, y, 0, 0);
         mRectTemp.set(mRect);
-        float unit = graffiti.getSizeUnit();
+        float unit = getGraffiti().getSizeUnit();
         mRectTemp.left -= 10 * unit;
         mRectTemp.top -= 10 * unit;
         mRectTemp.right += 10 * unit;
         mRectTemp.bottom += 10 * unit;
-        return mRectTemp.contains((int) mLocationTemp.x, (int) mLocationTemp.y);
+        return mRectTemp.contains((int) mTemp.x, (int) mTemp.y);
     }
 
     /**
      * 是否可以旋转
      */
     @Override
-    public boolean isCanRotate(IGraffiti graffiti, float x, float y) {
-        mLocationTemp = getLocation();
+    public boolean isCanRotate(float x, float y) {
+        IGraffiti graffiti = getGraffiti();
+        PointF location = getLocation();
         // 把触摸点转换成在item坐标系（即以item起始点作为坐标原点）内的点
-        x = x - mLocationTemp.x;
-        y = y - mLocationTemp.y;
+        x = x - location.x;
+        y = y - location.y;
         // 把变换后矩形中的触摸点，还原回未变换前矩形中的点，然后判断是否矩形中
-        PointF rectXy = rotatePoint(mLocationTemp, (int) -(graffiti.getRotate() - getGraffitiRotate() + getItemRotate()), x, y, 0, 0);
+        PointF xy = rotatePoint(mTemp, (int) -(graffiti.getRotate() - getGraffitiRotate() + getItemRotate()), x, y, 0, 0);
 
         mRectTemp.set(mRect);
         float unit = graffiti.getSizeUnit();
-        mRectTemp.left -= 10 * unit;
-        mRectTemp.top -= 10 * unit;
-        mRectTemp.right += 10 * unit;
-        mRectTemp.bottom += 10 * unit;
-        return rectXy.x >= mRectTemp.right && rectXy.x <= mRectTemp.right + ITEM_CAN_ROTATE_BOUND * graffiti.getSizeUnit()
-                && rectXy.y >= mRectTemp.top && rectXy.y <= mRectTemp.bottom;
+        mRectTemp.left -= 13 * unit;
+        mRectTemp.top -= 13 * unit;
+        mRectTemp.right += 13 * unit;
+        mRectTemp.bottom += 13 * unit;
+        return xy.x >= mRectTemp.right && xy.x <= mRectTemp.right + ITEM_CAN_ROTATE_BOUND * graffiti.getSizeUnit()
+                && xy.y >= mRectTemp.top && xy.y <= mRectTemp.bottom;
+    }
+
+    @Override
+    public boolean isRotating() {
+        return mIsRotating;
+    }
+
+    @Override
+    public void setIsRotating(boolean isRotating) {
+        mIsRotating = isRotating;
     }
 
     /**
      * 绘制选别时的背景
      *
      * @param canvas
-     * @param graffiti
      */
     @Override
-    public void drawSelectedBackground(IGraffiti graffiti, Canvas canvas) {
+    public void drawSelectedBackground(Canvas canvas) {
+        canvas.save();
+        PointF location = getLocation(); // 获取旋转后的起始坐标
+        canvas.translate(location.x, location.y); // 把坐标系平移到文字矩形范围
+        canvas.rotate(getGraffiti().getRotate() - getGraffitiRotate() + getItemRotate(), 0, 0); // 旋转坐标系
+
+        doDrawSelectedBackground(canvas);
+
+        canvas.restore();
+    }
+
+    public void doDrawSelectedBackground(Canvas canvas) {
         mRectTemp.set(mRect);
-        float unit = graffiti.getSizeUnit();
+        float unit = getGraffiti().getSizeUnit();
         mRectTemp.left -= 10 * unit;
         mRectTemp.top -= 10 * unit;
         mRectTemp.right += 10 * unit;
@@ -117,7 +139,7 @@ public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implem
         paint.setStrokeWidth(1);
         canvas.drawRect(mRectTemp, paint);
         // border
-        if (graffiti.isRotatingItem()) {
+        if (isRotating()) {
             paint.setColor(0x88ffd700);
         } else {
             paint.setColor(0x88888888);
@@ -128,11 +150,10 @@ public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implem
         canvas.drawRect(mRectTemp, paint);
         // setRotate
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(4 * unit);
+        paint.setStrokeWidth(2 * unit);
         canvas.drawLine(mRectTemp.right, mRectTemp.top + mRectTemp.height() / 2,
                 mRectTemp.right + (GraffitiSelectableItemBase.ITEM_CAN_ROTATE_BOUND - 16) * unit, mRectTemp.top + mRectTemp.height() / 2, paint);
         canvas.drawCircle(mRectTemp.right + (GraffitiSelectableItemBase.ITEM_CAN_ROTATE_BOUND - 8) * unit, mRectTemp.top + mRectTemp.height() / 2, 8 * unit, paint);
-
     }
 
 

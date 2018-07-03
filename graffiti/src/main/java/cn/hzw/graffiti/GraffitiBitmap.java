@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 
 /**
+ * 图片item
  * Created by huangziwei on 2017/3/16.
  */
 

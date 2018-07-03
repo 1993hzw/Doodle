@@ -260,6 +260,7 @@
                 </HorizontalScrollView>
 
                 <LinearLayout
+                    android:id="@+id/graffiti_color_container"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
@@ -306,41 +307,10 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/graffiti_edit_container"
-                android:layout_width="fill_parent"
-                android:layout_height="@dimen/title_bar_height"
-                android:layout_alignParentBottom="true"
-                android:background="#88000000"
-                android:gravity="center_horizontal"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btn_centre_pic"
-                    android:layout_width="@dimen/title_bar_height"
-                    android:layout_height="@dimen/title_bar_height"
-                    android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
-
-                    android:text="O"
-                    android:textColor="#ffffff"
-                    android:textSize="16dp"
-                    android:textStyle="bold"/>
-
-                <ImageView
-                    android:id="@+id/graffiti_btn_rotate"
-                    android:layout_width="@dimen/title_bar_height"
-                    android:layout_height="@dimen/title_bar_height"
-                    android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
-                    android:padding="5dp"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/graffiti_rotate"
-                    android:textSize="20dp"/>
-            </LinearLayout>
-
-            <LinearLayout
                 android:id="@+id/graffiti_selectable_edit_container"
                 android:layout_width="fill_parent"
                 android:layout_height="@dimen/title_bar_height"
-                android:layout_above="@+id/graffiti_edit_container"
+                android:layout_alignParentBottom="true"
                 android:background="#88000000"
                 android:gravity="center"
                 android:orientation="horizontal"
@@ -354,6 +324,17 @@
                     android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
                     android:gravity="center"
                     android:text="@string/graffiti_edit"
+                    android:textColor="#ffffff"
+                    android:textSize="16dp"/>
+
+                <TextView
+                    android:id="@+id/graffiti_selectable_bottom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/graffiti_btn_effect_rect_pressed_black"
+                    android:gravity="center"
+                    android:text="@string/graffiti_bottom"
                     android:textColor="#ffffff"
                     android:textSize="16dp"/>
 

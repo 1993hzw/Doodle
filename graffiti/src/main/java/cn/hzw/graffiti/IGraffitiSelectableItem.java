@@ -11,19 +11,32 @@ public interface IGraffitiSelectableItem extends IGraffitiItem {
     /**
      * 是否击中
      */
-    public boolean isInIt(IGraffiti graffiti, float x, float y);
+    public boolean isInIt(float x, float y);
 
     /**
      * 绘制选别时的背景
      *
      * @param canvas
-     * @param graffiti
      */
-    public void drawSelectedBackground(IGraffiti graffiti, Canvas canvas);
+    public void drawSelectedBackground(Canvas canvas);
 
     /**
      * 是否可以旋转
      */
-    public boolean isCanRotate(IGraffiti graffiti, float x, float y);
+    public boolean isCanRotate(float x, float y);
+
+    /**
+     * 是否正在旋转
+     *
+     * @return
+     */
+    public boolean isRotating();
+
+    /**
+     * 设置正在旋转
+     *
+     * @param isRotating
+     */
+    public void setIsRotating(boolean isRotating);
 
 }

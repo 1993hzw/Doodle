@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.text.TextUtils;
 
 /**
+ * 文字item
  * Created by huangziwei on 2017/3/16.
  */
 

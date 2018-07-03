@@ -109,7 +109,7 @@ public class GraffitiActivity extends Activity {
     private View mBtnHidePanel, mSettingsPanel;
     private View mShapeModeContainer;
     private View mSelectedTextEditContainer;
-    private View mEditContainer;
+    private View mColorContainer;
 
     private AlphaAnimation mViewShowAnimation, mViewHideAnimation; // view隐藏和显示时用到的渐变动画
 
@@ -246,7 +246,6 @@ public class GraffitiActivity extends Activity {
                             mPaintSizeBar.setProgress((int) (selectableItem.getSize() + 0.5f));
                         } else {
                             mSelectedTextEditContainer.setVisibility(View.GONE);
-                            mEditContainer.setVisibility(View.VISIBLE);
                             if (mGraffiti.getColor().getType() == GraffitiColor.Type.BITMAP) {
                                 mBtnColor.setBackgroundDrawable(new BitmapDrawable(mGraffiti.getColor().getBitmap()));
                             } else {
@@ -374,8 +373,10 @@ public class GraffitiActivity extends Activity {
                     return;
                 }
                 if (graffitiText == null) {
-                    mGraffiti.addItem(new GraffitiText(mGraffiti, text, mGraffiti.getSize(), mGraffiti.getColor().copy(),
-                            0, x, y));
+                    IGraffitiSelectableItem item = new GraffitiText(mGraffiti, text, mGraffiti.getSize(), mGraffiti.getColor().copy(),
+                            0, x, y);
+                    mGraffiti.addItem(item);
+                    mGraffiti.setSelectedItem(item);
                 } else {
                     graffitiText.setText(text);
                 }
@@ -426,10 +427,10 @@ public class GraffitiActivity extends Activity {
                 Bitmap bitmap = ImageUtils.createBitmapFromPath(pathList.get(0), mGraffitiView.getWidth() / 4, mGraffitiView.getHeight() / 4);
 
                 if (graffitiBitmap == null) {
-                    mGraffiti.addItem(
-                            new GraffitiBitmap(mGraffiti, bitmap, mGraffiti.getSize(), mGraffiti.getColor().copy(),
-                                    0, x, y))
-                    ;
+                    IGraffitiSelectableItem item = new GraffitiBitmap(mGraffiti, bitmap, mGraffiti.getSize(), mGraffiti.getColor().copy(),
+                            0, x, y);
+                    mGraffiti.addItem(item);
+                    mGraffiti.setSelectedItem(item);
                 } else {
                     graffitiBitmap.setBitmap(bitmap);
                 }
@@ -457,17 +458,17 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.graffiti_selectable_edit).setOnClickListener(mOnClickListener);
         findViewById(R.id.graffiti_selectable_remove).setOnClickListener(mOnClickListener);
         findViewById(R.id.graffiti_selectable_top).setOnClickListener(mOnClickListener);
+        findViewById(R.id.graffiti_selectable_bottom).setOnClickListener(mOnClickListener);
         mShapeModeContainer = findViewById(R.id.bar_shape_mode);
         mSelectedTextEditContainer = findViewById(R.id.graffiti_selectable_edit_container);
-        mEditContainer = findViewById(R.id.graffiti_edit_container);
         mBtnHidePanel = findViewById(R.id.graffiti_btn_hide_panel);
         mBtnHidePanel.setOnClickListener(mOnClickListener);
         findViewById(R.id.graffiti_btn_finish).setOnClickListener(mOnClickListener);
         findViewById(R.id.graffiti_btn_back).setOnClickListener(mOnClickListener);
-        findViewById(R.id.btn_centre_pic).setOnClickListener(mOnClickListener);
         mBtnColor = findViewById(R.id.btn_set_color);
         mBtnColor.setOnClickListener(mOnClickListener);
         mSettingsPanel = findViewById(R.id.graffiti_panel);
+        mColorContainer = findViewById(R.id.graffiti_color_container);
         if (mGraffiti.getColor().getType() == GraffitiColor.Type.COLOR) {
             mBtnColor.setBackgroundColor(mGraffiti.getColor().getColor());
         } else if (mGraffiti.getColor().getType() == GraffitiColor.Type.BITMAP) {
@@ -581,25 +582,30 @@ public class GraffitiActivity extends Activity {
             mDone = false;
             if (v.getId() == R.id.btn_pen_hand) {
                 mShapeModeContainer.setVisibility(View.VISIBLE);
+                mColorContainer.setVisibility(View.VISIBLE);
                 mGraffiti.setPen(GraffitiView.Pen.HAND);
                 mPaintSizeBar.setProgress((int) (mGraffiti.getSize() + 0.5f));
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_copy) {
                 mShapeModeContainer.setVisibility(View.VISIBLE);
+                mColorContainer.setVisibility(View.GONE);
                 mGraffiti.setPen(GraffitiView.Pen.COPY);
                 mPaintSizeBar.setProgress((int) (mGraffiti.getSize() + 0.5f));
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_eraser) {
                 mShapeModeContainer.setVisibility(View.VISIBLE);
+                mColorContainer.setVisibility(View.GONE);
                 mGraffiti.setPen(GraffitiView.Pen.ERASER);
                 mPaintSizeBar.setProgress((int) (mGraffiti.getSize() + 0.5f));
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_text) {
                 mShapeModeContainer.setVisibility(View.GONE);
+                mColorContainer.setVisibility(View.VISIBLE);
                 mGraffiti.setPen(GraffitiView.Pen.TEXT);
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_bitmap) {
                 mShapeModeContainer.setVisibility(View.GONE);
+                mColorContainer.setVisibility(View.GONE);
                 mGraffiti.setPen(GraffitiView.Pen.BITMAP);
                 mDone = true;
             }
@@ -685,9 +691,6 @@ public class GraffitiActivity extends Activity {
                     });
                 }
                 mDone = true;
-            } else if (v.getId() == R.id.btn_centre_pic) {
-               /* mGraffiti.centrePic();
-                mDone = true;*/
             }
             if (mDone) {
                 return;
@@ -705,7 +708,10 @@ public class GraffitiActivity extends Activity {
                 mGraffiti.removeItem(mGraffiti.getSelectedItem());
                 mDone = true;
             } else if (v.getId() == R.id.graffiti_selectable_top) {
-                mGraffiti.topItem();
+                mGraffiti.topItem(mGraffiti.getSelectedItem());
+                mDone = true;
+            } else if (v.getId() == R.id.graffiti_selectable_bottom) {
+                mGraffiti.bottomItem(mGraffiti.getSelectedItem());
                 mDone = true;
             }
             if (mDone) {

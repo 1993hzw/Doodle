@@ -19,12 +19,14 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
     private IGraffiti mGraffiti;
     private float mOriginalPivotX, mOriginalPivotY; // // 原图的中心位置
 
-    private PointF mLocationTemp = new PointF();
+    private PointF mLocation = new PointF();
+    private PointF mTemp = new PointF();
 
     private GraffitiView.Pen mPen; // 画笔类型
     private GraffitiView.Shape mShape; // 画笔形状
     private float mSize; // 大小
     private GraffitiColor mColor; // 颜色
+    private boolean mIsDrawOptimize = false; //优化绘制
 
     public GraffitiItemBase(IGraffiti graffiti) {
         this(graffiti, null);
@@ -42,13 +44,24 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
 
     @Override
     public void setGraffiti(IGraffiti graffiti) {
+        if (graffiti != null && mGraffiti != null) { // 不能重复赋予非空值
+            throw new RuntimeException("item's graffiti object is not null");
+        }
         mGraffiti = graffiti;
         if (graffiti == null) {
             return;
         }
         mGraffitiRotate = graffiti.getRotate();
-        mOriginalPivotX = graffiti.getOriginalBitmapWidth() / 2;
-        mOriginalPivotY = graffiti.getOriginalBitmapHeight() / 2;
+        int bitmapWidth = graffiti.getBitmap().getWidth();
+        int bitmapHeight = graffiti.getBitmap().getHeight();
+        int degree = graffiti.getRotate();
+        if (Math.abs(degree) == 90 || Math.abs(degree) == 270) { // 获取原始图片的宽高
+            int t = bitmapWidth;
+            bitmapWidth = bitmapHeight;
+            bitmapHeight = t;
+        }
+        mOriginalPivotX = bitmapWidth / 2;
+        mOriginalPivotY = bitmapHeight / 2;
     }
 
     @Override
@@ -68,9 +81,10 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
 
     @Override
     public void setLocation(float x, float y) {
-        mLocationTemp = restoreRotatePointInGraffiti(mLocationTemp, mGraffiti.getRotate(), mGraffitiRotate, x, y, mOriginalPivotX, mOriginalPivotY);
-        mOriginalX = mLocationTemp.x;
-        mOriginalY = mLocationTemp.y;
+        // 转换成未旋转前的坐标
+        mTemp = restoreRotatePointInGraffiti(mTemp, mGraffiti.getRotate(), mGraffitiRotate, x, y, mOriginalPivotX, mOriginalPivotY);
+        mOriginalX = mTemp.x;
+        mOriginalY = mTemp.y;
 
         // 使用下面的代码 旋转后移动异常
 //        mOriginalX = x;
@@ -79,7 +93,7 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
 
     @Override
     public PointF getLocation() {
-        return rotatePointInGraffiti(mLocationTemp, mGraffiti.getRotate(), mGraffitiRotate, mOriginalX, mOriginalY, mOriginalPivotX, mOriginalPivotY);
+        return rotatePointInGraffiti(mLocation, mGraffiti.getRotate(), mGraffitiRotate, mOriginalX, mOriginalY, mOriginalPivotX, mOriginalPivotY);
     }
 
     public float getOriginalPivotX() {
@@ -129,14 +143,9 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
     @Override
     public void draw(Canvas canvas) {
         canvas.save();
-
-        mLocationTemp = getLocation(); // 获取旋转后的起始坐标
-        canvas.translate(mLocationTemp.x, mLocationTemp.y); // 把坐标系平移到文字矩形范围
+        mLocation = getLocation(); // 获取旋转后的起始坐标
+        canvas.translate(mLocation.x, mLocation.y); // 把坐标系平移到文字矩形范围
         canvas.rotate(mGraffiti.getRotate() - mGraffitiRotate + mItemRotate, 0, 0); // 旋转坐标系
-
-        if (mGraffiti.getSelectedItem() == this) {
-            ((IGraffitiSelectableItem) this).drawSelectedBackground(mGraffiti, canvas);
-        }
 
         doDraw(canvas);
 
@@ -145,4 +154,23 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
     }
 
     protected abstract void doDraw(Canvas canvas);
+
+    /**
+     * 是否优化绘制，若是则在添加item时提前会绘制到图片上，若否则在每次view绘制时绘制在View中，直到保存时才绘制到图片上
+     *
+     * @param drawOptimize
+     */
+    public void setDrawOptimize(boolean drawOptimize) {
+        if (drawOptimize == mIsDrawOptimize) {
+            return;
+        }
+        mIsDrawOptimize = drawOptimize;
+    }
+
+    /**
+     * 是否优化绘制，若是则在添加item时提前会绘制到图片上，若否则在每次view绘制时绘制在View中，直到保存时才绘制到图片上
+     */
+    public boolean isDrawOptimize() {
+        return mIsDrawOptimize;
+    }
 }

@@ -13,4 +13,5 @@
     <string name="graffiti_edit">编辑</string>
     <string name="graffiti_remove">移除</string>
     <string name="graffiti_top">置顶</string>
+    <string name="graffiti_bottom">置底</string>
 </resources>

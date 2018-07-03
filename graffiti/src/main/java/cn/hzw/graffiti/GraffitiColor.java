@@ -7,7 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Shader;
 
 /**
- * 涂鸦底色
+ * 涂鸦画笔颜色
  */
 public class GraffitiColor {
     public enum Type {

@@ -1,7 +1,7 @@
 package cn.hzw.graffiti;
 
 /**
- * 画布属性
+ * 画笔属性
  * Created on 29/06/2018.
  */
 
