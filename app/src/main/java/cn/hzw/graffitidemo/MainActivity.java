@@ -49,6 +49,7 @@ public class MainActivity extends Activity {
 
                 // 涂鸦参数
                 GraffitiParams params = new GraffitiParams();
+                params.mIsFullScreen = true;
                 // 图片路径
                 params.mImagePath = list.get(0);
                 // 初始画笔大小

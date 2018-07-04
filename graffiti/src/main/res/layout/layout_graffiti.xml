@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="fill_parent"
-             android:layout_height="fill_parent"
-             android:background="#232323"
-             android:fitsSystemWindows="true"
-             android:orientation="vertical">
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#232323"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="fill_parent"
@@ -13,13 +13,13 @@
 
         <include
             android:id="@+id/graffiti__title_bar"
-            layout="@layout/graffiti__title_bar"/>
+            layout="@layout/graffiti__title_bar" />
 
         <FrameLayout
             android:id="@+id/graffiti_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/graffiti__title_bar"/>
+            android:layout_below="@id/graffiti__title_bar" />
 
         <RelativeLayout
             android:id="@+id/graffiti_panel"
@@ -28,15 +28,14 @@
             android:layout_below="@id/graffiti__title_bar">
 
             <LinearLayout
-
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
                 android:orientation="vertical">
-
                 <HorizontalScrollView
+                    android:layout_marginTop="10dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:scrollbars="none">
@@ -55,7 +54,7 @@
                             android:text="手绘"
                             android:textColor="#000000"
                             android:textSize="13dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
 
                         <Button
                             android:id="@+id/btn_pen_copy"
@@ -66,7 +65,7 @@
                             android:text="仿制"
                             android:textColor="#000000"
                             android:textSize="13dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
 
                         <Button
                             android:id="@+id/btn_pen_eraser"
@@ -78,7 +77,7 @@
                             android:text="橡皮擦"
                             android:textColor="#000000"
                             android:textSize="13dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
 
                         <Button
                             android:id="@+id/btn_pen_text"
@@ -89,7 +88,7 @@
                             android:text="文字"
                             android:textColor="#000000"
                             android:textSize="13dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
 
                         <Button
                             android:id="@+id/btn_pen_bitmap"
@@ -100,13 +99,13 @@
                             android:text="贴图"
                             android:textColor="#000000"
                             android:textSize="13dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
 
                         <FrameLayout
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:minWidth="10dp"/>
+                            android:minWidth="10dp" />
 
                         <Button
                             android:id="@+id/btn_clear"
@@ -115,7 +114,7 @@
                             android:background="@drawable/graffiti_btn_effect_round"
                             android:text="清屏"
                             android:textColor="#000000"
-                            android:textSize="13dp"/>
+                            android:textSize="13dp" />
 
                         <Button
                             android:id="@+id/btn_undo"
@@ -124,46 +123,12 @@
                             android:background="@drawable/graffiti_btn_effect_round"
                             android:text="撤销"
                             android:textColor="#000000"
-                            android:textSize="13dp"/>
+                            android:textSize="13dp" />
                     </LinearLayout>
 
                 </HorizontalScrollView>
-
-                <LinearLayout
-                    android:id="@+id/bar_paint_mode"
-                    android:layout_width="fill_parent"
-                    android:layout_height="30dp"
-                    android:layout_centerHorizontal="true"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <Button
-                        android:id="@+id/btn_painter"
-                        android:layout_width="50dp"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/graffiti_btn_effect_rect_line"
-
-                        android:scaleType="centerCrop"
-                        android:text="手绘"
-                        android:textColor="#000000"
-                        android:textSize="10dp"
-                        android:visibility="visible"/>
-
-                    <Button
-                        android:id="@+id/btn_copy"
-                        android:layout_width="50dp"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/graffiti_btn_effect_rect_line"
-
-                        android:scaleType="centerCrop"
-                        android:text="仿制"
-                        android:textColor="#000000"
-                        android:textSize="10dp"
-                        android:visibility="visible"/>
-                </LinearLayout>
-
                 <HorizontalScrollView
+                    android:layout_marginTop="10dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:scrollbars="none">
@@ -173,45 +138,44 @@
                         android:layout_width="fill_parent"
                         android:layout_height="30dp"
                         android:layout_centerHorizontal="true"
-                        android:layout_marginTop="10dp"
                         android:orientation="horizontal"
                         android:visibility="visible">
 
                         <Button
                             android:id="@+id/btn_hand_write"
-                            android:layout_width="50dp"
+                            android:layout_width="45dp"
                             android:layout_height="match_parent"
                             android:background="@drawable/graffiti_btn_effect_rect_line"
                             android:text="手绘"
                             android:textColor="#000000"
                             android:textSize="10dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
 
                         <Button
                             android:id="@+id/btn_arrow"
-                            android:layout_width="50dp"
+                            android:layout_width="45dp"
                             android:layout_height="match_parent"
                             android:background="@drawable/graffiti_btn_effect_rect_line"
 
                             android:text="箭头"
                             android:textColor="#000000"
                             android:textSize="10dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
 
                         <Button
                             android:id="@+id/btn_line"
-                            android:layout_width="50dp"
+                            android:layout_width="45dp"
                             android:layout_height="match_parent"
                             android:background="@drawable/graffiti_btn_effect_rect_line"
 
                             android:text="直线"
                             android:textColor="#000000"
                             android:textSize="10dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
 
                         <Button
                             android:id="@+id/btn_holl_circle"
-                            android:layout_width="50dp"
+                            android:layout_width="45dp"
                             android:layout_height="match_parent"
                             android:background="@drawable/graffiti_btn_effect_rect_line"
 
@@ -219,11 +183,11 @@
                             android:text="空心圆"
                             android:textColor="#000000"
                             android:textSize="10dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
 
                         <Button
                             android:id="@+id/btn_fill_circle"
-                            android:layout_width="50dp"
+                            android:layout_width="45dp"
                             android:layout_height="match_parent"
                             android:background="@drawable/graffiti_btn_effect_rect_line"
 
@@ -231,23 +195,22 @@
                             android:text="实心圆"
                             android:textColor="#000000"
                             android:textSize="10dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
 
                         <Button
                             android:id="@+id/btn_holl_rect"
-                            android:layout_width="50dp"
+                            android:layout_width="45dp"
                             android:layout_height="match_parent"
                             android:background="@drawable/graffiti_btn_effect_rect_line"
-
                             android:scaleType="centerCrop"
                             android:text="空心矩形"
                             android:textColor="#000000"
                             android:textSize="10dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
 
                         <Button
                             android:id="@+id/btn_fill_rect"
-                            android:layout_width="50dp"
+                            android:layout_width="45dp"
                             android:layout_height="match_parent"
                             android:background="@drawable/graffiti_btn_effect_rect_line"
 
@@ -255,10 +218,9 @@
                             android:text="实心矩形"
                             android:textColor="#000000"
                             android:textSize="10dp"
-                            android:visibility="visible"/>
+                            android:visibility="visible" />
                     </LinearLayout>
                 </HorizontalScrollView>
-
                 <LinearLayout
                     android:id="@+id/graffiti_color_container"
                     android:layout_width="wrap_content"
@@ -271,13 +233,12 @@
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:background="@drawable/graffiti_btn_effect_rect_line"
-
                         android:padding="2dp">
 
                         <ImageView
                             android:id="@+id/btn_set_color"
                             android:layout_width="fill_parent"
-                            android:layout_height="fill_parent"/>
+                            android:layout_height="fill_parent" />
                     </RelativeLayout>
 
                     <SeekBar
@@ -291,7 +252,7 @@
                         android:paddingRight="10dp"
                         android:progressDrawable="@drawable/graffiti_seekbar_bg"
                         android:thumb="@drawable/graffiti_thumb_seekbarr"
-                        android:thumbOffset="0dp"/>
+                        android:thumbOffset="0dp" />
 
                     <TextView
                         android:id="@+id/paint_size_text"
@@ -302,7 +263,7 @@
                         android:minWidth="40dp"
                         android:text=""
                         android:textColor="#ffffff"
-                        android:textSize="14dp"/>
+                        android:textSize="14dp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -325,7 +286,7 @@
                     android:gravity="center"
                     android:text="@string/graffiti_edit"
                     android:textColor="#ffffff"
-                    android:textSize="16dp"/>
+                    android:textSize="16dp" />
 
                 <TextView
                     android:id="@+id/graffiti_selectable_bottom"
@@ -336,7 +297,7 @@
                     android:gravity="center"
                     android:text="@string/graffiti_bottom"
                     android:textColor="#ffffff"
-                    android:textSize="16dp"/>
+                    android:textSize="16dp" />
 
                 <TextView
                     android:id="@+id/graffiti_selectable_top"
@@ -347,7 +308,7 @@
                     android:gravity="center"
                     android:text="@string/graffiti_top"
                     android:textColor="#ffffff"
-                    android:textSize="16dp"/>
+                    android:textSize="16dp" />
 
                 <TextView
                     android:id="@+id/graffiti_selectable_remove"
@@ -358,7 +319,7 @@
                     android:gravity="center"
                     android:text="@string/graffiti_remove"
                     android:textColor="#ffffff"
-                    android:textSize="16dp"/>
+                    android:textSize="16dp" />
             </LinearLayout>
         </RelativeLayout>
 

@@ -3,7 +3,7 @@
              xmlns:app="http://schemas.android.com/apk/res-auto"
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
-             android:background="#232323"
+             android:background="#181818"
              android:fitsSystemWindows="true">
 
     <LinearLayout
@@ -27,7 +27,7 @@
             android:layout_height="match_parent"
             android:layout_marginBottom="15dp"
             android:layout_marginTop="15dp"
-            android:background="#181818"/>
+            android:background="#101010"/>
 
         <TextView
             android:id="@+id/graffiti_txt_title"

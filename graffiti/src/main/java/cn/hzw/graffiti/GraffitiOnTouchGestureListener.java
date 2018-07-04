@@ -1,5 +1,7 @@
 package cn.hzw.graffiti;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.view.MotionEvent;
@@ -39,6 +41,10 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
 
     private GraffitiView mGraffiti;
 
+    private ValueAnimator mScaleAnimator ;
+    private float mAnimTransX, mAnimTranY;
+    private boolean mEnableAmplifier;
+
     public GraffitiOnTouchGestureListener(GraffitiView graffiti) {
         mGraffiti = graffiti;
         mCopyLocation = mGraffiti.getCopyLocation();
@@ -48,6 +54,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
     public boolean onDown(MotionEvent e) {
         mTouchX = mTouchDownX = e.getX();
         mTouchY = mTouchDownY = e.getY();
+        mGraffiti.enableAmplifier(false); // 关闭放大镜
         return true;
     }
 
@@ -75,6 +82,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                 }
             }
         } else {
+            mGraffiti.enableAmplifier(true); // 涂鸦时开启放大镜
             // 点击copy
             if (mGraffiti.getPen() == IGraffiti.Pen.COPY && mCopyLocation.isInIt(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY), mGraffiti.getSize())) {
                 mCopyLocation.setRelocating(true);
@@ -117,7 +125,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
             mCurrGraffitiPath.setDrawOptimize(true);
             mGraffiti.invalidate(mCurrGraffitiPath);
         }
-
+        mGraffiti.enableAmplifier(false); // 关闭放大镜
         mGraffiti.invalidate();
     }
 
@@ -220,6 +228,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
     public boolean onScaleBegin(ScaleGestureDetector detector) {
         mLastFocusX = null;
         mLastFocusY = null;
+        mGraffiti.enableAmplifier(false);
         return true;
     }
 
@@ -249,6 +258,30 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
         mLastFocusY = mTouchCentreY;
 
         return true;
+    }
+
+    @Override
+    public void onScaleEnd(ScaleGestureDetector detector) {
+        if(mGraffiti.getScale()<1){
+            if(mScaleAnimator==null) {
+                mScaleAnimator = new ValueAnimator();
+                mScaleAnimator.setDuration(100);
+                mScaleAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        float value = (float) animation.getAnimatedValue();
+                        float fraction = animation.getAnimatedFraction();
+                        mGraffiti.setScale(value, mGraffiti.toX(mTouchCentreX), mGraffiti.toY(mTouchCentreY));
+                        mGraffiti.setTrans(mAnimTransX*(1-fraction),mAnimTranY*(1-fraction));
+                    }
+                });
+            }
+            mScaleAnimator.cancel();
+            mAnimTransX = mGraffiti.getTransX();
+            mAnimTranY = mGraffiti.getTransY();
+            mScaleAnimator.setFloatValues(mGraffiti.getScale(),1);
+            mScaleAnimator.start();
+        }
     }
 
 }

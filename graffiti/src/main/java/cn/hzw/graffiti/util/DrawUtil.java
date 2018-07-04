@@ -1,9 +1,15 @@
 package cn.hzw.graffiti.util;
 
+import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.Rect;
+import android.view.View;
+import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.widget.FrameLayout;
 
 import cn.forward.androids.utils.LogUtil;
 
@@ -55,7 +61,7 @@ public class DrawUtil {
         canvas.drawPath(triangle, paint);
     }
 
-    // 计算 向量（px,py�? 旋转ang角度后的新长�?
+    // 计算 向量（px,py) 旋转ang角度后的新长度
     public static double[] rotateVec(float px, float py, double ang,
                                      boolean isChLen, double newLen) {
         double mathstr[] = new double[2];
@@ -140,7 +146,6 @@ public class DrawUtil {
     }
 
     /**
-     *
      * xy为在涂鸦中旋转后的坐标，该函数逆向计算出未旋转前的坐标
      */
     public static PointF restoreRotatePointInGraffiti(PointF coords, int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
@@ -219,5 +224,54 @@ public class DrawUtil {
         /*PointF pointF = new PointF(0,0);
         restoreRotatePointInGraffiti(pointF,90,0,0,0,100,100);
         System.out.printf(pointF.toString());*/
+    }
+
+    public static void assistActivity(Window activity) {
+        new AndroidBug5497Workaround(activity);
+    }
+
+    public static class AndroidBug5497Workaround {
+
+        // For more information, see https://issuetracker.google.com/issues/36911528
+        // To use this class, simply invoke assistActivity() on an Activity that already has its content view set.
+
+
+        private View mChildOfContent;
+        private int usableHeightPrevious;
+        private FrameLayout.LayoutParams frameLayoutParams;
+
+        private AndroidBug5497Workaround(Window window) {
+            FrameLayout content = (FrameLayout) window.findViewById(android.R.id.content);
+            mChildOfContent = content.getChildAt(0);
+            mChildOfContent.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                public void onGlobalLayout() {
+                    possiblyResizeChildOfContent();
+                }
+            });
+            frameLayoutParams = (FrameLayout.LayoutParams) mChildOfContent.getLayoutParams();
+        }
+
+        private void possiblyResizeChildOfContent() {
+            int usableHeightNow = computeUsableHeight();
+            if (usableHeightNow != usableHeightPrevious) {
+                int usableHeightSansKeyboard = mChildOfContent.getRootView().getHeight();
+                int heightDifference = usableHeightSansKeyboard - usableHeightNow;
+                if (heightDifference > (usableHeightSansKeyboard / 4)) {
+                    // keyboard probably just became visible
+                    frameLayoutParams.height = usableHeightSansKeyboard - heightDifference;
+                } else {
+                    // keyboard probably just became hidden
+                    frameLayoutParams.height = usableHeightSansKeyboard;
+                }
+                mChildOfContent.requestLayout();
+                usableHeightPrevious = usableHeightNow;
+            }
+        }
+
+        private int computeUsableHeight() {
+            Rect r = new Rect();
+            mChildOfContent.getWindowVisibleDisplayFrame(r);
+            return r.bottom;
+        }
     }
 }

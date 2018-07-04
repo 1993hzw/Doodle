@@ -32,9 +32,11 @@ import java.util.List;
 import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.LogUtil;
 import cn.forward.androids.utils.StatusBarUtil;
+import cn.forward.androids.views.KeyboardLayout;
 import cn.hzw.graffiti.dialog.ColorPickerDialog;
 import cn.hzw.graffiti.dialog.DialogController;
 import cn.hzw.graffiti.imagepicker.ImageSelectorView;
+import cn.hzw.graffiti.util.DrawUtil;
 
 /**
  * 涂鸦界面，根据GraffitiView的接口，提供页面交互
@@ -226,9 +228,10 @@ public class GraffitiActivity extends Activity {
                         mGraffiti.setSize(mGraffitiParams.mPaintSize > 0 ? mGraffitiParams.mPaintSize
                                 : mGraffiti.getSize());
                         mPaintSizeBar.setProgress((int) (mGraffiti.getSize() + 0.5f));
-                        mPaintSizeBar.setMax((int) (Math.min(mGraffitiView.getWidth(),
-                                mGraffitiView.getHeight()) / mGraffiti.getSizeUnit()));
+                        mPaintSizeBar.setMax(Math.min(mGraffitiView.getWidth(), mGraffitiView.getHeight()));
                         mPaintSizeView.setText("" + mPaintSizeBar.getProgress());
+                        // 当设置面板隐藏时才显示放大器
+                        mGraffiti.setAmplifierScale(mGraffitiParams.mAmplifierScale);
                         // 选择画笔
                         findViewById(R.id.btn_pen_hand).performClick();
                         findViewById(R.id.btn_hand_write).performClick();
@@ -316,6 +319,10 @@ public class GraffitiActivity extends Activity {
             }
         });
         dialog.setContentView(container);
+
+        if(fullScreen){
+            DrawUtil.assistActivity(dialog.getWindow());
+        }
 
         final EditText textView = (EditText) container.findViewById(R.id.graffiti_selectable_edit);
         final View cancelBtn = container.findViewById(R.id.graffiti_text_cancel_btn);
@@ -522,8 +529,6 @@ public class GraffitiActivity extends Activity {
                             mSettingsPanel.postDelayed(mShowDelayRunnable, mGraffitiParams.mChangePanelVisibilityDelay);
                             break;
                     }
-                } else if (mBtnHidePanel.isSelected() && mGraffiti.getAmplifierScale() > 0) {
-                    mGraffiti.setAmplifierScale(-1);
                 }
 
                 return false;
@@ -548,9 +553,9 @@ public class GraffitiActivity extends Activity {
         });
 
         mViewShowAnimation = new AlphaAnimation(0, 1);
-        mViewShowAnimation.setDuration(500);
+        mViewShowAnimation.setDuration(300);
         mViewHideAnimation = new AlphaAnimation(1, 0);
-        mViewHideAnimation.setDuration(500);
+        mViewHideAnimation.setDuration(300);
         mHideDelayRunnable = new Runnable() {
             public void run() {
                 hideView(mSettingsPanel);
@@ -755,29 +760,15 @@ public class GraffitiActivity extends Activity {
         view.clearAnimation();
         view.startAnimation(mViewShowAnimation);
         view.setVisibility(View.VISIBLE);
-        if (view == mSettingsPanel || mBtnHidePanel.isSelected()) {
-            mGraffiti.setAmplifierScale(-1);
-        }
     }
 
     private void hideView(View view) {
         if (view.getVisibility() != View.VISIBLE) {
-            if (view == mSettingsPanel && mGraffiti.getAmplifierScale() > 0) {
-                mGraffiti.setAmplifierScale(-1);
-            }
             return;
         }
         view.clearAnimation();
         view.startAnimation(mViewHideAnimation);
         view.setVisibility(View.GONE);
-
-        if (view == mSettingsPanel
-                && !mBtnHidePanel.isSelected()) {
-            // 当设置面板隐藏时才显示放大器
-            mGraffiti.setAmplifierScale(mGraffitiParams.mAmplifierScale);
-        } else if ((view == mSettingsPanel && mGraffiti.getAmplifierScale() > 0)) {
-            mGraffiti.setAmplifierScale(-1);
-        }
     }
 
 }

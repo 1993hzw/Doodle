@@ -59,7 +59,7 @@ public class GraffitiView extends View implements IGraffiti {
     private boolean mReady = false;
 
     private float mTouchX, mTouchY;
-
+    private boolean mEnableAmplifier = false; // 放大镜功能
 
     // 保存涂鸦操作，便于撤销
     private CopyOnWriteArrayList<IGraffitiItem> mItemStack = new CopyOnWriteArrayList<IGraffitiItem>();
@@ -217,7 +217,7 @@ public class GraffitiView extends View implements IGraffiti {
         doDraw(canvas);
         canvas.restore();
 
-        if (mAmplifierScale > 0) { //启用放大镜
+        if (mEnableAmplifier && mAmplifierScale > 0) { //启用放大镜
             canvas.save();
 
             if (mTouchY <= mAmplifierRadius * 2) { // 在放大镜的范围内， 把放大镜仿制底部
@@ -264,21 +264,23 @@ public class GraffitiView extends View implements IGraffiti {
             canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
         }
         for (IGraffitiItem item : mItemStack) {
-            if (item == mSelectedItem) {
-                if (canvasClipped) { // 1.旋中时的背景不需要裁剪
-                    canvas.restore();
-                }
-                mSelectedItem.drawSelectedBackground(canvas);
-                if (canvasClipped) { // 2.恢复裁剪
-                    canvas.save();
-                    canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
-                }
-            }
             if (item instanceof GraffitiItemBase) {
                 if (((GraffitiItemBase) item).isDrawOptimize()) { // 优化绘制
 
                 } else { //画在view的画布上
-                    item.draw(canvas);
+                    if (item == mSelectedItem) {
+                        if (canvasClipped) { // 1.旋中时的背景不需要裁剪
+                            canvas.restore();
+                        }
+                        mSelectedItem.drawSelectedBackground(canvas);
+                        item.draw(canvas);
+                        if (canvasClipped) { // 2.恢复裁剪
+                            canvas.save();
+                            canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
+                        }
+                    } else {
+                        item.draw(canvas);
+                    }
                 }
             } else {
                 item.draw(canvas);
@@ -764,6 +766,22 @@ public class GraffitiView extends View implements IGraffiti {
     @Override
     public IGraffitiSelectableItem getSelectedItem() {
         return mSelectedItem;
+    }
+
+    /**
+     * 设置是否开启放大镜
+     *
+     * @param enable
+     */
+    public void enableAmplifier(boolean enable) {
+        mEnableAmplifier = enable;
+    }
+
+    /**
+     * 是否开启放大镜
+     */
+    public boolean isEnableAmplifier() {
+        return mEnableAmplifier;
     }
 
     @Override
