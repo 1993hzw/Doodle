@@ -2,6 +2,8 @@ package cn.hzw.graffiti;
 
 import android.graphics.Bitmap;
 
+import cn.hzw.graffiti.core.IGraffitiSelectableItem;
+
 /**
  * 涂鸦框架相关的回调
  * Created by huangziwei on 2017/3/17.

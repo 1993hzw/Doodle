@@ -2,11 +2,10 @@ package cn.hzw.graffiti;
 
 
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.view.View;
+
+import cn.hzw.graffiti.core.IGraffiti;
 
 /**
  * 涂鸦参数

@@ -5,6 +5,9 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
 
+import cn.hzw.graffiti.core.IGraffiti;
+import cn.hzw.graffiti.core.IGraffitiSelectableItem;
+
 import static cn.hzw.graffiti.util.DrawUtil.rotatePoint;
 
 /**

@@ -1,8 +1,10 @@
-package cn.hzw.graffiti;
+package cn.hzw.graffiti.core;
 
 import android.graphics.Bitmap;
 
 import java.util.List;
+
+import cn.hzw.graffiti.GraffitiColor;
 
 /**
  * Created on 27/06/2018.

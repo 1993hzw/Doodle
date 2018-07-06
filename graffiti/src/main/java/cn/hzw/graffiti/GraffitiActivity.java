@@ -32,7 +32,8 @@ import java.util.List;
 import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.LogUtil;
 import cn.forward.androids.utils.StatusBarUtil;
-import cn.forward.androids.views.KeyboardLayout;
+import cn.hzw.graffiti.core.IGraffiti;
+import cn.hzw.graffiti.core.IGraffitiSelectableItem;
 import cn.hzw.graffiti.dialog.ColorPickerDialog;
 import cn.hzw.graffiti.dialog.DialogController;
 import cn.hzw.graffiti.imagepicker.ImageSelectorView;
@@ -593,13 +594,13 @@ public class GraffitiActivity extends Activity {
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_copy) {
                 mShapeModeContainer.setVisibility(View.VISIBLE);
-                mColorContainer.setVisibility(View.GONE);
+                mColorContainer.setVisibility(View.VISIBLE);
                 mGraffiti.setPen(GraffitiView.Pen.COPY);
                 mPaintSizeBar.setProgress((int) (mGraffiti.getSize() + 0.5f));
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_eraser) {
                 mShapeModeContainer.setVisibility(View.VISIBLE);
-                mColorContainer.setVisibility(View.GONE);
+                mColorContainer.setVisibility(View.VISIBLE);
                 mGraffiti.setPen(GraffitiView.Pen.ERASER);
                 mPaintSizeBar.setProgress((int) (mGraffiti.getSize() + 0.5f));
                 mDone = true;
@@ -610,7 +611,7 @@ public class GraffitiActivity extends Activity {
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_bitmap) {
                 mShapeModeContainer.setVisibility(View.GONE);
-                mColorContainer.setVisibility(View.GONE);
+                mColorContainer.setVisibility(View.VISIBLE);
                 mGraffiti.setPen(GraffitiView.Pen.BITMAP);
                 mDone = true;
             }

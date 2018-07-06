@@ -5,8 +5,8 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
-import android.util.Log;
 
+import cn.hzw.graffiti.core.IGraffiti;
 import cn.hzw.graffiti.util.DrawUtil;
 
 import static cn.hzw.graffiti.util.DrawUtil.drawArrow;

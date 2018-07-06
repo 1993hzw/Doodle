@@ -1,6 +1,5 @@
 package cn.hzw.graffiti;
 
-import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.graphics.Path;
 import android.graphics.PointF;
@@ -10,6 +9,9 @@ import android.view.ScaleGestureDetector;
 import java.util.List;
 
 import cn.forward.androids.TouchGestureDetector;
+import cn.hzw.graffiti.core.IGraffiti;
+import cn.hzw.graffiti.core.IGraffitiItem;
+import cn.hzw.graffiti.core.IGraffitiSelectableItem;
 
 import static cn.hzw.graffiti.util.DrawUtil.computeAngle;
 
@@ -41,7 +43,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
 
     private GraffitiView mGraffiti;
 
-    private ValueAnimator mScaleAnimator ;
+    private ValueAnimator mScaleAnimator;
     private float mAnimTransX, mAnimTranY;
     private boolean mEnableAmplifier;
 
@@ -181,11 +183,6 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
         mLastTouchY = mTouchY;
         mTouchX = e.getX();
         mTouchY = e.getY();
-        // 为了仅点击时也能出现绘图，必须移动path
-        if (mTouchDownX == mTouchX && mTouchDownY == mTouchY & mTouchDownX == mLastTouchX && mTouchDownY == mLastTouchY) {
-            mTouchX += VALUE;
-            mTouchY += VALUE;
-        }
 
         if (mGraffiti.getPen().isSelectable()) {
             boolean found = false;
@@ -218,7 +215,10 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                 }
             }
         } else {
-
+            // 模拟一次滑动
+            onScrollBegin(e);
+            onScroll(e, e, 0, 0);
+            onScrollEnd(e);
         }
         mGraffiti.invalidate();
         return true;
@@ -262,8 +262,8 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
-        if(mGraffiti.getScale()<1){
-            if(mScaleAnimator==null) {
+        if (mGraffiti.getScale() < 1) {
+            if (mScaleAnimator == null) {
                 mScaleAnimator = new ValueAnimator();
                 mScaleAnimator.setDuration(100);
                 mScaleAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -272,14 +272,14 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                         float value = (float) animation.getAnimatedValue();
                         float fraction = animation.getAnimatedFraction();
                         mGraffiti.setScale(value, mGraffiti.toX(mTouchCentreX), mGraffiti.toY(mTouchCentreY));
-                        mGraffiti.setTrans(mAnimTransX*(1-fraction),mAnimTranY*(1-fraction));
+                        mGraffiti.setTrans(mAnimTransX * (1 - fraction), mAnimTranY * (1 - fraction));
                     }
                 });
             }
             mScaleAnimator.cancel();
             mAnimTransX = mGraffiti.getTransX();
             mAnimTranY = mGraffiti.getTransY();
-            mScaleAnimator.setFloatValues(mGraffiti.getScale(),1);
+            mScaleAnimator.setFloatValues(mGraffiti.getScale(), 1);
             mScaleAnimator.start();
         }
     }

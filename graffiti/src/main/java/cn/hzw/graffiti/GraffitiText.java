@@ -5,6 +5,8 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.text.TextUtils;
 
+import cn.hzw.graffiti.core.IGraffiti;
+
 /**
  * 文字item
  * Created by huangziwei on 2017/3/16.

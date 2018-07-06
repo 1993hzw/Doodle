@@ -1,4 +1,4 @@
-package cn.hzw.graffiti;
+package cn.hzw.graffiti.core;
 
 import android.graphics.Canvas;
 

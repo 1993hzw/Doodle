@@ -4,6 +4,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 
+import cn.hzw.graffiti.core.IGraffiti;
+
 import static cn.hzw.graffiti.util.DrawUtil.drawCircle;
 import static cn.hzw.graffiti.util.DrawUtil.rotatePointInGraffiti;
 

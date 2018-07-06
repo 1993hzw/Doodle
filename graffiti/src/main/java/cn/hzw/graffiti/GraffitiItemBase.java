@@ -3,6 +3,9 @@ package cn.hzw.graffiti;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 
+import cn.hzw.graffiti.core.IGraffiti;
+import cn.hzw.graffiti.core.IGraffitiItem;
+
 import static cn.hzw.graffiti.util.DrawUtil.restoreRotatePointInGraffiti;
 import static cn.hzw.graffiti.util.DrawUtil.rotatePointInGraffiti;
 

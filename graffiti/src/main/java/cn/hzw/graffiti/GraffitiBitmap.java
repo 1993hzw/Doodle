@@ -2,8 +2,9 @@ package cn.hzw.graffiti;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Rect;
+
+import cn.hzw.graffiti.core.IGraffiti;
 
 /**
  * 图片item

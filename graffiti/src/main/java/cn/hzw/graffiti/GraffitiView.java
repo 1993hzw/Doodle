@@ -13,9 +13,12 @@ import android.view.View;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import cn.forward.androids.TouchGestureDetector;
 import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.Util;
+import cn.hzw.graffiti.core.IGraffiti;
+import cn.hzw.graffiti.core.IGraffitiItem;
+import cn.hzw.graffiti.core.IGraffitiSelectableItem;
+import cn.hzw.graffiti.core.IGraffitiTouchGestureDetector;
 
 import static cn.hzw.graffiti.util.DrawUtil.drawCircle;
 
@@ -83,7 +86,7 @@ public class GraffitiView extends View implements IGraffiti {
     private int mGraffitiRotateDegree = 0; // 相对于初始图片旋转的角度
 
     // 手势相关
-    private TouchGestureDetector mTouchGestureDetector;
+    private IGraffitiTouchGestureDetector mTouchGestureDetector;
 
     /**
      * @param context
@@ -130,12 +133,7 @@ public class GraffitiView extends View implements IGraffiti {
         mAmplifierPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
         mAmplifierPaint.setStrokeWidth(Util.dp2px(getContext(), 10));
 
-        mTouchGestureDetector = new TouchGestureDetector(getContext(), new GraffitiOnTouchGestureListener(this));
-        mTouchGestureDetector.setScaleSpanSlop(1);
-        mTouchGestureDetector.setScaleMinSpan(1);
-        mTouchGestureDetector.setIsLongpressEnabled(false);
-        mTouchGestureDetector.setIsScrollAfterScaled(false);
-
+        mTouchGestureDetector = new GraffitiTouchGestureDetector(getContext(), new GraffitiOnTouchGestureListener(this));
     }
 
     @Override
@@ -404,7 +402,7 @@ public class GraffitiView extends View implements IGraffiti {
      *
      * @param touchGestureDetector
      */
-    public void setTouchGestureDetector(TouchGestureDetector touchGestureDetector) {
+    public void setTouchGestureDetector(IGraffitiTouchGestureDetector touchGestureDetector) {
         mTouchGestureDetector = touchGestureDetector;
     }
 
@@ -413,7 +411,7 @@ public class GraffitiView extends View implements IGraffiti {
      *
      * @return
      */
-    public TouchGestureDetector getTouchGestureDetector() {
+    public IGraffitiTouchGestureDetector getTouchGestureDetector() {
         return mTouchGestureDetector;
     }
 

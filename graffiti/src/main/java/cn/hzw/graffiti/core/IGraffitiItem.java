@@ -1,7 +1,9 @@
-package cn.hzw.graffiti;
+package cn.hzw.graffiti.core;
 
 import android.graphics.Canvas;
 import android.graphics.PointF;
+
+import cn.hzw.graffiti.GraffitiColor;
 
 /**
  * Created on 27/06/2018.
@@ -17,25 +19,25 @@ public interface IGraffitiItem {
      * 获取画笔
      * @return
      */
-    public GraffitiView.Pen getPen();
+    public IGraffiti.Pen getPen();
 
     /**
      * 设置画笔
      * @param pen
      */
-    public void setPen(GraffitiView.Pen pen);
+    public void setPen(IGraffiti.Pen pen);
 
     /**
      * 获取画笔形状
      * @return
      */
-    public GraffitiView.Shape getShape();
+    public IGraffiti.Shape getShape();
 
     /**
      * 设置画笔形状
      * @param shape
      */
-    public void setShape(GraffitiView.Shape shape);
+    public void setShape(IGraffiti.Shape shape);
 
     /**
      * 获取大小
