@@ -40,10 +40,9 @@ public interface GraffitiListener {
 
     /**
      * 新建一个可选的item
-     * @param pen
      * @param x
      * @param y
      */
-    void onCreateSelectableItem(GraffitiView.Pen pen, float x, float y);
+    void onCreateSelectableItem(float x, float y);
 
 }

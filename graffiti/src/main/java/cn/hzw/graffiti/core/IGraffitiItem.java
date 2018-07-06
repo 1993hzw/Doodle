@@ -19,25 +19,25 @@ public interface IGraffitiItem {
      * 获取画笔
      * @return
      */
-    public IGraffiti.Pen getPen();
+    public IGraffitiPen getPen();
 
     /**
      * 设置画笔
      * @param pen
      */
-    public void setPen(IGraffiti.Pen pen);
+    public void setPen(IGraffitiPen pen);
 
     /**
      * 获取画笔形状
      * @return
      */
-    public IGraffiti.Shape getShape();
+    public IGraffitiShape getShape();
 
     /**
      * 设置画笔形状
      * @param shape
      */
-    public void setShape(IGraffiti.Shape shape);
+    public void setShape(IGraffitiShape shape);
 
     /**
      * 获取大小
@@ -55,13 +55,13 @@ public interface IGraffitiItem {
      * 获取颜色
      * @return
      */
-    public GraffitiColor getColor();
+    public IGraffitiColor getColor();
 
     /**
      * 设置颜色
      * @param color
      */
-    public void setColor(GraffitiColor color);
+    public void setColor(IGraffitiColor color);
 
     /**
      * 绘制item

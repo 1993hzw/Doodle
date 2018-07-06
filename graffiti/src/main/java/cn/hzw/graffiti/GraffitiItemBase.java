@@ -4,7 +4,10 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 
 import cn.hzw.graffiti.core.IGraffiti;
+import cn.hzw.graffiti.core.IGraffitiColor;
 import cn.hzw.graffiti.core.IGraffitiItem;
+import cn.hzw.graffiti.core.IGraffitiPen;
+import cn.hzw.graffiti.core.IGraffitiShape;
 
 import static cn.hzw.graffiti.util.DrawUtil.restoreRotatePointInGraffiti;
 import static cn.hzw.graffiti.util.DrawUtil.rotatePointInGraffiti;
@@ -25,10 +28,10 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
     private PointF mLocation = new PointF();
     private PointF mTemp = new PointF();
 
-    private GraffitiView.Pen mPen; // 画笔类型
-    private GraffitiView.Shape mShape; // 画笔形状
+    private IGraffitiPen mPen; // 画笔类型
+    private IGraffitiShape mShape; // 画笔形状
     private float mSize; // 大小
-    private GraffitiColor mColor; // 颜色
+    private IGraffitiColor mColor; // 颜色
     private boolean mIsDrawOptimize = false; //优化绘制
 
     public GraffitiItemBase(IGraffiti graffiti) {
@@ -111,35 +114,36 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
         return mGraffitiRotate;
     }
 
-    public GraffitiView.Pen getPen() {
+    @Override
+    public IGraffitiPen getPen() {
         return mPen;
     }
-
-    public void setPen(GraffitiView.Pen pen) {
+    @Override
+    public void setPen(IGraffitiPen pen) {
         mPen = pen;
     }
-
-    public GraffitiView.Shape getShape() {
+    @Override
+    public IGraffitiShape getShape() {
         return mShape;
     }
-
-    public void setShape(GraffitiView.Shape shape) {
+    @Override
+    public void setShape(IGraffitiShape shape) {
         mShape = shape;
     }
-
+    @Override
     public float getSize() {
         return mSize;
     }
-
+    @Override
     public void setSize(float size) {
         mSize = size;
     }
-
-    public GraffitiColor getColor() {
+    @Override
+    public IGraffitiColor getColor() {
         return mColor;
     }
-
-    public void setColor(GraffitiColor color) {
+    @Override
+    public void setColor(IGraffitiColor color) {
         mColor = color;
     }
 

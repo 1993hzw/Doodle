@@ -86,11 +86,11 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
         } else {
             mGraffiti.enableAmplifier(true); // 涂鸦时开启放大镜
             // 点击copy
-            if (mGraffiti.getPen() == IGraffiti.Pen.COPY && mCopyLocation.isInIt(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY), mGraffiti.getSize())) {
+            if (mGraffiti.getPen() == GraffitiPen.COPY && mCopyLocation.isInIt(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY), mGraffiti.getSize())) {
                 mCopyLocation.setRelocating(true);
                 mCopyLocation.setCopying(false);
             } else {
-                if (mGraffiti.getPen() == IGraffiti.Pen.COPY) {
+                if (mGraffiti.getPen() == GraffitiPen.COPY) {
                     if (!mCopyLocation.isCopying()) {
                         mCopyLocation.setStartPosition(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY));
                     }
@@ -101,7 +101,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                 // 初始化绘制
                 mCurrPath = new Path();
                 mCurrPath.moveTo(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY));
-                if (mGraffiti.getShape() == IGraffiti.Shape.HAND_WRITE) { // 手写
+                if (mGraffiti.getShape() == GraffitiShape.HAND_WRITE) { // 手写
                     mCurrGraffitiPath = GraffitiPath.toPath(mGraffiti, mCurrPath);
                 } else {  // 画图形
                     mCurrGraffitiPath = GraffitiPath.toShape(mGraffiti,
@@ -152,15 +152,15 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                 }
             }
         } else {
-            if (mGraffiti.getPen() == IGraffiti.Pen.COPY && mCopyLocation.isRelocating()) {
+            if (mGraffiti.getPen() == GraffitiPen.COPY && mCopyLocation.isRelocating()) {
                 // 正在定位location
                 mCopyLocation.updateLocation(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY));
             } else {
-                if (mGraffiti.getPen() == IGraffiti.Pen.COPY) {
+                if (mGraffiti.getPen() == GraffitiPen.COPY) {
                     mCopyLocation.updateLocation(mCopyLocation.getCopyStartX() + mGraffiti.toX(mTouchX) - mCopyLocation.getTouchStartX(),
                             mCopyLocation.getCopyStartY() + mGraffiti.toY(mTouchY) - mCopyLocation.getTouchStartY());
                 }
-                if (mGraffiti.getShape() == IGraffiti.Shape.HAND_WRITE) { // 手写
+                if (mGraffiti.getShape() == GraffitiShape.HAND_WRITE) { // 手写
                     mCurrPath.quadTo(
                             mGraffiti.toX(mLastTouchX),
                             mGraffiti.toY(mLastTouchY),
@@ -211,7 +211,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                     mGraffiti.setSelectedItem(null);
                     mGraffiti.getGraffitiListener().onSelectedItem(old, false);
                 } else {
-                    mGraffiti.getGraffitiListener().onCreateSelectableItem(mGraffiti.getPen(), mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY));
+                    mGraffiti.getGraffitiListener().onCreateSelectableItem(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY));
                 }
             }
         } else {

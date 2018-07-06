@@ -6,10 +6,16 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Shader;
 
+import cn.hzw.graffiti.core.IGraffitiColor;
+import cn.hzw.graffiti.core.IGraffitiItem;
+import cn.hzw.graffiti.core.IGraffitiPen;
+import cn.hzw.graffiti.util.DrawUtil;
+
 /**
  * 涂鸦画笔颜色
  */
-public class GraffitiColor {
+public class GraffitiColor implements IGraffitiColor{
+
     public enum Type {
         COLOR, // 颜色值
         BITMAP // 图片
@@ -40,13 +46,13 @@ public class GraffitiColor {
         mTileY = tileY;
     }
 
-    public void initColor(Paint paint, Matrix matrix) {
+    @Override
+    public void initColor(Paint paint, IGraffitiItem item) {
+        GraffitiItemBase graffitiItem = (GraffitiItemBase) item;
         if (mType == Type.COLOR) {
             paint.setColor(mColor);
-            paint.setShader(null);
         } else if (mType == Type.BITMAP) {
             BitmapShader shader = new BitmapShader(mBitmap, mTileX, mTileY);
-            shader.setLocalMatrix(matrix);
             paint.setShader(shader);
         }
     }
@@ -80,7 +86,8 @@ public class GraffitiColor {
         return mType;
     }
 
-    public GraffitiColor copy() {
+    @Override
+    public IGraffitiColor copy() {
         GraffitiColor color = null;
         if (mType == Type.COLOR) {
             color = new GraffitiColor(mColor);

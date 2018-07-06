@@ -16,8 +16,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.Util;
 import cn.hzw.graffiti.core.IGraffiti;
+import cn.hzw.graffiti.core.IGraffitiColor;
 import cn.hzw.graffiti.core.IGraffitiItem;
+import cn.hzw.graffiti.core.IGraffitiPen;
 import cn.hzw.graffiti.core.IGraffitiSelectableItem;
+import cn.hzw.graffiti.core.IGraffitiShape;
 import cn.hzw.graffiti.core.IGraffitiTouchGestureDetector;
 
 import static cn.hzw.graffiti.util.DrawUtil.drawCircle;
@@ -54,7 +57,7 @@ public class GraffitiView extends View implements IGraffiti {
 
     private Paint mPaint;
     private float mSize;
-    private GraffitiColor mColor; // 画笔底色
+    private IGraffitiColor mColor; // 画笔底色
 
     private boolean isJustDrawOriginal; // 是否只绘制原图
 
@@ -69,8 +72,8 @@ public class GraffitiView extends View implements IGraffiti {
 //    private CopyOnWriteArrayList<GraffitiPath> mPathStack = new CopyOnWriteArrayList<GraffitiPath>();
 //    private CopyOnWriteArrayList<IGraffitiSelectableItem> mSelectableStack = new CopyOnWriteArrayList<>();
 
-    private Pen mPen;
-    private Shape mShape;
+    private IGraffitiPen mPen;
+    private IGraffitiShape mShape;
 
 
     private float mAmplifierRadius;
@@ -115,13 +118,12 @@ public class GraffitiView extends View implements IGraffiti {
         mColor = new GraffitiColor(Color.RED);
         mPaint = new Paint();
         mPaint.setStrokeWidth(mSize);
-        mPaint.setColor(mColor.getColor());
         mPaint.setAntiAlias(true);
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
 
-        mPen = Pen.HAND;
-        mShape = Shape.HAND_WRITE;
+        mPen = GraffitiPen.HAND;
+        mShape = GraffitiShape.HAND_WRITE;
 
         mCopyLocation = new CopyLocation(this, 150, 150);
 
@@ -287,7 +289,7 @@ public class GraffitiView extends View implements IGraffiti {
         canvas.restore();
 
 
-        if (mPen == Pen.COPY) {
+        if (mPen == GraffitiPen.COPY) {
             mCopyLocation.drawItSelf(canvas, mSize);
         }
     }
@@ -417,10 +419,6 @@ public class GraffitiView extends View implements IGraffiti {
 
     public final CopyLocation getCopyLocation() {
         return mCopyLocation;
-    }
-
-    private boolean isPenSelectable() {
-        return mPen == Pen.TEXT || mPen == Pen.BITMAP;
     }
 
     // ========================= api ================================
@@ -564,7 +562,7 @@ public class GraffitiView extends View implements IGraffiti {
      * @param color
      */
     @Override
-    public void setColor(GraffitiColor color) {
+    public void setColor(IGraffitiColor color) {
         mColor = color;
         if (mSelectedItem != null) {
             mSelectedItem.setColor(color);
@@ -573,7 +571,7 @@ public class GraffitiView extends View implements IGraffiti {
     }
 
     @Override
-    public GraffitiColor getColor() {
+    public IGraffitiColor getColor() {
         return mColor;
     }
 
@@ -616,14 +614,14 @@ public class GraffitiView extends View implements IGraffiti {
      * @param pen
      */
     @Override
-    public void setPen(Pen pen) {
+    public void setPen(IGraffitiPen pen) {
         if (pen == null) {
             throw new RuntimeException("Pen can't be null");
         }
-        Pen old = mPen;
+        IGraffitiPen old = mPen;
         mPen = pen;
 
-        if (!isPenSelectable() || old != mPen) {
+        if (!mPen.isSelectable() || old != mPen) {
             if (mSelectedItem != null) {
                 IGraffitiSelectableItem oldItem = mSelectedItem;
                 mSelectedItem = null;
@@ -634,7 +632,7 @@ public class GraffitiView extends View implements IGraffiti {
     }
 
     @Override
-    public IGraffiti.Pen getPen() {
+    public IGraffitiPen getPen() {
         return mPen;
     }
 
@@ -644,7 +642,7 @@ public class GraffitiView extends View implements IGraffiti {
      * @param shape
      */
     @Override
-    public void setShape(Shape shape) {
+    public void setShape(IGraffitiShape shape) {
         if (shape == null) {
             throw new RuntimeException("Shape can't be null");
         }
@@ -653,7 +651,7 @@ public class GraffitiView extends View implements IGraffiti {
     }
 
     @Override
-    public Shape getShape() {
+    public IGraffitiShape getShape() {
         return mShape;
     }
 
@@ -666,7 +664,7 @@ public class GraffitiView extends View implements IGraffiti {
     }
 
     /**
-     * 设置图片偏移
+     * 设置图片G偏移
      *
      * @param transX
      */

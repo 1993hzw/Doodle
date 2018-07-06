@@ -11,49 +11,6 @@ import cn.hzw.graffiti.GraffitiColor;
  */
 
 public interface IGraffiti {
-
-    /**
-     * 画笔
-     */
-    public enum Pen {
-        HAND, // 手绘
-        COPY, // 仿制
-        ERASER, // 橡皮擦
-        TEXT(true), // 文本
-        BITMAP(true); // 贴图
-
-        private boolean mIsSelectable = false; // 画笔绘制的item是否可选
-
-        Pen() {
-            this(false);
-        }
-
-        Pen(boolean isSelectable) {
-            mIsSelectable = isSelectable;
-        }
-
-        /**
-         * 画笔制作的item是否可选，用于旋转、移动等特定操作
-         * @return
-         */
-        public boolean isSelectable() {
-            return mIsSelectable;
-        }
-    }
-
-    /**
-     * 图形
-     */
-    public enum Shape {
-        HAND_WRITE, //
-        ARROW, // 箭头
-        LINE, // 直线
-        FILL_CIRCLE, // 实心圆
-        HOLLOW_CIRCLE, // 空心圆
-        FILL_RECT, // 实心矩形
-        HOLLOW_RECT, // 空心矩形
-    }
-
     /**
      * 获取当前涂鸦坐标系中的单位大小，该单位参考dp，独立于图片
      *
@@ -94,24 +51,24 @@ public interface IGraffiti {
      *
      * @param pen
      */
-    public void setPen(Pen pen);
+    public void setPen(IGraffitiPen pen);
 
     /**
      * 获取画笔
      */
-    public IGraffiti.Pen getPen();
+    public IGraffitiPen getPen();
 
     /**
      * 设置画笔形状
      *
      * @param shape
      */
-    public void setShape(Shape shape);
+    public void setShape(IGraffitiShape shape);
 
     /**
      * 获取画笔形状
      */
-    public Shape getShape();
+    public IGraffitiShape getShape();
 
     /**
      * 设置图片偏移量x
@@ -168,14 +125,14 @@ public interface IGraffiti {
      *
      * @param color
      */
-    public void setColor(GraffitiColor color);
+    public void setColor(IGraffitiColor color);
 
     /**
      * 获取颜色
      *
      * @return
      */
-    public GraffitiColor getColor();
+    public IGraffitiColor getColor();
 
     /**
      * 最小缩放倍数限制

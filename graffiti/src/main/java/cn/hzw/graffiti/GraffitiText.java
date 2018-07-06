@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.text.TextUtils;
 
 import cn.hzw.graffiti.core.IGraffiti;
+import cn.hzw.graffiti.core.IGraffitiColor;
 
 /**
  * 文字item
@@ -18,7 +19,7 @@ public class GraffitiText extends GraffitiSelectableItemBase {
     private final Paint mPaint = new Paint();
     private String mText;
 
-    public GraffitiText(IGraffiti graffiti, String text, float size, GraffitiColor color, int textRotate, float x, float y) {
+    public GraffitiText(IGraffiti graffiti, String text, float size, IGraffitiColor color, int textRotate, float x, float y) {
         super(graffiti, textRotate, x, y);
         this.mText = text;
         setSize(size);

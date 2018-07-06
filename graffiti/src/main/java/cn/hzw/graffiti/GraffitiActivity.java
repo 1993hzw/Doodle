@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -33,7 +34,9 @@ import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.LogUtil;
 import cn.forward.androids.utils.StatusBarUtil;
 import cn.hzw.graffiti.core.IGraffiti;
+import cn.hzw.graffiti.core.IGraffitiPen;
 import cn.hzw.graffiti.core.IGraffitiSelectableItem;
+import cn.hzw.graffiti.core.IGraffitiShape;
 import cn.hzw.graffiti.dialog.ColorPickerDialog;
 import cn.hzw.graffiti.dialog.DialogController;
 import cn.hzw.graffiti.imagepicker.ImageSelectorView;
@@ -241,30 +244,42 @@ public class GraffitiActivity extends Activity {
                     @Override
                     public void onSelectedItem(IGraffitiSelectableItem selectableItem, boolean selected) {
                         if (selected) {
-                            mSelectedTextEditContainer.setVisibility(View.VISIBLE);
-                            if (mGraffiti.getColor().getType() == GraffitiColor.Type.BITMAP) {
-                                mBtnColor.setBackgroundDrawable(new BitmapDrawable(mGraffiti.getColor().getBitmap()));
-                            } else {
-                                mBtnColor.setBackgroundColor(selectableItem.getColor().getColor());
+                            GraffitiColor color = null;
+                            if(mGraffiti.getColor() instanceof GraffitiColor){
+                                color = (GraffitiColor) selectableItem.getColor();
+                            }
+                            if(color!=null) {
+                                if (color.getType() == GraffitiColor.Type.BITMAP) {
+                                    mBtnColor.setBackgroundDrawable(new BitmapDrawable(color.getBitmap()));
+                                } else {
+                                    mBtnColor.setBackgroundColor(color.getColor());
+                                }
                             }
                             mPaintSizeBar.setProgress((int) (selectableItem.getSize() + 0.5f));
+                            mSelectedTextEditContainer.setVisibility(View.VISIBLE);
                         } else {
-                            mSelectedTextEditContainer.setVisibility(View.GONE);
-                            if (mGraffiti.getColor().getType() == GraffitiColor.Type.BITMAP) {
-                                mBtnColor.setBackgroundDrawable(new BitmapDrawable(mGraffiti.getColor().getBitmap()));
-                            } else {
-                                mBtnColor.setBackgroundColor(mGraffiti.getColor().getColor());
+                            GraffitiColor color = null;
+                            if(mGraffiti.getColor() instanceof GraffitiColor){
+                                color = (GraffitiColor) mGraffiti.getColor();
+                            }
+                            if(color!=null) {
+                                if (color.getType() == GraffitiColor.Type.BITMAP) {
+                                    mBtnColor.setBackgroundDrawable(new BitmapDrawable(color.getBitmap()));
+                                } else {
+                                    mBtnColor.setBackgroundColor(color.getColor());
+                                }
                             }
 
                             mPaintSizeBar.setProgress((int) (mGraffiti.getSize() + 0.5f));
+                            mSelectedTextEditContainer.setVisibility(View.GONE);
                         }
                     }
 
                     @Override
-                    public void onCreateSelectableItem(GraffitiView.Pen pen, float x, float y) {
-                        if (pen == GraffitiView.Pen.TEXT) {
+                    public void onCreateSelectableItem(float x, float y) {
+                        if (mGraffiti.getPen() == GraffitiPen.TEXT) {
                             createGraffitiText(null, x, y);
-                        } else if (pen == GraffitiView.Pen.BITMAP) {
+                        } else if (mGraffiti.getPen() == GraffitiPen.BITMAP) {
                             createGraffitiBitmap(null, x, y);
                         }
                     }
@@ -435,7 +450,7 @@ public class GraffitiActivity extends Activity {
                 Bitmap bitmap = ImageUtils.createBitmapFromPath(pathList.get(0), mGraffitiView.getWidth() / 4, mGraffitiView.getHeight() / 4);
 
                 if (graffitiBitmap == null) {
-                    IGraffitiSelectableItem item = new GraffitiBitmap(mGraffiti, bitmap, mGraffiti.getSize(), mGraffiti.getColor().copy(),
+                    IGraffitiSelectableItem item = new GraffitiBitmap(mGraffiti, bitmap, mGraffiti.getSize(), new GraffitiColor(Color.TRANSPARENT),
                             0, x, y);
                     mGraffiti.addItem(item);
                     mGraffiti.setSelectedItem(item);
@@ -477,10 +492,17 @@ public class GraffitiActivity extends Activity {
         mBtnColor.setOnClickListener(mOnClickListener);
         mSettingsPanel = findViewById(R.id.graffiti_panel);
         mColorContainer = findViewById(R.id.graffiti_color_container);
-        if (mGraffiti.getColor().getType() == GraffitiColor.Type.COLOR) {
-            mBtnColor.setBackgroundColor(mGraffiti.getColor().getColor());
-        } else if (mGraffiti.getColor().getType() == GraffitiColor.Type.BITMAP) {
-            mBtnColor.setBackgroundDrawable(new BitmapDrawable(mGraffiti.getColor().getBitmap()));
+
+        GraffitiColor color = null;
+        if(mGraffiti.getColor() instanceof GraffitiColor){
+            color = (GraffitiColor) mGraffiti.getColor();
+        }
+        if(color!=null) {
+            if (color.getType() == GraffitiColor.Type.COLOR) {
+                mBtnColor.setBackgroundColor(color.getColor());
+            } else if (color.getType() == GraffitiColor.Type.BITMAP) {
+                mBtnColor.setBackgroundDrawable(new BitmapDrawable(color.getBitmap()));
+            }
         }
 
         mPaintSizeBar = (SeekBar) findViewById(R.id.paint_size);
@@ -589,30 +611,30 @@ public class GraffitiActivity extends Activity {
             if (v.getId() == R.id.btn_pen_hand) {
                 mShapeModeContainer.setVisibility(View.VISIBLE);
                 mColorContainer.setVisibility(View.VISIBLE);
-                mGraffiti.setPen(GraffitiView.Pen.HAND);
+                mGraffiti.setPen(GraffitiPen.HAND);
                 mPaintSizeBar.setProgress((int) (mGraffiti.getSize() + 0.5f));
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_copy) {
                 mShapeModeContainer.setVisibility(View.VISIBLE);
                 mColorContainer.setVisibility(View.VISIBLE);
-                mGraffiti.setPen(GraffitiView.Pen.COPY);
+                mGraffiti.setPen(GraffitiPen.COPY);
                 mPaintSizeBar.setProgress((int) (mGraffiti.getSize() + 0.5f));
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_eraser) {
                 mShapeModeContainer.setVisibility(View.VISIBLE);
                 mColorContainer.setVisibility(View.VISIBLE);
-                mGraffiti.setPen(GraffitiView.Pen.ERASER);
+                mGraffiti.setPen(GraffitiPen.ERASER);
                 mPaintSizeBar.setProgress((int) (mGraffiti.getSize() + 0.5f));
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_text) {
                 mShapeModeContainer.setVisibility(View.GONE);
                 mColorContainer.setVisibility(View.VISIBLE);
-                mGraffiti.setPen(GraffitiView.Pen.TEXT);
+                mGraffiti.setPen(GraffitiPen.TEXT);
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_bitmap) {
                 mShapeModeContainer.setVisibility(View.GONE);
                 mColorContainer.setVisibility(View.VISIBLE);
-                mGraffiti.setPen(GraffitiView.Pen.BITMAP);
+                mGraffiti.setPen(GraffitiPen.BITMAP);
                 mDone = true;
             }
             if (mDone) {
@@ -642,21 +664,27 @@ public class GraffitiActivity extends Activity {
                 mGraffiti.undo();
                 mDone = true;
             } else if (v.getId() == R.id.btn_set_color) {
-                if (!(GraffitiParams.getDialogInterceptor() != null
-                        && GraffitiParams.getDialogInterceptor().onShow(GraffitiActivity.this, mGraffiti, GraffitiParams.DialogType.COLOR_PICKER))) {
-                    new ColorPickerDialog(GraffitiActivity.this, mGraffiti.getColor().getColor(), "画笔颜色",
-                            new ColorPickerDialog.OnColorChangedListener() {
-                                public void colorChanged(int color) {
-                                    mBtnColor.setBackgroundColor(color);
-                                    mGraffiti.setColor(new GraffitiColor(color));
-                                }
+                GraffitiColor color = null;
+                if(mGraffiti.getColor() instanceof GraffitiColor){
+                    color = (GraffitiColor) mGraffiti.getColor();
+                }
+                if(color!=null) {
+                    if (!(GraffitiParams.getDialogInterceptor() != null
+                            && GraffitiParams.getDialogInterceptor().onShow(GraffitiActivity.this, mGraffiti, GraffitiParams.DialogType.COLOR_PICKER))) {
+                        new ColorPickerDialog(GraffitiActivity.this, color.getColor(), "画笔颜色",
+                                new ColorPickerDialog.OnColorChangedListener() {
+                                    public void colorChanged(int color) {
+                                        mBtnColor.setBackgroundColor(color);
+                                        mGraffiti.setColor(new GraffitiColor(color));
+                                    }
 
-                                @Override
-                                public void colorChanged(Drawable color) {
-                                    mBtnColor.setBackgroundDrawable(color);
-                                    mGraffiti.setColor(new GraffitiColor(ImageUtils.getBitmapFromDrawable(color)));
-                                }
-                            }).show();
+                                    @Override
+                                    public void colorChanged(Drawable color) {
+                                        mBtnColor.setBackgroundDrawable(color);
+                                        mGraffiti.setColor(new GraffitiColor(ImageUtils.getBitmapFromDrawable(color)));
+                                    }
+                                }).show();
+                    }
                 }
                 mDone = true;
             }
@@ -725,19 +753,19 @@ public class GraffitiActivity extends Activity {
             }
 
             if (v.getId() == R.id.btn_hand_write) {
-                mGraffiti.setShape(GraffitiView.Shape.HAND_WRITE);
+                mGraffiti.setShape(GraffitiShape.HAND_WRITE);
             } else if (v.getId() == R.id.btn_arrow) {
-                mGraffiti.setShape(GraffitiView.Shape.ARROW);
+                mGraffiti.setShape(GraffitiShape.ARROW);
             } else if (v.getId() == R.id.btn_line) {
-                mGraffiti.setShape(GraffitiView.Shape.LINE);
+                mGraffiti.setShape(GraffitiShape.LINE);
             } else if (v.getId() == R.id.btn_holl_circle) {
-                mGraffiti.setShape(GraffitiView.Shape.HOLLOW_CIRCLE);
+                mGraffiti.setShape(GraffitiShape.HOLLOW_CIRCLE);
             } else if (v.getId() == R.id.btn_fill_circle) {
-                mGraffiti.setShape(GraffitiView.Shape.FILL_CIRCLE);
+                mGraffiti.setShape(GraffitiShape.FILL_CIRCLE);
             } else if (v.getId() == R.id.btn_holl_rect) {
-                mGraffiti.setShape(GraffitiView.Shape.HOLLOW_RECT);
+                mGraffiti.setShape(GraffitiShape.HOLLOW_RECT);
             } else if (v.getId() == R.id.btn_fill_rect) {
-                mGraffiti.setShape(GraffitiView.Shape.FILL_RECT);
+                mGraffiti.setShape(GraffitiShape.FILL_RECT);
             }
 
             if (mLastShapeView != null) {
