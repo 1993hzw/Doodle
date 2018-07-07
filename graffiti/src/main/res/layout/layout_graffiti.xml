@@ -12,20 +12,20 @@
 
 
         <include
-            android:id="@+id/graffiti__title_bar"
-            layout="@layout/graffiti__title_bar" />
+            android:id="@+id/graffiti_title_bar"
+            layout="@layout/graffiti_title_bar" />
 
         <FrameLayout
             android:id="@+id/graffiti_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/graffiti__title_bar" />
+            android:layout_below="@id/graffiti_title_bar" />
 
         <RelativeLayout
             android:id="@+id/graffiti_panel"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_below="@id/graffiti__title_bar">
+            android:layout_below="@id/graffiti_title_bar">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -229,7 +229,8 @@
                     android:layout_marginTop="10dp"
                     android:orientation="horizontal">
 
-                    <RelativeLayout
+                    <FrameLayout
+                        android:id="@+id/btn_set_color_container"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:background="@drawable/graffiti_btn_effect_rect_line"
@@ -239,7 +240,7 @@
                             android:id="@+id/btn_set_color"
                             android:layout_width="fill_parent"
                             android:layout_height="fill_parent" />
-                    </RelativeLayout>
+                    </FrameLayout>
 
                     <SeekBar
                         android:id="@+id/paint_size"

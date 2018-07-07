@@ -123,7 +123,7 @@ public class CopyLocation {
     public CopyLocation copy() {
         CopyLocation copyLocation = new CopyLocation();
         copyLocation.mCopyStartX = mCopyStartX;
-        copyLocation.mCopyStartX = mCopyStartX;
+        copyLocation.mCopyStartY = mCopyStartY;
         copyLocation.mTouchStartX = mTouchStartX;
         copyLocation.mTouchStartY = mTouchStartY;
         copyLocation.mX = mX;

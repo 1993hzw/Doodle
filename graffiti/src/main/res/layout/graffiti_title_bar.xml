@@ -29,7 +29,7 @@
             android:layout_marginTop="15dp"
             android:background="#101010"/>
 
-        <TextView
+        <cn.forward.androids.views.STextView
             android:id="@+id/graffiti_txt_title"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -40,6 +40,7 @@
             android:maxLines="1"
             android:singleLine="true"
             android:text="涂鸦"
+            app:stv_text_color_pressed="#aaffffff"
             android:textColor="#ffffff"
             android:textSize="18dp"/>
 
@@ -61,7 +62,7 @@
             android:layout_height="@dimen/title_bar_height"
             android:padding="13dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/graffiti_hide_panel"
+            android:src="@drawable/graffiti_btn_effect_panel"
             android:visibility="visible"
             app:miv_is_ignore_alpha="true"
             app:miv_mask_color="#a8a8a8"/>

@@ -1,7 +1,6 @@
 <resources>
     <string name="graffiti_app_name">Graffiti</string>
 
-    <string name="graffiti_moving_pic">单指移动、双指缩放</string>
     <string name="graffiti_clear_screen">清屏</string>
     <string name="graffiti_cant_undo_after_clearing">清屏后不可撤销</string>
     <string name="graffiti_saving_picture">保存图片</string>

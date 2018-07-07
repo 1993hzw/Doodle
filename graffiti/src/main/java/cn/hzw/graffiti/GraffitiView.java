@@ -42,7 +42,7 @@ public class GraffitiView extends View implements IGraffiti {
 
     public final static float MAX_SCALE = 4f; // 最大缩放倍数
     public final static float MIN_SCALE = 0.25f; // 最小缩放倍数
-    public final static int DEFAULT_SIZE = 8; // 默认画笔大小
+    public final static int DEFAULT_SIZE = 6; // 默认画笔大小
 
     public static final int ERROR_INIT = -1;
     public static final int ERROR_SAVE = -2;
@@ -89,7 +89,7 @@ public class GraffitiView extends View implements IGraffiti {
     private float mGraffitiSizeUnit = 1; // 长度单位，不同大小的图片的长度单位不一样。该单位的意义同dp的作用类似，独立于图片之外的单位长度
     private int mGraffitiRotateDegree = 0; // 相对于初始图片旋转的角度
 
-    private List<WeakReference<GraffitiViewListener>> mListenerList = new CopyOnWriteArrayList<>();
+    private List<WeakReference<IGraffitiViewListener>> mListenerList = new CopyOnWriteArrayList<>();
 
     // 手势相关
     private IGraffitiTouchDetector mDefaultTouchDetector;
@@ -880,7 +880,7 @@ public class GraffitiView extends View implements IGraffiti {
      *
      * @param listener
      */
-    public void addGraffitiViewListener(GraffitiViewListener listener) {
+    public void addGraffitiViewListener(IGraffitiViewListener listener) {
         if (listener == null || mListenerList.contains(listener)) {
             return;
         }
@@ -892,9 +892,9 @@ public class GraffitiView extends View implements IGraffiti {
      *
      * @param listener
      */
-    public void removeGraffitiViewListener(GraffitiViewListener listener) {
-        GraffitiViewListener callBack;
-        for (WeakReference<GraffitiViewListener> ref : mListenerList) {
+    public void removeGraffitiViewListener(IGraffitiViewListener listener) {
+        IGraffitiViewListener callBack;
+        for (WeakReference<IGraffitiViewListener> ref : mListenerList) {
             callBack = ref.get();
             if (callBack == null || callBack == listener) {
                 mListenerList.remove(ref);
@@ -903,8 +903,8 @@ public class GraffitiView extends View implements IGraffiti {
     }
 
     private void notifyActionOccur(int action, Object obj) {
-        GraffitiViewListener callBack;
-        for (WeakReference<GraffitiViewListener> ref : mListenerList) {
+        IGraffitiViewListener callBack;
+        for (WeakReference<IGraffitiViewListener> ref : mListenerList) {
             callBack = ref.get();
             if (callBack != null) {
                 callBack.onActionOccur(action, obj);
@@ -917,7 +917,7 @@ public class GraffitiView extends View implements IGraffiti {
     /**
      * 监听涂鸦中的事件
      */
-    public interface GraffitiViewListener {
+    public interface IGraffitiViewListener {
 
         /**
          * 操作发生后回调

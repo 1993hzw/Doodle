@@ -5,7 +5,7 @@
                 android:layout_height="match_parent">
 
     <cn.forward.androids.views.RatioImageView
-        android:id="@+id/image"
+        android:id="@+id/graffiti_image"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:scaleType="centerCrop"
@@ -13,7 +13,7 @@
         />
 
     <ImageView
-        android:id="@+id/image_selected"
+        android:id="@+id/graffiti_image_selected"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:layout_alignParentRight="true"

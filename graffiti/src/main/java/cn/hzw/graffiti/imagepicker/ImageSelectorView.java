@@ -64,7 +64,7 @@ public class ImageSelectorView extends FrameLayout implements View.OnClickListen
             mMaxCount = 1;
         }
         mSelectorListener = listener;
-        mGridView = (GridView) findViewById(R.id.list_image);
+        mGridView = (GridView) findViewById(R.id.graffiti_list_image);
         mBtnEnter = (TextView) findViewById(R.id.btn_enter);
         mBtnEnter.setOnClickListener(this);
         findViewById(R.id.btn_back).setOnClickListener(this);
@@ -112,6 +112,18 @@ public class ImageSelectorView extends FrameLayout implements View.OnClickListen
         });
         mGridView.setOnItemClickListener(new ItemClickListener());
         scanImageData();
+    }
+
+    /**
+     * 列数
+     * @param count
+     */
+    public void setColumnCount(int count) {
+        mGridView.setNumColumns(count);
+    }
+
+    public int getColumnCount() {
+        return mGridView.getNumColumns();
     }
 
     // 扫描系统数据库中的图片
