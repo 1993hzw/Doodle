@@ -9,12 +9,24 @@ import android.graphics.Canvas;
 public interface IGraffitiSelectableItem extends IGraffitiItem {
 
     /**
+     * 设置是否选中
+     * @param isSelected
+     */
+    public void setSelected(boolean isSelected);
+
+    /**
+     * 是否选中
+     * @return
+     */
+    public boolean isSelected();
+
+    /**
      * 是否击中
      */
     public boolean isInIt(float x, float y);
 
     /**
-     * 绘制选别时的背景
+     * 绘制选择时的背景
      *
      * @param canvas
      */

@@ -3,10 +3,10 @@ package cn.hzw.graffiti;
 import android.content.Context;
 
 import cn.forward.androids.TouchGestureDetector;
-import cn.hzw.graffiti.core.IGraffitiTouchGestureDetector;
+import cn.hzw.graffiti.core.IGraffitiTouchDetector;
 
-public class GraffitiTouchGestureDetector extends TouchGestureDetector implements IGraffitiTouchGestureDetector {
-    public GraffitiTouchGestureDetector(Context context, IOnTouchGestureListener listener) {
+public class GraffitiTouchDetector extends TouchGestureDetector implements IGraffitiTouchDetector {
+    public GraffitiTouchDetector(Context context, IOnTouchGestureListener listener) {
         super(context, listener);
         this.setScaleSpanSlop(1);
         this.setScaleMinSpan(1);

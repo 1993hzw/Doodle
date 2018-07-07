@@ -93,4 +93,26 @@ public interface IGraffitiItem {
      * @return
      */
     public float getItemRotate();
+
+    /**
+     * 是否需要裁剪图片区域外的部分
+     * @return
+     */
+    public boolean isNeedClipOutside();
+
+    /**
+     * 设置是否需要裁剪图片区域外的部分
+     * @param clip
+     */
+    public void setNeedClipOutside(boolean clip);
+
+    /**
+     * 添加进涂鸦时回调
+     */
+    public void onAdd();
+
+    /**
+     * 移除涂鸦时回调
+     */
+    public void onRemove();
 }

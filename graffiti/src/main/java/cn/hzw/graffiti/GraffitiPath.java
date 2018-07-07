@@ -30,35 +30,20 @@ public class GraffitiPath extends GraffitiItemBase {
         super(graffiti, attrs);
     }
 
-    public void reset(IGraffiti graffiti, float sx, float sy, float dx, float dy) {
-//        setGraffiti(graffiti);
-        setPen(graffiti.getPen());
-        setShape(graffiti.getShape());
-        setSize(graffiti.getSize());
-        setColor(graffiti.getColor().copy());
-
+    public void updateXY(float sx, float sy, float dx, float dy) {
         mSxy.set(sx, sy);
         mDxy.set(dx, dy);
-        if (graffiti instanceof GraffitiView) {
-            mCopyLocation = ((GraffitiView) graffiti).getCopyLocation().copy();
-        } else {
-            mCopyLocation = null;
-        }
     }
 
-    public void reset(IGraffiti graffiti, Path p) {
-//        setGraffiti(graffiti);
-        setPen(graffiti.getPen());
-        setShape(graffiti.getShape());
-        setSize(graffiti.getSize());
-        setColor(graffiti.getColor().copy());
+    public void updatePath(Path path) {
+        this.mPath = path;
+    }
 
-        this.mPath = p;
-        if (graffiti instanceof GraffitiView) {
-            mCopyLocation = ((GraffitiView) graffiti).getCopyLocation().copy();
-        } else {
-            mCopyLocation = null;
+    public void updateCopy(float touchStartX, float touchStartY, float copyStartX, float copyStartY){
+        if(mCopyLocation==null){
+            return;
         }
+        mCopyLocation.setStartPosition(touchStartX, touchStartY, copyStartX, copyStartY);
     }
 
     public CopyLocation getCopyLocation() {
@@ -86,10 +71,10 @@ public class GraffitiPath extends GraffitiItemBase {
 
         path.mSxy.set(sx, sy);
         path.mDxy.set(dx, dy);
-        if (graffiti instanceof GraffitiView) {
-            path.mCopyLocation = ((GraffitiView) graffiti).getCopyLocation().copy();
-        } else {
-            path.mCopyLocation = null;
+        if(path.getPen()==GraffitiPen.COPY) {
+            if (graffiti instanceof GraffitiView) {
+                path.mCopyLocation = GraffitiPen.COPY.getCopyLocation().copy();
+            }
         }
         return path;
     }
@@ -103,7 +88,7 @@ public class GraffitiPath extends GraffitiItemBase {
 
         path.mPath = p;
         if (graffiti instanceof GraffitiView) {
-            path.mCopyLocation = ((GraffitiView) graffiti).getCopyLocation().copy();
+            path.mCopyLocation = GraffitiPen.COPY.getCopyLocation().copy();
         } else {
             path.mCopyLocation = null;
         }
@@ -112,14 +97,14 @@ public class GraffitiPath extends GraffitiItemBase {
 
     @Override
     protected void doDraw(Canvas canvas) {
+        mPaint.reset();
         mPaint.setStrokeWidth(getSize());
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setAntiAlias(true);
 
-        getColor().initColor(mPaint,this);
-
-        getShape().draw(canvas,this, mPaint);
+        getColor().config(this, mPaint);
+        getShape().draw(canvas, this, mPaint);
     }
 
 

@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 
 import cn.hzw.graffiti.core.IGraffiti;
+import cn.hzw.graffiti.core.IGraffitiColor;
 
 /**
  * 图片item
@@ -17,7 +18,7 @@ public class GraffitiBitmap extends GraffitiSelectableItemBase {
     private Rect mSrcRect = new Rect();
     private Rect mDstRect = new Rect();
 
-    public GraffitiBitmap(IGraffiti graffiti, Bitmap bitmap, float size, GraffitiColor color, int itemRotate, float x, float y) {
+    public GraffitiBitmap(IGraffiti graffiti, Bitmap bitmap, float size, IGraffitiColor color, int itemRotate, float x, float y) {
         super(graffiti, itemRotate, x, y);
         this.mBitmap = bitmap;
         setSize(size);

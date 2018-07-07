@@ -1,5 +1,6 @@
 package cn.hzw.graffiti;
 
+import cn.hzw.graffiti.core.IGraffitiColor;
 import cn.hzw.graffiti.core.IGraffitiPen;
 import cn.hzw.graffiti.core.IGraffitiShape;
 
@@ -12,7 +13,7 @@ public class GraffitiPaintAttrs {
     private IGraffitiPen mPen; // 画笔类型
     private IGraffitiShape mShape; // 画笔形状
     private float mSize; // 大小
-    private GraffitiColor mColor; // 颜色
+    private IGraffitiColor mColor; // 颜色
 
     public IGraffitiPen pen() {
         return mPen;
@@ -41,11 +42,11 @@ public class GraffitiPaintAttrs {
         return this;
     }
 
-    public GraffitiColor color() {
+    public IGraffitiColor color() {
         return mColor;
     }
 
-    public GraffitiPaintAttrs color(GraffitiColor color) {
+    public GraffitiPaintAttrs color(IGraffitiColor color) {
         mColor = color;
         return this;
     }

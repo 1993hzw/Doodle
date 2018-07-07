@@ -7,10 +7,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.os.Build;
+import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import cn.forward.androids.utils.ImageUtils;
@@ -19,9 +23,8 @@ import cn.hzw.graffiti.core.IGraffiti;
 import cn.hzw.graffiti.core.IGraffitiColor;
 import cn.hzw.graffiti.core.IGraffitiItem;
 import cn.hzw.graffiti.core.IGraffitiPen;
-import cn.hzw.graffiti.core.IGraffitiSelectableItem;
 import cn.hzw.graffiti.core.IGraffitiShape;
-import cn.hzw.graffiti.core.IGraffitiTouchGestureDetector;
+import cn.hzw.graffiti.core.IGraffitiTouchDetector;
 
 import static cn.hzw.graffiti.util.DrawUtil.drawCircle;
 
@@ -31,14 +34,20 @@ import static cn.hzw.graffiti.util.DrawUtil.drawCircle;
  */
 public class GraffitiView extends View implements IGraffiti {
 
+    // ACTION
+    public final static int ACTION_ROTATION = 1; // 旋转
+    public final static int ACTION_SAVE = 2; // 保存
+    public final static int ACTION_UNDO = 3; // 撤销
+    public final static int ACTION_CLEAR = 4; // 清空
+
     public final static float MAX_SCALE = 4f; // 最大缩放倍数
     public final static float MIN_SCALE = 0.25f; // 最小缩放倍数
-
+    public final static int DEFAULT_SIZE = 8; // 默认画笔大小
 
     public static final int ERROR_INIT = -1;
     public static final int ERROR_SAVE = -2;
 
-    private GraffitiListener mGraffitiListener;
+    private IGraffitiListener mGraffitiListener;
 
     private Bitmap mBitmap; // 当前涂鸦的原图（旋转后）
     private Bitmap mGraffitiBitmap; // 绘制涂鸦的图片
@@ -52,8 +61,6 @@ public class GraffitiView extends View implements IGraffiti {
     private float mTransX = 0, mTransY = 0; // 图片在适应屏幕且处于居中位置的基础上的偏移量（ 图片真实偏移量为mCentreTranX + mTransX，View窗口坐标系上的偏移）
     private float mMinScale = MIN_SCALE; // 最小缩放倍数
     private float mMaxScale = MAX_SCALE; // 最大缩放倍数
-
-    private CopyLocation mCopyLocation; // 仿制的定位器
 
     private Paint mPaint;
     private float mSize;
@@ -69,12 +76,9 @@ public class GraffitiView extends View implements IGraffiti {
 
     // 保存涂鸦操作，便于撤销
     private CopyOnWriteArrayList<IGraffitiItem> mItemStack = new CopyOnWriteArrayList<IGraffitiItem>();
-//    private CopyOnWriteArrayList<GraffitiPath> mPathStack = new CopyOnWriteArrayList<GraffitiPath>();
-//    private CopyOnWriteArrayList<IGraffitiSelectableItem> mSelectableStack = new CopyOnWriteArrayList<>();
 
     private IGraffitiPen mPen;
     private IGraffitiShape mShape;
-
 
     private float mAmplifierRadius;
     private Path mAmplifierPath;
@@ -82,22 +86,26 @@ public class GraffitiView extends View implements IGraffiti {
     private Paint mAmplifierPaint;
     private int mAmplifierHorizonX; // 放大器的位置的x坐标，使其水平居中
 
-    // 当前选择的文字信息
-    private IGraffitiSelectableItem mSelectedItem;
-
     private float mGraffitiSizeUnit = 1; // 长度单位，不同大小的图片的长度单位不一样。该单位的意义同dp的作用类似，独立于图片之外的单位长度
     private int mGraffitiRotateDegree = 0; // 相对于初始图片旋转的角度
 
+    private List<WeakReference<GraffitiViewListener>> mListenerList = new CopyOnWriteArrayList<>();
+
     // 手势相关
-    private IGraffitiTouchGestureDetector mTouchGestureDetector;
+    private IGraffitiTouchDetector mDefaultTouchDetector;
+    private Map<IGraffitiPen, IGraffitiTouchDetector> mTouchDetectorMap = new HashMap<>();
+
+    public GraffitiView(Context context, Bitmap bitmap, IGraffitiListener listener) {
+        this(context, bitmap, listener, null);
+    }
 
     /**
      * @param context
      * @param bitmap
      * @param listener
-     * @
+     * @param defaultDetector 默认手势识别器
      */
-    public GraffitiView(Context context, Bitmap bitmap, GraffitiListener listener) {
+    public GraffitiView(Context context, Bitmap bitmap, IGraffitiListener listener, IGraffitiTouchDetector defaultDetector) {
         super(context);
 
         // 关闭硬件加速，因为bitmap的Canvas不支持硬件加速
@@ -108,7 +116,7 @@ public class GraffitiView extends View implements IGraffiti {
         mBitmap = bitmap;
         mGraffitiListener = listener;
         if (mGraffitiListener == null) {
-            throw new RuntimeException("GraffitiListener is null!!!");
+            throw new RuntimeException("IGraffitiListener is null!!!");
         }
         if (mBitmap == null) {
             throw new RuntimeException("Bitmap is null!!!");
@@ -125,8 +133,6 @@ public class GraffitiView extends View implements IGraffiti {
         mPen = GraffitiPen.HAND;
         mShape = GraffitiShape.HAND_WRITE;
 
-        mCopyLocation = new CopyLocation(this, 150, 150);
-
         mAmplifierPaint = new Paint();
         mAmplifierPaint.setColor(0xaaffffff);
         mAmplifierPaint.setStyle(Paint.Style.STROKE);
@@ -135,7 +141,7 @@ public class GraffitiView extends View implements IGraffiti {
         mAmplifierPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
         mAmplifierPaint.setStrokeWidth(Util.dp2px(getContext(), 10));
 
-        mTouchGestureDetector = new GraffitiTouchGestureDetector(getContext(), new GraffitiOnTouchGestureListener(this));
+        mDefaultTouchDetector = defaultDetector;
     }
 
     @Override
@@ -143,7 +149,6 @@ public class GraffitiView extends View implements IGraffiti {
         super.onSizeChanged(w, h, oldw, oldh);
         initGraffitiBitmap();
         if (!mReady) {
-            mCopyLocation.updateLocation(toX(w / 2), toY(h / 2));
             mGraffitiListener.onReady();
             mReady = true;
         }
@@ -153,10 +158,18 @@ public class GraffitiView extends View implements IGraffiti {
     public boolean onTouchEvent(MotionEvent event) {
         mTouchX = event.getX();
         mTouchY = event.getY();
-        if (mTouchGestureDetector == null) {
-            return super.onTouchEvent(event);
+
+        // 綁定的识别器
+        IGraffitiTouchDetector detector = mTouchDetectorMap.get(mPen);
+        if (detector != null) {
+            return detector.onTouchEvent(event);
         }
-        return mTouchGestureDetector.onTouchEvent(event);
+        // 默认识别器
+        if (mDefaultTouchDetector != null) {
+            return mDefaultTouchDetector.onTouchEvent(event);
+        }
+
+        return super.onTouchEvent(event);
     }
 
     private void initGraffitiBitmap() {// 不用resize preview
@@ -177,18 +190,7 @@ public class GraffitiView extends View implements IGraffiti {
         mCentreTranX = (getWidth() - mPrivateWidth) / 2f;
         mCentreTranY = (getHeight() - mPrivateHeight) / 2f;
 
-        initCanvas();
-
-        // 重新绘制到图片上
-        for (IGraffitiItem item : mItemStack) {
-            if (item instanceof GraffitiItemBase) {
-                if (((GraffitiItemBase) item).isDrawOptimize()) { // 优化绘制
-                    item.draw(mBitmapCanvas);
-                } else { //画在view的画布上
-
-                }
-            }
-        }
+        invalidateForce();
 
         mAmplifierRadius = Math.min(getWidth(), getHeight()) / 4;
         mAmplifierPath = new Path();
@@ -198,9 +200,9 @@ public class GraffitiView extends View implements IGraffiti {
         mGraffitiSizeUnit = Util.dp2px(getContext(), 1) / mPrivateScale;
 
         if (!mReady) { // 只有初始化时才需要设置画笔大小
-            mSize = 30 * mGraffitiSizeUnit;
+            mSize = DEFAULT_SIZE * mGraffitiSizeUnit;
         }
-
+        // 居中适应屏幕
         mTransX = mTransY = 0;
         mScale = 1;
 
@@ -268,18 +270,23 @@ public class GraffitiView extends View implements IGraffiti {
                 if (((GraffitiItemBase) item).isDrawOptimize()) { // 优化绘制
 
                 } else { //画在view的画布上
-                    if (item == mSelectedItem) {
-                        if (canvasClipped) { // 1.旋中时的背景不需要裁剪
+                    if (!item.isNeedClipOutside()) { // 1.不需要裁剪
+                        if (canvasClipped) {
                             canvas.restore();
                         }
-                        mSelectedItem.drawSelectedBackground(canvas);
+
+                        ((GraffitiItemBase) item).drawBefore(canvas);
                         item.draw(canvas);
+                        ((GraffitiItemBase) item).drawAfter(canvas);
+
                         if (canvasClipped) { // 2.恢复裁剪
                             canvas.save();
                             canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
                         }
                     } else {
+                        ((GraffitiItemBase) item).drawBefore(canvas);
                         item.draw(canvas);
+                        ((GraffitiItemBase) item).drawAfter(canvas);
                     }
                 }
             } else {
@@ -288,18 +295,8 @@ public class GraffitiView extends View implements IGraffiti {
         }
         canvas.restore();
 
-
-        if (mPen == GraffitiPen.COPY) {
-            mCopyLocation.drawItSelf(canvas, mSize);
-        }
+        mPen.draw(canvas, this);
     }
-
-    private void draw(Canvas canvas, List<? extends IGraffitiItem> items) {
-        for (IGraffitiItem item : items) {
-            item.draw(canvas);
-        }
-    }
-
 
     /**
      * 将屏幕触摸坐标x转换成在图片中的坐标
@@ -400,48 +397,83 @@ public class GraffitiView extends View implements IGraffiti {
     }
 
     /**
-     * 手势识别器
+     * 根据画笔绑定手势识别器
      *
-     * @param touchGestureDetector
+     * @param pen
+     * @param detector
      */
-    public void setTouchGestureDetector(IGraffitiTouchGestureDetector touchGestureDetector) {
-        mTouchGestureDetector = touchGestureDetector;
+    public void bindTouchDetector(IGraffitiPen pen, IGraffitiTouchDetector detector) {
+        if (pen == null) {
+            return;
+        }
+        mTouchDetectorMap.put(pen, detector);
     }
 
     /**
-     * 手势识别器
+     * 获取画笔绑定的手势识别器
+     *
+     * @param pen
+     */
+    public IGraffitiTouchDetector getDefaultTouchDetector(IGraffitiPen pen) {
+        return mTouchDetectorMap.get(pen);
+    }
+
+    /**
+     * 移除指定画笔的手势识别器
+     *
+     * @param pen
+     */
+    public void removeTouchDetector(IGraffitiPen pen) {
+        if (pen == null) {
+            return;
+        }
+        mTouchDetectorMap.remove(pen);
+    }
+
+    /**
+     * 设置默认手势识别器
+     *
+     * @param touchGestureDetector
+     */
+    public void setDefaultTouchDetector(IGraffitiTouchDetector touchGestureDetector) {
+        mDefaultTouchDetector = touchGestureDetector;
+    }
+
+    /**
+     * 默认手势识别器
      *
      * @return
      */
-    public IGraffitiTouchGestureDetector getTouchGestureDetector() {
-        return mTouchGestureDetector;
-    }
-
-    public final CopyLocation getCopyLocation() {
-        return mCopyLocation;
+    public IGraffitiTouchDetector getDefaultTouchDetector() {
+        return mDefaultTouchDetector;
     }
 
     // ========================= api ================================
-
-
-    public void setGraffitiListener(GraffitiListener graffitiListener) {
-        mGraffitiListener = graffitiListener;
-    }
-
-    public GraffitiListener getGraffitiListener() {
-        return mGraffitiListener;
-    }
 
     /**
      * 强制刷新，包括重新刷新涂鸦图片
      */
     public void invalidateForce() {
         initCanvas();
-        draw(mBitmapCanvas, mItemStack);
+        // 重新绘制到图片上
+        for (IGraffitiItem item : mItemStack) {
+            if (item instanceof GraffitiItemBase) {
+                if (((GraffitiItemBase) item).isDrawOptimize()) { // 优化绘制
+                    item.draw(mBitmapCanvas);
+                } else { //画在view的画布上
+
+                }
+            } else {
+                item.draw(mBitmapCanvas);
+            }
+        }
         invalidate();
     }
 
     public void invalidate(IGraffitiItem item) {
+        if (!mItemStack.contains(item)) {
+            throw new RuntimeException("graffiti doesn't include the item");
+        }
         if (((GraffitiItemBase) item).isDrawOptimize()) { // 优化绘制,保存到图片上
             item.draw(mBitmapCanvas);
         } else {
@@ -483,22 +515,16 @@ public class GraffitiView extends View implements IGraffiti {
 
         mBitmap = ImageUtils.rotate(mBitmap, r, true);
         initGraffitiBitmap();
-
-        mCopyLocation.rotatePosition(originalDegree, mGraffitiRotateDegree);
+        notifyActionOccur(ACTION_ROTATION, originalDegree);
 
         invalidate();
-
     }
 
-
     /**
-     * 保存
+     * 保存, 回调GraffitiListener.onSaved()的线程和调用save()的线程相同
      */
     @Override
     public void save() {
-
-        mSelectedItem = null;
-
         for (IGraffitiItem item : mItemStack) {
             if (item instanceof GraffitiItemBase) {
                 if (((GraffitiItemBase) item).isDrawOptimize()) { // 优化绘制，addItem时已经保存在图片上
@@ -509,7 +535,23 @@ public class GraffitiView extends View implements IGraffiti {
             }
         }
 
-        mGraffitiListener.onSaved(mGraffitiBitmap);
+        mGraffitiListener.onSaved(mGraffitiBitmap, new Runnable() {
+            @Override
+            public void run() {
+                // 还原涂鸦图片，确保在ui线程刷新
+                if (Looper.myLooper() == Looper.getMainLooper()) {
+                    invalidateForce();
+                } else {
+                    post(new Runnable() {
+                        @Override
+                        public void run() {
+                            invalidateForce();
+                        }
+                    });
+                }
+            }
+        });
+        notifyActionOccur(ACTION_SAVE, null);
     }
 
     /**
@@ -517,7 +559,9 @@ public class GraffitiView extends View implements IGraffiti {
      */
     @Override
     public void clear() {
+        int size = mItemStack.size();
         mItemStack.clear();
+        notifyActionOccur(ACTION_CLEAR, size);
         invalidateForce();
     }
 
@@ -526,7 +570,9 @@ public class GraffitiView extends View implements IGraffiti {
 
         if (mItemStack.size() > 0) {
             step = Math.min(mItemStack.size(), step);
-            removeItem(mItemStack.get(mItemStack.size() - step));
+            IGraffitiItem item = mItemStack.get(mItemStack.size() - step);
+            removeItem(item);
+            notifyActionOccur(ACTION_UNDO, item);
             return true;
         }
         return false;
@@ -564,9 +610,6 @@ public class GraffitiView extends View implements IGraffiti {
     @Override
     public void setColor(IGraffitiColor color) {
         mColor = color;
-        if (mSelectedItem != null) {
-            mSelectedItem.setColor(color);
-        }
         invalidate();
     }
 
@@ -620,14 +663,6 @@ public class GraffitiView extends View implements IGraffiti {
         }
         IGraffitiPen old = mPen;
         mPen = pen;
-
-        if (!mPen.isSelectable() || old != mPen) {
-            if (mSelectedItem != null) {
-                IGraffitiSelectableItem oldItem = mSelectedItem;
-                mSelectedItem = null;
-                mGraffitiListener.onSelectedItem(oldItem, false);
-            }
-        }
         invalidate();
     }
 
@@ -696,9 +731,6 @@ public class GraffitiView extends View implements IGraffiti {
     @Override
     public void setSize(float paintSize) {
         mSize = paintSize;
-        if (mSelectedItem != null) {
-            mSelectedItem.setSize(paintSize);
-        }
         invalidate();
     }
 
@@ -739,29 +771,6 @@ public class GraffitiView extends View implements IGraffiti {
     @Override
     public float getAmplifierScale() {
         return mAmplifierScale;
-    }
-
-    @Override
-    public boolean isSelectedItem() {
-        return mSelectedItem != null;
-    }
-
-    @Override
-    public void setSelectedItem(IGraffitiSelectableItem selectedItem) {
-        IGraffitiSelectableItem old = mSelectedItem;
-        mSelectedItem = selectedItem;
-        if (old != null) {
-            mGraffitiListener.onSelectedItem((IGraffitiSelectableItem) old, false);
-        }
-        if (selectedItem != null) {
-            mGraffitiListener.onSelectedItem((IGraffitiSelectableItem) selectedItem, true);
-        }
-        invalidate();
-    }
-
-    @Override
-    public IGraffitiSelectableItem getSelectedItem() {
-        return mSelectedItem;
     }
 
     /**
@@ -827,6 +836,7 @@ public class GraffitiView extends View implements IGraffiti {
             throw new RuntimeException("Graffiti is different");
         }
         mItemStack.add(graffitiItem);
+        graffitiItem.onAdd();
 
         if (((GraffitiItemBase) graffitiItem).isDrawOptimize()) { // // 优化绘制
             graffitiItem.draw(mBitmapCanvas); // 提前保存到图片中
@@ -840,13 +850,11 @@ public class GraffitiView extends View implements IGraffiti {
         if (!mItemStack.remove(graffitiItem)) {
             return;
         }
+        graffitiItem.onRemove();
 
         if (graffitiItem instanceof GraffitiItemBase &&
                 ((GraffitiItemBase) graffitiItem).isDrawOptimize()) { // 由于优化绘制，需要重新绘制抹掉图片上的痕迹
             invalidateForce();
-        } else if (graffitiItem == mSelectedItem) {
-            mSelectedItem = null;
-            mGraffitiListener.onSelectedItem((IGraffitiSelectableItem) graffitiItem, false);
         }
         invalidate();
     }
@@ -864,5 +872,59 @@ public class GraffitiView extends View implements IGraffiti {
     @Override
     public Bitmap getGraffitiBitmap() {
         return mGraffitiBitmap;
+    }
+
+
+    /**
+     * 添加回调
+     *
+     * @param listener
+     */
+    public void addGraffitiViewListener(GraffitiViewListener listener) {
+        if (listener == null || mListenerList.contains(listener)) {
+            return;
+        }
+        mListenerList.add(new WeakReference<>(listener));
+    }
+
+    /**
+     * 移除回调
+     *
+     * @param listener
+     */
+    public void removeGraffitiViewListener(GraffitiViewListener listener) {
+        GraffitiViewListener callBack;
+        for (WeakReference<GraffitiViewListener> ref : mListenerList) {
+            callBack = ref.get();
+            if (callBack == null || callBack == listener) {
+                mListenerList.remove(ref);
+            }
+        }
+    }
+
+    private void notifyActionOccur(int action, Object obj) {
+        GraffitiViewListener callBack;
+        for (WeakReference<GraffitiViewListener> ref : mListenerList) {
+            callBack = ref.get();
+            if (callBack != null) {
+                callBack.onActionOccur(action, obj);
+            } else { // 刪除无用的引用
+                mListenerList.remove(ref);
+            }
+        }
+    }
+
+    /**
+     * 监听涂鸦中的事件
+     */
+    public interface GraffitiViewListener {
+
+        /**
+         * 操作发生后回调
+         *
+         * @param action
+         * @param obj    动作相关的对象信息
+         */
+        public void onActionOccur(int action, Object obj);
     }
 }

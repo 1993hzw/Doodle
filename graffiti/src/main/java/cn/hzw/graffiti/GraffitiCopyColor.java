@@ -10,6 +10,9 @@ import cn.hzw.graffiti.core.IGraffitiColor;
 import cn.hzw.graffiti.core.IGraffitiItem;
 import cn.hzw.graffiti.util.DrawUtil;
 
+/**
+ * 涂鸦画笔颜色，底图为涂鸦原图，用于橡皮擦、仿制
+ */
 public class GraffitiCopyColor implements IGraffitiColor {
 
     private PointF mLocationTemp = new PointF();
@@ -31,7 +34,7 @@ public class GraffitiCopyColor implements IGraffitiColor {
     }
 
     @Override
-    public void initColor(Paint paint, IGraffitiItem item) {
+    public void config(IGraffitiItem item, Paint paint) {
         GraffitiItemBase graffitiItem = (GraffitiItemBase) item;
         // 根据旋转值获取正确的旋转地图
         float px = graffitiItem.getOriginalPivotX(), py = graffitiItem.getOriginalPivotY();
@@ -48,16 +51,16 @@ public class GraffitiCopyColor implements IGraffitiColor {
             transY += px - py;
         }
 
-        if(graffitiItem.getPen() == GraffitiPen.COPY) {
-            CopyLocation mCopyLocation = ((GraffitiPath) item).getCopyLocation();
+        if(graffitiItem.getPen() == GraffitiPen.COPY) { // 仿制需要偏移图片
+            CopyLocation copyLocation = ((GraffitiPath) item).getCopyLocation();
             // 仿制时需要偏移图片
-            if (mCopyLocation != null) {
+            if (copyLocation != null) {
                 /*transXSpan = mCopyLocation.getTouchStartX() - mCopyLocation.getCopyStartX();
                 transYSpan = mCopyLocation.getTouchStartY() - mCopyLocation.getCopyStartY();*/
                 mLocationTemp = DrawUtil.rotatePointInGraffiti(mLocationTemp, graffitiItem.getGraffiti().getRotate(), graffitiItem.getGraffitiRotate(),
-                        mCopyLocation.getTouchStartX(), mCopyLocation.getTouchStartY(), graffitiItem.getOriginalPivotX(), graffitiItem.getOriginalPivotY());
+                        copyLocation.getTouchStartX(), copyLocation.getTouchStartY(), graffitiItem.getOriginalPivotX(), graffitiItem.getOriginalPivotY());
                 mLocationTemp2 = DrawUtil.rotatePointInGraffiti(mLocationTemp2, graffitiItem.getGraffiti().getRotate(), graffitiItem.getGraffitiRotate(),
-                        mCopyLocation.getCopyStartX(), mCopyLocation.getCopyStartY(), graffitiItem.getOriginalPivotX(), graffitiItem.getOriginalPivotY());
+                        copyLocation.getCopyStartX(), copyLocation.getCopyStartY(), graffitiItem.getOriginalPivotX(), graffitiItem.getOriginalPivotY());
                 transXSpan = mLocationTemp.x - mLocationTemp2.x;
                 transYSpan = mLocationTemp.y - mLocationTemp2.y;
             }

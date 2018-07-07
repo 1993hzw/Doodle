@@ -10,6 +10,12 @@ public interface IGraffitiPen {
      */
     public boolean isSelectable();
 
-    public void draw(Canvas canvas);
+    /**
+     * 绘制画笔，由IGraffiti绘制，不属于IGraffitiItem的内容
+     * 比如可以用于仿制功能时 定位器的绘制
+     * @param canvas
+     * @param graffiti
+     */
+    public void draw( Canvas canvas, IGraffiti graffiti);
 
 }

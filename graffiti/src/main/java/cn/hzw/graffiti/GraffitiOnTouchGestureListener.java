@@ -9,7 +9,6 @@ import android.view.ScaleGestureDetector;
 import java.util.List;
 
 import cn.forward.androids.TouchGestureDetector;
-import cn.hzw.graffiti.core.IGraffiti;
 import cn.hzw.graffiti.core.IGraffitiItem;
 import cn.hzw.graffiti.core.IGraffitiSelectableItem;
 
@@ -43,13 +42,40 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
 
     private GraffitiView mGraffiti;
 
+    // 动画相关
     private ValueAnimator mScaleAnimator;
     private float mAnimTransX, mAnimTranY;
-    private boolean mEnableAmplifier;
 
-    public GraffitiOnTouchGestureListener(GraffitiView graffiti) {
+    private IGraffitiSelectableItem mSelectedItem; // 当前选中的item
+    private ISelectionListener mListener;
+
+    public GraffitiOnTouchGestureListener(GraffitiView graffiti, ISelectionListener listener) {
         mGraffiti = graffiti;
-        mCopyLocation = mGraffiti.getCopyLocation();
+        mCopyLocation = GraffitiPen.COPY.getCopyLocation();
+        mCopyLocation.reset();
+        mGraffiti.addGraffitiViewListener(new GraffitiView.GraffitiViewListener() {
+            @Override
+            public void onActionOccur(int action, Object obj) {
+                if (action == GraffitiView.ACTION_ROTATION) {
+                    mCopyLocation.rotatePosition(mGraffiti, (int) obj);
+                }
+            }
+        });
+        mListener = listener;
+    }
+
+    public void setSelectedItem(IGraffitiSelectableItem selectedItem) {
+        if (mSelectedItem != null) {
+            mSelectedItem.setSelected(false);
+        }
+        if (selectedItem != null) {
+            selectedItem.setSelected(true);
+        }
+        this.mSelectedItem = selectedItem;
+    }
+
+    public IGraffitiSelectableItem getSelectedItem() {
+        return mSelectedItem;
     }
 
     @Override
@@ -72,14 +98,14 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
 
         if (mGraffiti.getPen().isSelectable()) {
             // 判断是否点中选择区域
-            if (mGraffiti.getSelectedItem() != null) {
-                PointF xy = mGraffiti.getSelectedItem().getLocation();
+            if (mSelectedItem != null) {
+                PointF xy = mSelectedItem.getLocation();
                 mSelectedItemX = xy.x;
                 mSelectedItemY = xy.y;
                 // 旋转
-                if (mGraffiti.getSelectedItem().isCanRotate(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY))) {
-                    mGraffiti.getSelectedItem().setIsRotating(true);
-                    mRotateTextDiff = mGraffiti.getSelectedItem().getItemRotate() -
+                if (mSelectedItem.isCanRotate(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY))) {
+                    mSelectedItem.setIsRotating(true);
+                    mRotateTextDiff = mSelectedItem.getItemRotate() -
                             computeAngle(xy.x, xy.y, mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY));
                 }
             }
@@ -91,12 +117,13 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                 mCopyLocation.setCopying(false);
             } else {
                 if (mGraffiti.getPen() == GraffitiPen.COPY) {
+                    mCopyLocation.setRelocating(false);
                     if (!mCopyLocation.isCopying()) {
+                        mCopyLocation.setCopying(true);
                         mCopyLocation.setStartPosition(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY));
+//                        mCurrGraffitiPath.updateCopy(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY), mCopyLocation.getX(), mCopyLocation.getY());
                     }
-                    mCopyLocation.setCopying(true);
                 }
-                mCopyLocation.setRelocating(false);
 
                 // 初始化绘制
                 mCurrPath = new Path();
@@ -122,10 +149,13 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
         mTouchY = e.getY();
 
         if (mGraffiti.getPen().isSelectable()) {
-            mGraffiti.getSelectedItem().setIsRotating(false);
+            mSelectedItem.setIsRotating(false);
         } else {
-            mCurrGraffitiPath.setDrawOptimize(true);
-            mGraffiti.invalidate(mCurrGraffitiPath);
+            if (mCurrGraffitiPath != null) {
+                mCurrGraffitiPath.setDrawOptimize(true);
+                mGraffiti.invalidate(mCurrGraffitiPath);
+                mCurrGraffitiPath = null;
+            }
         }
         mGraffiti.enableAmplifier(false); // 关闭放大镜
         mGraffiti.invalidate();
@@ -139,14 +169,14 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
         mTouchY = e2.getY();
 
         if (mGraffiti.getPen().isSelectable()) { //画笔是否是可选择的
-            if (mGraffiti.getSelectedItem() != null) {
-                if (mGraffiti.getSelectedItem().isRotating()) { // 旋转item
-                    PointF xy = mGraffiti.getSelectedItem().getLocation();
-                    mGraffiti.getSelectedItem().setItemRotate(mRotateTextDiff + computeAngle(
+            if (mSelectedItem != null) {
+                if (mSelectedItem.isRotating()) { // 旋转item
+                    PointF xy = mSelectedItem.getLocation();
+                    mSelectedItem.setItemRotate(mRotateTextDiff + computeAngle(
                             xy.x, xy.y, mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY)
                     ));
                 } else { // 移动item
-                    mGraffiti.getSelectedItem().setLocation(
+                    mSelectedItem.setLocation(
                             mSelectedItemX + mGraffiti.toX(mTouchX) - mGraffiti.toX(mTouchDownX),
                             mSelectedItemY + mGraffiti.toY(mTouchY) - mGraffiti.toY(mTouchDownY));
                 }
@@ -166,9 +196,9 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                             mGraffiti.toY(mLastTouchY),
                             mGraffiti.toX((mTouchX + mLastTouchX) / 2),
                             mGraffiti.toY((mTouchY + mLastTouchY) / 2));
-                    mCurrGraffitiPath.reset(mGraffiti, mCurrPath);
+                    mCurrGraffitiPath.updatePath(mCurrPath);
                 } else {  // 画图形
-                    mCurrGraffitiPath.reset(mGraffiti, mGraffiti.toX(mTouchDownX), mGraffiti.toY(mTouchDownY), mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY));
+                    mCurrGraffitiPath.updateXY(mGraffiti.toX(mTouchDownX), mGraffiti.toY(mTouchDownY), mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY));
                 }
             }
         }
@@ -197,21 +227,21 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
 
                 if (item.isInIt(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY))) {
                     found = true;
-                    mGraffiti.setSelectedItem(item);
+                    setSelectedItem(item);
                     PointF xy = item.getLocation();
                     mSelectedItemX = xy.x;
                     mSelectedItemY = xy.y;
-                    mGraffiti.getGraffitiListener().onSelectedItem(mGraffiti.getSelectedItem(), true);
+                    mListener.onSelectedItem(mSelectedItem, true);
                     break;
                 }
             }
             if (!found) {
-                if (mGraffiti.getSelectedItem() != null) { // 取消选定
-                    IGraffitiSelectableItem old = mGraffiti.getSelectedItem();
-                    mGraffiti.setSelectedItem(null);
-                    mGraffiti.getGraffitiListener().onSelectedItem(old, false);
+                if (mSelectedItem != null) { // 取消选定
+                    IGraffitiSelectableItem old = mSelectedItem;
+                    setSelectedItem(null);
+                    mListener.onSelectedItem(old, false);
                 } else {
-                    mGraffiti.getGraffitiListener().onCreateSelectableItem(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY));
+                    mListener.onCreateSelectableItem(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY));
                 }
             }
         } else {
@@ -282,6 +312,31 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
             mScaleAnimator.setFloatValues(mGraffiti.getScale(), 1);
             mScaleAnimator.start();
         }
+    }
+
+    public void setGraffitiListener(ISelectionListener graffitiListener) {
+        mListener = graffitiListener;
+    }
+
+    public ISelectionListener getGraffitiListener() {
+        return mListener;
+    }
+
+    public interface ISelectionListener {
+        /**
+         * 选中
+         *
+         * @param selected 是否选中，false表示从选中变成不选中
+         */
+        void onSelectedItem(IGraffitiSelectableItem selectableItem, boolean selected);
+
+        /**
+         * 新建一个可选的item
+         *
+         * @param x
+         * @param y
+         */
+        void onCreateSelectableItem(float x, float y);
     }
 
 }

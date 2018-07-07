@@ -26,14 +26,14 @@ public enum GraffitiShape implements IGraffitiShape {
 
 
     @Override
-    public void draw(Canvas canvas, IGraffitiItem graffitiItem, Paint mPaint) {
+    public void draw(Canvas canvas, IGraffitiItem graffitiItem, Paint paint) {
         GraffitiPath graffitiPath = (GraffitiPath) graffitiItem;
         if (this == GraffitiShape.HAND_WRITE) { // 手写
-            canvas.drawPath(graffitiPath.getPath(), mPaint);
+            canvas.drawPath(graffitiPath.getPath(), paint);
         } else { // 画图形
             PointF mSxy = graffitiPath.getSxy();
             PointF mDxy = graffitiPath.getDxy();
-            draw(canvas, mPaint, (GraffitiShape) graffitiItem.getShape(), mSxy.x, mSxy.y, mDxy.x, mDxy.y);
+            draw(canvas, paint, (GraffitiShape) graffitiItem.getShape(), mSxy.x, mSxy.y, mDxy.x, mDxy.y);
         }
     }
 

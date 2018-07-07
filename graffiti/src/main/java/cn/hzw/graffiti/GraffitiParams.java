@@ -51,9 +51,15 @@ public class GraffitiParams implements Parcelable {
     public boolean mIsFullScreen = false;
 
     /**
-     * 初始化的画笔大小
+     * 初始化的画笔大小,单位为像素
      */
-    public float mPaintSize = -1;
+    public float mPaintPixelSize = -1;
+
+    /**
+     * 初始化的画笔大小,单位为涂鸦坐标系中的单位大小，该单位参考dp，独立于图片
+     * mPaintUnitSize值优先于mPaintPixelSize
+     */
+    public float mPaintUnitSize = -1;
 
     /**
      * 画布的最小/最大缩放倍数
@@ -72,7 +78,8 @@ public class GraffitiParams implements Parcelable {
             params.mChangePanelVisibilityDelay = in.readLong();
             params.mAmplifierScale = in.readFloat();
             params.mIsFullScreen = in.readInt() == 1;
-            params.mPaintSize = in.readFloat();
+            params.mPaintPixelSize = in.readFloat();
+            params.mPaintUnitSize = in.readFloat();
             params.mMinScale = in.readFloat();
             params.mMaxScale = in.readFloat();
 
@@ -94,7 +101,8 @@ public class GraffitiParams implements Parcelable {
         dest.writeLong(mChangePanelVisibilityDelay);
         dest.writeFloat(mAmplifierScale);
         dest.writeInt(mIsFullScreen ? 1 : 0);
-        dest.writeFloat(mPaintSize);
+        dest.writeFloat(mPaintPixelSize);
+        dest.writeFloat(mPaintUnitSize);
         dest.writeFloat(mMinScale);
         dest.writeFloat(mMaxScale);
     }

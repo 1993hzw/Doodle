@@ -12,7 +12,8 @@ import cn.hzw.graffiti.core.IGraffitiPen;
 import cn.hzw.graffiti.util.DrawUtil;
 
 /**
- * 涂鸦画笔颜色
+ * 涂鸦画笔颜色，用于手绘
+ *
  */
 public class GraffitiColor implements IGraffitiColor{
 
@@ -47,7 +48,7 @@ public class GraffitiColor implements IGraffitiColor{
     }
 
     @Override
-    public void initColor(Paint paint, IGraffitiItem item) {
+    public void config(IGraffitiItem item, Paint paint) {
         GraffitiItemBase graffitiItem = (GraffitiItemBase) item;
         if (mType == Type.COLOR) {
             paint.setColor(mColor);

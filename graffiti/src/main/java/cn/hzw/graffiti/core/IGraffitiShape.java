@@ -8,5 +8,11 @@ import android.graphics.Paint;
  */
 public interface IGraffitiShape {
 
-     public void draw(Canvas canvas, IGraffitiItem graffitiItem, Paint mPaint);
+     /**
+      * 绘制
+      * @param canvas
+      * @param graffitiItem
+      * @param paint 绘制的画笔
+      */
+     public void draw(Canvas canvas, IGraffitiItem graffitiItem, Paint paint);
 }

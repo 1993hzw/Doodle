@@ -184,22 +184,6 @@ public interface IGraffiti {
     public List<IGraffitiItem> getAllItem();
 
     /**
-     * 是否
-     *
-     * @return
-     */
-    public boolean isSelectedItem();
-
-    /**
-     * 设置当前选中的item
-     *
-     * @param item
-     */
-    public void setSelectedItem(IGraffitiSelectableItem item);
-
-    public IGraffitiSelectableItem getSelectedItem();
-
-    /**
      * 设置放大镜倍数
      *
      * @param amplifierScale

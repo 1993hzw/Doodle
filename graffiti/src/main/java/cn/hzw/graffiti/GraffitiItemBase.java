@@ -33,6 +33,7 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
     private float mSize; // 大小
     private IGraffitiColor mColor; // 颜色
     private boolean mIsDrawOptimize = false; //优化绘制
+    private boolean mIsNeedClipOutside = true; // 是否需要裁剪图片区域外的部分
 
     public GraffitiItemBase(IGraffiti graffiti) {
         this(graffiti, null);
@@ -157,10 +158,7 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
         doDraw(canvas);
 
         canvas.restore();
-
     }
-
-    protected abstract void doDraw(Canvas canvas);
 
     /**
      * 是否优化绘制，若是则在添加item时提前会绘制到图片上，若否则在每次view绘制时绘制在View中，直到保存时才绘制到图片上
@@ -180,4 +178,45 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
     public boolean isDrawOptimize() {
         return mIsDrawOptimize;
     }
+
+    @Override
+    public boolean isNeedClipOutside() {
+        return mIsNeedClipOutside;
+    }
+
+    @Override
+    public void setNeedClipOutside(boolean clip) {
+        mIsNeedClipOutside = clip;
+    }
+
+    @Override
+    public void onAdd() {
+
+    }
+
+    @Override
+    public void onRemove() {
+
+    }
+
+    /**
+     * 仅画在View上，在绘制涂鸦图片之前调用(相当于背景图，但是保存图片时不包含该部分)
+     * @param canvas 为View的Canvas
+     */
+    protected void drawBefore(Canvas canvas){
+
+    }
+    /**
+     * 绘制item，不限制Canvas
+     * @param canvas
+     */
+    protected abstract void doDraw(Canvas canvas);
+    /**
+     * 仅画在View上，在绘制涂鸦图片之后调用(相当于前景图，但是保存图片时不包含该部分)
+     * @param canvas 为View的Canvas
+     */
+    protected  void drawAfter(Canvas canvas){
+
+    }
+
 }

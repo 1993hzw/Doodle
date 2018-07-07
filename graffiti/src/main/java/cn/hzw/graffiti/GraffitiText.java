@@ -48,7 +48,7 @@ public class GraffitiText extends GraffitiSelectableItemBase {
 
     @Override
     public void doDraw(Canvas canvas) {
-        getColor().initColor(mPaint, null);
+        getColor().config(this, mPaint);
         mPaint.setTextSize(getSize());
         mPaint.setStyle(Paint.Style.FILL);
         canvas.drawText(mText, 0, 0, mPaint);

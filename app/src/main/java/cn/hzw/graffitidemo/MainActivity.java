@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import cn.forward.androids.utils.LogUtil;
 import cn.hzw.graffiti.GraffitiActivity;
 import cn.hzw.graffiti.GraffitiParams;
+import cn.hzw.graffiti.GraffitiView;
 import cn.hzw.imageselector.ImageLoader;
 import cn.hzw.imageselector.ImageSelectorActivity;
 
@@ -53,7 +54,7 @@ public class MainActivity extends Activity {
                 // 图片路径
                 params.mImagePath = list.get(0);
                 // 初始画笔大小
-                params.mPaintSize = 20;
+                params.mPaintUnitSize = GraffitiView.DEFAULT_SIZE;
                 // 启动涂鸦页面
                 GraffitiActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_GRAFFITI);
             }

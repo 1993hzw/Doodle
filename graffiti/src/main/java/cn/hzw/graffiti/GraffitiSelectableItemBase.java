@@ -25,6 +25,7 @@ public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implem
 
     private PointF mTemp = new PointF();
     private boolean mIsRotating = false;
+    private boolean mIsSelected = false;
 
     public GraffitiSelectableItemBase(IGraffiti graffiti, int itemRotate, float x, float y) {
         this(graffiti, null, itemRotate, x, y);
@@ -104,6 +105,13 @@ public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implem
         mIsRotating = isRotating;
     }
 
+    @Override
+    protected void drawBefore(Canvas canvas) {
+        if (isSelected()) {
+            drawSelectedBackground(canvas);
+        }
+    }
+
     /**
      * 绘制选别时的背景
      *
@@ -159,6 +167,18 @@ public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implem
         canvas.drawCircle(mRectTemp.right + (GraffitiSelectableItemBase.ITEM_CAN_ROTATE_BOUND - 8) * unit, mRectTemp.top + mRectTemp.height() / 2, 8 * unit, paint);
     }
 
+    @Override
+    public boolean isSelected() {
+        return mIsSelected;
+    }
+
+    @Override
+    public void setSelected(boolean isSelected) {
+        mIsSelected = isSelected;
+        if (getGraffiti() != null) {
+            getGraffiti().invalidate();
+        }
+    }
 
     protected abstract void resetBounds(Rect rect);
 

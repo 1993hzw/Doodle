@@ -2,6 +2,7 @@ package cn.hzw.graffiti;
 
 import android.graphics.Canvas;
 
+import cn.hzw.graffiti.core.IGraffiti;
 import cn.hzw.graffiti.core.IGraffitiPen;
 
 /**
@@ -16,6 +17,7 @@ public enum GraffitiPen implements IGraffitiPen {
     BITMAP(true); // 贴图
 
     private boolean mIsSelectable = false; // 画笔绘制的item是否可选
+    private CopyLocation mCopyLocation;
 
     GraffitiPen() {
         this(false);
@@ -34,8 +36,24 @@ public enum GraffitiPen implements IGraffitiPen {
         return mIsSelectable;
     }
 
-    @Override
-    public void draw(Canvas canvas) {
+    public CopyLocation getCopyLocation() {
+        if (this != COPY) {
+            return null;
+        }
+        if (mCopyLocation == null) {
+            synchronized (this) {
+                if (mCopyLocation == null) {
+                    mCopyLocation = new CopyLocation();
+                }
+            }
+        }
+        return mCopyLocation;
+    }
 
+    @Override
+    public void draw(Canvas canvas, IGraffiti graffiti) {
+        if (this == COPY) {
+            mCopyLocation.drawItSelf(canvas, graffiti.getSize());
+        }
     }
 }

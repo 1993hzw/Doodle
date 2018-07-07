@@ -9,14 +9,15 @@ import cn.hzw.graffiti.core.IGraffitiSelectableItem;
  * Created by huangziwei on 2017/3/17.
  */
 
-public interface GraffitiListener {
+public interface IGraffitiListener {
 
     /**
      * 保存图片
      *
      * @param graffitiBitmap       涂鸦后的图片
+     * @param callback  保存后的回调，如果需要继续涂鸦，必须调用该回调
      */
-    void onSaved(Bitmap graffitiBitmap);
+    void onSaved(Bitmap graffitiBitmap, Runnable callback);
 
     /**
      * 出错
@@ -30,19 +31,5 @@ public interface GraffitiListener {
      * 准备工作已经完成
      */
     void onReady();
-
-    /**
-     * 选中
-     *
-     * @param selected 是否选中，false表示从选中变成不选中
-     */
-    void onSelectedItem(IGraffitiSelectableItem selectableItem, boolean selected);
-
-    /**
-     * 新建一个可选的item
-     * @param x
-     * @param y
-     */
-    void onCreateSelectableItem(float x, float y);
 
 }
