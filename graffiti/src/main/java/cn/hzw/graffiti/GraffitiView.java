@@ -4,8 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PointF;
+import android.graphics.RectF;
 import android.os.Build;
 import android.os.Looper;
 import android.view.MotionEvent;
@@ -28,6 +31,7 @@ import cn.hzw.graffiti.core.IGraffitiShape;
 import cn.hzw.graffiti.core.IGraffitiTouchDetector;
 
 import static cn.hzw.graffiti.util.DrawUtil.drawCircle;
+import static cn.hzw.graffiti.util.DrawUtil.rotatePoint;
 
 /**
  * 涂鸦框架
@@ -57,6 +61,9 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
     private float mPrivateScale; // 图片适应屏幕时的缩放倍数
     private int mPrivateHeight, mPrivateWidth;// 图片适应屏幕时的大小（View窗口坐标系上的大小）
     private float mCentreTranX, mCentreTranY;// 图片在适应屏幕时，位于居中位置的偏移（View窗口坐标系上的偏移）
+
+    private float mRotateScale = 1;
+    private float mRotateTranX, mRotateTranY;
 
     private float mScale = 1; // 在适应屏幕时的缩放基础上的缩放倍数 （ 图片真实的缩放倍数为 mPrivateScale*mScale ）
     private float mTransX = 0, mTransY = 0; // 图片在适应屏幕且处于居中位置的基础上的偏移量（ 图片真实偏移量为mCentreTranX + mTransX，View窗口坐标系上的偏移）
@@ -162,11 +169,29 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
         }
     }
 
+    private Matrix mTouchEventMatrix = new Matrix();
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         mTouchX = event.getX();
         mTouchY = event.getY();
-        return super.dispatchTouchEvent(event);
+
+        if (mGraffitiRotateDegree == 0 || mGraffitiRotateDegree == 180) {
+            return super.dispatchTouchEvent(event);
+        } else {
+            // 把事件转发给innerView，避免在区域外不可点击
+            MotionEvent transformedEvent = MotionEvent.obtain(event);
+//        final float offsetX = mInner.getScrollX() - mInner.getLeft();
+//        final float offsetY = mInner.getScrollY() - mInner.getTop();
+//        transformedEvent.offsetLocation(offsetX, offsetY);
+            mTouchEventMatrix.reset();
+            mTouchEventMatrix.setRotate(-mGraffitiRotateDegree, mInner.getWidth() / 2, mInner.getHeight() / 2);
+            transformedEvent.transform(mTouchEventMatrix);
+            boolean handled = mInner.dispatchTouchEvent(transformedEvent);
+            transformedEvent.recycle();
+
+            return handled;
+        }
     }
 
     private void initGraffitiBitmap() {// 不用resize preview
@@ -204,6 +229,43 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
         invalidate();
     }
 
+    private RectF mGraffitiBound = new RectF();
+    private PointF mTempPoint = new PointF();
+
+    private RectF getGraffitiBound() {
+        rotatePoint(mTempPoint, mGraffitiRotateDegree, mTransX, mTransY, 0, 0);
+        mTempPoint.x = mCentreTranX + mRotateTranX + mTempPoint.x;
+        mTempPoint.y = mCentreTranY + mRotateTranY + mTempPoint.y;
+
+        mGraffitiBound.set(mTempPoint.x, mTempPoint.y, mTempPoint.x + mPrivateWidth * mRotateScale * mScale, mTempPoint.y + mPrivateHeight * mRotateScale * mScale);
+
+        float px = mTempPoint.x + mPrivateWidth * mRotateScale / 2;
+        float py = mTempPoint.y + mPrivateHeight * mRotateScale / 2;
+        // 左上
+        rotatePoint(mTempPoint, mGraffitiRotateDegree, mGraffitiBound.left, mGraffitiBound.top, px, py);
+        float ltX = mTempPoint.x;
+        float ltY = mTempPoint.y;
+        //右下
+        rotatePoint(mTempPoint, mGraffitiRotateDegree, mGraffitiBound.right, mGraffitiBound.bottom, px, py);
+        float rbX = mTempPoint.x;
+        float rbY = mTempPoint.y;
+        // 左下
+        rotatePoint(mTempPoint, mGraffitiRotateDegree, mGraffitiBound.left, mGraffitiBound.bottom, px, py);
+        float lbX = mTempPoint.x;
+        float lbY = mTempPoint.y;
+        //右上
+        rotatePoint(mTempPoint, mGraffitiRotateDegree, mGraffitiBound.right, mGraffitiBound.top, px, py);
+        float rtX = mTempPoint.x;
+        float rtY = mTempPoint.y;
+
+        mGraffitiBound.left = Math.min(Math.min(ltX, rbX), Math.min(lbX, rtX));
+        mGraffitiBound.top = Math.min(Math.min(ltY, rbY), Math.min(lbY, rtY));
+        mGraffitiBound.right = Math.max(Math.max(ltX, rbX), Math.max(lbX, rtX));
+        mGraffitiBound.bottom = Math.max(Math.max(ltY, rbY), Math.max(lbY, rtY));
+
+        return mGraffitiBound;
+    }
+
     @Override
     protected void dispatchDraw(Canvas canvas) {
         if (mBitmap.isRecycled() || mGraffitiBitmap.isRecycled()) {
@@ -211,6 +273,11 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
         }
 
         super.dispatchDraw(canvas);
+
+        /*mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setColor(Color.BLUE);
+        mPaint.setStrokeWidth(20);
+        canvas.drawRect( getGraffitiBound(), mPaint);*/
 
         if (mEnableAmplifier && mAmplifierScale > 0) { //启用放大镜
             canvas.save();
@@ -238,12 +305,13 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
     }
 
     private void doDraw(Canvas canvas) {
-        float left = mCentreTranX + mTransX;
-        float top = mCentreTranY + mTransY;
+        float left = getInnerTranX();
+        float top = getInnerTranY();
 
         // 画布和图片共用一个坐标系，只需要处理屏幕坐标系到图片（画布）坐标系的映射关系
         canvas.translate(left, top); // 偏移画布
-        canvas.scale(mPrivateScale * mScale, mPrivateScale * mScale); // 缩放画布
+        float scale = getInnerScale();
+        canvas.scale(scale, scale); // 缩放画布
 
         if (isJustDrawOriginal) { // 只绘制原图
             canvas.drawBitmap(mBitmap, 0, 0, null);
@@ -291,32 +359,44 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
         mPen.draw(canvas, this);
     }
 
+    private float getInnerScale() {
+        return mPrivateScale * mRotateScale * mScale;
+    }
+
+    private float getInnerTranX() {
+        return mCentreTranX + mRotateTranX + mTransX;
+    }
+
+    private float getInnerTranY() {
+        return mCentreTranY + mRotateTranY + mTransY;
+    }
+
     /**
      * 将屏幕触摸坐标x转换成在图片中的坐标
      */
     public final float toX(float touchX) {
-        return (touchX - mCentreTranX - mTransX) / (mPrivateScale * mScale);
+        return (touchX - getInnerTranX()) / getInnerScale();
     }
 
     /**
      * 将屏幕触摸坐标y转换成在图片中的坐标
      */
     public final float toY(float touchY) {
-        return (touchY - mCentreTranY - mTransY) / (mPrivateScale * mScale);
+        return (touchY - getInnerTranY()) / getInnerScale();
     }
 
     /**
      * 将图片坐标x转换成屏幕触摸坐标
      */
     public final float toTouchX(float x) {
-        return x * ((mPrivateScale * mScale)) + mCentreTranX + mTransX;
+        return x * getInnerScale() + getInnerTranX();
     }
 
     /**
      * 将图片坐标y转换成屏幕触摸坐标
      */
     public final float toTouchY(float y) {
-        return y * ((mPrivateScale * mScale)) + mCentreTranY + mTransY;
+        return y * getInnerScale() + getInnerTranY();
     }
 
     /**
@@ -328,11 +408,11 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
      * @return 偏移量
      */
     public final float toTransX(float touchX, float graffitiX) {
-        return -graffitiX * (mPrivateScale * mScale) + touchX - mCentreTranX;
+        return -graffitiX * getInnerScale() + touchX - mCentreTranX - mRotateTranX;
     }
 
     public final float toTransY(float touchY, float graffitiY) {
-        return -graffitiY * (mPrivateScale * mScale) + touchY - mCentreTranY;
+        return -graffitiY * getInnerScale() + touchY - mCentreTranY - mRotateTranY;
     }
 
 
@@ -507,26 +587,28 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
         int pivotY = mBitmap.getHeight() / 2;
 
         mTransX = mTransY = 0;
+        mRotateTranX = mRotateTranY = 0;
         this.mScale = 1;
+        mRotateScale = 1;
         float touchX = toTouchX(pivotX);
         float touchY = toTouchY(pivotY);
-        mPrivateScale = scale;
+        mRotateScale = scale / mPrivateScale;
 
         // 缩放后，偏移图片，以产生围绕某个点缩放的效果
         tx = toTransX(touchX, pivotX);
         ty = toTransY(touchY, pivotY);
 
-        mCentreTranX = mCentreTranX + tx;
-        mCentreTranY = mCentreTranY + ty;
+        mRotateTranX = tx;
+        mRotateTranY = ty;
 
-        if (nw > nh) {
+        /*if (nw > nh) {
             mPrivateWidth = getWidth();
             mPrivateHeight = (int) (h * mPrivateScale);
         } else {
             mPrivateWidth = (int) (w * mPrivateScale);
             mPrivateHeight = getHeight();
         }
-
+*/
         invalidate();
     }
 
@@ -949,6 +1031,12 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
         protected void onSizeChanged(int w, int h, int oldw, int oldh) {
             super.onSizeChanged(w, h, oldw, oldh);
         }
+
+        @Override
+        public boolean dispatchTouchEvent(MotionEvent event) {
+            return super.dispatchTouchEvent(event);
+        }
+
 
         @Override
         public boolean onTouchEvent(MotionEvent event) {
