@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ import static cn.hzw.graffiti.util.DrawUtil.drawCircle;
  * 涂鸦框架
  * Created by huangziwei on 2016/9/3.
  */
-public class GraffitiView extends View implements IGraffiti {
+public class GraffitiView extends FrameLayout implements IGraffiti {
 
     // ACTION
     public final static int ACTION_ROTATION = 1; // 旋转
@@ -95,6 +96,8 @@ public class GraffitiView extends View implements IGraffiti {
     private IGraffitiTouchDetector mDefaultTouchDetector;
     private Map<IGraffitiPen, IGraffitiTouchDetector> mTouchDetectorMap = new HashMap<>();
 
+    private GraffitiViewInner mInner;
+
     public GraffitiView(Context context, Bitmap bitmap, IGraffitiListener listener) {
         this(context, bitmap, listener, null);
     }
@@ -142,11 +145,16 @@ public class GraffitiView extends View implements IGraffiti {
         mAmplifierPaint.setStrokeWidth(Util.dp2px(getContext(), 10));
 
         mDefaultTouchDetector = defaultDetector;
+
+        mInner = new GraffitiViewInner(context);
+        addView(mInner);
+        setClipChildren(false);
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+        initCanvas();
         initGraffitiBitmap();
         if (!mReady) {
             mGraffitiListener.onReady();
@@ -155,21 +163,10 @@ public class GraffitiView extends View implements IGraffiti {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean dispatchTouchEvent(MotionEvent event) {
         mTouchX = event.getX();
         mTouchY = event.getY();
-
-        // 綁定的识别器
-        IGraffitiTouchDetector detector = mTouchDetectorMap.get(mPen);
-        if (detector != null) {
-            return detector.onTouchEvent(event);
-        }
-        // 默认识别器
-        if (mDefaultTouchDetector != null) {
-            return mDefaultTouchDetector.onTouchEvent(event);
-        }
-
-        return super.onTouchEvent(event);
+        return super.dispatchTouchEvent(event);
     }
 
     private void initGraffitiBitmap() {// 不用resize preview
@@ -190,8 +187,6 @@ public class GraffitiView extends View implements IGraffiti {
         mCentreTranX = (getWidth() - mPrivateWidth) / 2f;
         mCentreTranY = (getHeight() - mPrivateHeight) / 2f;
 
-        invalidateForce();
-
         mAmplifierRadius = Math.min(getWidth(), getHeight()) / 4;
         mAmplifierPath = new Path();
         mAmplifierPath.addCircle(mAmplifierRadius, mAmplifierRadius, mAmplifierRadius, Path.Direction.CCW);
@@ -210,14 +205,12 @@ public class GraffitiView extends View implements IGraffiti {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void dispatchDraw(Canvas canvas) {
         if (mBitmap.isRecycled() || mGraffitiBitmap.isRecycled()) {
             return;
         }
 
-        canvas.save();
-        doDraw(canvas);
-        canvas.restore();
+        super.dispatchDraw(canvas);
 
         if (mEnableAmplifier && mAmplifierScale > 0) { //启用放大镜
             canvas.save();
@@ -234,7 +227,7 @@ public class GraffitiView extends View implements IGraffiti {
             float scale = mAmplifierScale / mScale; // 除以mScale，无论当前图片缩放多少，都产生图片在居中状态下缩放mAmplifierScale倍的效果
             canvas.scale(scale, scale);
             canvas.translate(-mTouchX + mAmplifierRadius / scale, -mTouchY + mAmplifierRadius / scale);
-            doDraw(canvas);
+            super.dispatchDraw(canvas);
             canvas.restore();
 
             // 画放大器的边框
@@ -359,41 +352,32 @@ public class GraffitiView extends View implements IGraffiti {
      * 偏移量x = mCentreTranX + mTransX，而view的大小为width = getWidth()。height和偏移量y以此类推。
      */
     private void judgePosition() {
-        boolean changed = false;
-        if (mPrivateWidth * mScale < getWidth()) { // 限制在view范围内
+       /* if (mPrivateWidth * mScale < getWidth()) { // 限制在view范围内
             if (mTransX + mCentreTranX < 0) {
                 mTransX = -mCentreTranX;
-                changed = true;
             } else if (mTransX + mCentreTranX + mPrivateWidth * mScale > getWidth()) {
                 mTransX = getWidth() - mCentreTranX - mPrivateWidth * mScale;
-                changed = true;
             }
         } else { // 限制在view范围外
             if (mTransX + mCentreTranX > 0) {
                 mTransX = -mCentreTranX;
-                changed = true;
             } else if (mTransX + mCentreTranX + mPrivateWidth * mScale < getWidth()) {
                 mTransX = getWidth() - mCentreTranX - mPrivateWidth * mScale;
-                changed = true;
             }
         }
         if (mPrivateHeight * mScale < getHeight()) { // 限制在view范围内
             if (mTransY + mCentreTranY < 0) {
                 mTransY = -mCentreTranY;
-                changed = true;
             } else if (mTransY + mCentreTranY + mPrivateHeight * mScale > getHeight()) {
                 mTransY = getHeight() - mCentreTranY - mPrivateHeight * mScale;
-                changed = true;
             }
         } else { // 限制在view范围外
             if (mTransY + mCentreTranY > 0) {
                 mTransY = -mCentreTranY;
-                changed = true;
             } else if (mTransY + mCentreTranY + mPrivateHeight * mScale < getHeight()) {
                 mTransY = getHeight() - mCentreTranY - mPrivateHeight * mScale;
-                changed = true;
             }
-        }
+        }*/
     }
 
     /**
@@ -492,30 +476,56 @@ public class GraffitiView extends View implements IGraffiti {
      *
      * @param degree
      */
+
     @Override
     public void setRotate(int degree) {
-        degree = degree % 360;
-        int absDegree = Math.abs(degree);
-        if (absDegree > 0 && absDegree < 90) {
-            degree = degree / absDegree * 90;
-        } else if (absDegree > 90 && absDegree < 180) {
-            degree = degree / absDegree * 180;
-        } else if (absDegree > 180 && absDegree < 270) {
-            degree = degree / absDegree * 2700;
-        } else if (absDegree > 270 && absDegree < 360) {
-            degree = 0;
-        }
-
-        if (degree == mGraffitiRotateDegree) {
-            return;
-        }
-        int r = degree - mGraffitiRotateDegree;
-        int originalDegree = mGraffitiRotateDegree;
         mGraffitiRotateDegree = degree;
+        mGraffitiRotateDegree = mGraffitiRotateDegree % 360;
+        mInner.setPivotX(mInner.getWidth() / 2);
+        mInner.setPivotY(mInner.getHeight() / 2);
+        mInner.setRotation(mGraffitiRotateDegree);
 
-        mBitmap = ImageUtils.rotate(mBitmap, r, true);
-        initGraffitiBitmap();
-        notifyActionOccur(ACTION_ROTATION, originalDegree);
+        int w, h;
+        if (mGraffitiRotateDegree == 90 || mGraffitiRotateDegree == 270) {
+            w = mBitmap.getHeight();
+            h = mBitmap.getWidth();
+        } else {
+            w = mBitmap.getWidth();
+            h = mBitmap.getHeight();
+        }
+        float nw = w * 1f / getWidth();
+        float nh = h * 1f / getHeight();
+        float scale;
+        float tx, ty;
+        if (nw > nh) {
+            scale = 1 / nw;
+        } else {
+            scale = 1 / nh;
+        }
+
+        int pivotX = mBitmap.getWidth() / 2;
+        int pivotY = mBitmap.getHeight() / 2;
+
+        mTransX = mTransY = 0;
+        this.mScale = 1;
+        float touchX = toTouchX(pivotX);
+        float touchY = toTouchY(pivotY);
+        mPrivateScale = scale;
+
+        // 缩放后，偏移图片，以产生围绕某个点缩放的效果
+        tx = toTransX(touchX, pivotX);
+        ty = toTransY(touchY, pivotY);
+
+        mCentreTranX = mCentreTranX + tx;
+        mCentreTranY = mCentreTranY + ty;
+
+        if (nw > nh) {
+            mPrivateWidth = getWidth();
+            mPrivateHeight = (int) (h * mPrivateScale);
+        } else {
+            mPrivateWidth = (int) (w * mPrivateScale);
+            mPrivateHeight = getHeight();
+        }
 
         invalidate();
     }
@@ -534,6 +544,7 @@ public class GraffitiView extends View implements IGraffiti {
                 }
             }
         }
+        mGraffitiBitmap = ImageUtils.rotate(mGraffitiBitmap, mGraffitiRotateDegree, true);
 
         mGraffitiListener.onSaved(mGraffitiBitmap, new Runnable() {
             @Override
@@ -926,5 +937,38 @@ public class GraffitiView extends View implements IGraffiti {
          * @param obj    动作相关的对象信息
          */
         public void onActionOccur(int action, Object obj);
+    }
+
+    private class GraffitiViewInner extends View {
+
+        public GraffitiViewInner(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+            super.onSizeChanged(w, h, oldw, oldh);
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            // 綁定的识别器
+            IGraffitiTouchDetector detector = mTouchDetectorMap.get(mPen);
+            if (detector != null) {
+                return detector.onTouchEvent(event);
+            }
+            // 默认识别器
+            if (mDefaultTouchDetector != null) {
+                return mDefaultTouchDetector.onTouchEvent(event);
+            }
+            return super.onTouchEvent(event);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            canvas.save();
+            doDraw(canvas);
+            canvas.restore();
+        }
     }
 }

@@ -4,10 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 
-import cn.hzw.graffiti.core.IGraffiti;
-
 import static cn.hzw.graffiti.util.DrawUtil.drawCircle;
-import static cn.hzw.graffiti.util.DrawUtil.rotatePointInGraffiti;
 
 /**
  * 仿制的定位器
@@ -22,7 +19,6 @@ public class CopyLocation {
 
     private boolean mIsRelocating = true; // 正在定位中
     private boolean mIsCopying = false; // 正在仿制绘图中
-    private float mOriginalPivotX, mOriginalPivotY; // // 原图的中心位置
 
     private PointF mTemp = new PointF();
 
@@ -129,39 +125,6 @@ public class CopyLocation {
         copyLocation.mX = mX;
         copyLocation.mY = mY;
         return copyLocation;
-    }
-
-    private void init(IGraffiti graffiti) {
-        int bitmapWidth = graffiti.getBitmap().getWidth();
-        int bitmapHeight = graffiti.getBitmap().getHeight();
-        int degree = graffiti.getRotate();
-        if (Math.abs(degree) == 90 || Math.abs(degree) == 270) { // 获取原始图片的宽高
-            int t = bitmapWidth;
-            bitmapWidth = bitmapHeight;
-            bitmapHeight = t;
-        }
-        mOriginalPivotX = bitmapWidth / 2;
-        mOriginalPivotY = bitmapHeight / 2;
-    }
-
-    public void rotatePosition(IGraffiti graffiti, int oldRotate) {
-        init(graffiti);
-        int nowRotate = graffiti.getRotate();
-        // 旋转仿制图标的位置
-        PointF coords = rotatePointInGraffiti(mTemp, nowRotate, oldRotate, this.mX,
-                this.mY, mOriginalPivotX, mOriginalPivotY);
-        this.mX = coords.x;
-        this.mY = coords.y;
-
-        coords = rotatePointInGraffiti(mTemp, nowRotate, oldRotate, this.mCopyStartX,
-                this.mCopyStartY, mOriginalPivotX, mOriginalPivotY);
-        this.mCopyStartX = coords.x;
-        this.mCopyStartY = coords.y;
-
-        coords = rotatePointInGraffiti(mTemp, nowRotate, oldRotate, this.mTouchStartX,
-                this.mTouchStartY, mOriginalPivotX, mOriginalPivotY);
-        this.mTouchStartX = coords.x;
-        this.mTouchStartY = coords.y;
     }
 
     public void reset() {

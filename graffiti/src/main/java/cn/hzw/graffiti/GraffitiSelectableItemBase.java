@@ -56,13 +56,12 @@ public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implem
      */
     @Override
     public boolean isInIt(float x, float y) {
-        int currentRotate = getGraffiti().getRotate();
         PointF location = getLocation();
         // 把触摸点转换成在文字坐标系（即以文字起始点作为坐标原点）内的点
         x = x - location.x;
         y = y - location.y;
         // 把变换后相对于矩形的触摸点，还原回未变换前的点，然后判断是否矩形中
-        mTemp = rotatePoint(mTemp, (int) -(currentRotate - getGraffitiRotate() + getItemRotate()), x, y, 0, 0);
+        mTemp = rotatePoint(mTemp, (int) -getItemRotate(), x, y, 0, 0);
         mRectTemp.set(mRect);
         float unit = getGraffiti().getSizeUnit();
         mRectTemp.left -= 10 * unit;
@@ -83,7 +82,7 @@ public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implem
         x = x - location.x;
         y = y - location.y;
         // 把变换后矩形中的触摸点，还原回未变换前矩形中的点，然后判断是否矩形中
-        PointF xy = rotatePoint(mTemp, (int) -(graffiti.getRotate() - getGraffitiRotate() + getItemRotate()), x, y, 0, 0);
+        PointF xy = rotatePoint(mTemp, (int) -getItemRotate(), x, y, 0, 0);
 
         mRectTemp.set(mRect);
         float unit = graffiti.getSizeUnit();
@@ -122,7 +121,7 @@ public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implem
         canvas.save();
         PointF location = getLocation(); // 获取旋转后的起始坐标
         canvas.translate(location.x, location.y); // 把坐标系平移到文字矩形范围
-        canvas.rotate(getGraffiti().getRotate() - getGraffitiRotate() + getItemRotate(), 0, 0); // 旋转坐标系
+        canvas.rotate(getItemRotate(), 0, 0); // 旋转坐标系
 
         doDrawSelectedBackground(canvas);
 

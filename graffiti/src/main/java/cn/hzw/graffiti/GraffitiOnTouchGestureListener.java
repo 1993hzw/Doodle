@@ -60,9 +60,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
             @Override
             public void onActionOccur(int action, Object obj) {
                 if (action == GraffitiView.ACTION_ROTATION) {
-                    mCopyLocation.rotatePosition(mGraffiti, (int) obj);
-
-                    if(mRotateAnimator==null) {
+                    if (mRotateAnimator == null) {
                         mRotateAnimator = ValueAnimator.ofInt(-90, 0);
                         mRotateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                             @Override
@@ -281,6 +279,8 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
         return true;
     }
 
+    private float pendingX, pendingY, pendingScale = 1;
+
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
         // 屏幕上的焦点
@@ -292,15 +292,22 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
             final float dy = mTouchCentreY - mLastFocusY;
             // 移动图片
             if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-                mGraffiti.setTransX(mGraffiti.getTransX() + dx);
-                mGraffiti.setTransY(mGraffiti.getTransY() + dy);
+                mGraffiti.setTransX(mGraffiti.getTransX() + dx + pendingX);
+                mGraffiti.setTransY(mGraffiti.getTransY() + dy + pendingY);
+                pendingX = pendingY = 0;
+            } else {
+                pendingX += dx;
+                pendingY += dy;
             }
         }
 
-        if (detector.getScaleFactor() > 0.1f) {
+        if (Math.abs(1 - detector.getScaleFactor()) > 0.005f) {
             // 缩放图片
-            float scale = mGraffiti.getScale() * detector.getScaleFactor();
+            float scale = mGraffiti.getScale() * detector.getScaleFactor() * pendingScale;
             mGraffiti.setScale(scale, mGraffiti.toX(mTouchCentreX), mGraffiti.toY(mTouchCentreY));
+            pendingScale = 1;
+        } else {
+            pendingScale *= detector.getScaleFactor();
         }
 
         mLastFocusX = mTouchCentreX;

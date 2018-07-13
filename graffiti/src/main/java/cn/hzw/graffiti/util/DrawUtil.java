@@ -1,6 +1,5 @@
 package cn.hzw.graffiti.util;
 
-import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -145,33 +144,6 @@ public class DrawUtil {
         return angle;
     }
 
-    /**
-     * xy为在涂鸦中旋转后的坐标，该函数逆向计算出未旋转前的坐标
-     */
-    public static PointF restoreRotatePointInGraffiti(PointF coords, int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
-        int degree = nowDegree - oldDegree;
-        if (degree != 0) {
-            float px = mOriginalPivotX, py = mOriginalPivotY;
-            if (oldDegree == 90 || oldDegree == 270) { //　交换中心点的xy坐标
-                float t = px;
-                px = py;
-                py = t;
-            }
-            if (Math.abs(degree) == 90 || Math.abs(degree) == 270) {
-                x -= (py - px);
-                y -= -(py - px);
-            }
-
-            coords = rotatePoint(coords, -degree, x,
-                    y, px, py);
-
-            return coords;
-        }
-        coords.x = x;
-        coords.y = y;
-        return coords;
-    }
-
     // 顺时针旋转
     public static PointF rotatePoint(PointF coords, int degree, float x, float y, float px, float py) {
         /*角度变成弧度*/
@@ -182,44 +154,6 @@ public class DrawUtil {
         return coords;
     }
 
-    /**
-     * xy为未旋转前的坐标 ，该函数计算出在涂鸦中旋转后的坐标
-     */
-    public static PointF rotatePointInGraffiti(PointF coords, int nowDegree, int oldDegree, float x, float y, float mOriginalPivotX, float mOriginalPivotY) {
-        int degree = nowDegree - oldDegree;
-        if (degree != 0) {
-            float px = mOriginalPivotX, py = mOriginalPivotY;
-            if (oldDegree == 90 || oldDegree == 270) { //　交换中心点的xy坐标
-                float t = px;
-                px = py;
-                py = t;
-            }
-
-            coords = rotatePoint(coords, degree, x,
-                    y, px, py); // 绕（px,py）旋转
-            if (Math.abs(degree) == 90 || Math.abs(degree) == 270) { // 偏移
-                coords.x += (py - px);
-                coords.y += -(py - px);
-            }
-            return coords;
-        }
-        coords.x = x;
-        coords.y = y;
-        return coords;
-    }
-
-    /**
-     * 1dp在图片在适应屏幕时的像素点数
-     *
-     * @return 根据此值可以获取相对于当前图片的像素单位，比如文字的大小默认为30*getPixelUnit()，那么在所有涂鸦图片上的默认大小在视觉上看到的大小都一样。
-     */
-   /* public static float getGraffitiPixelUnit() {
-        return GRAFFITI_PIXEL_UNIT;
-    }
-
-    public static void setGraffitiPixelUnit(float graffitiPixelUnit) {
-        DrawUtil.GRAFFITI_PIXEL_UNIT = graffitiPixelUnit;
-    }*/
     public static void main(String[] args) {
         /*PointF pointF = new PointF(0,0);
         restoreRotatePointInGraffiti(pointF,90,0,0,0,100,100);
@@ -234,7 +168,6 @@ public class DrawUtil {
 
         // For more information, see https://issuetracker.google.com/issues/36911528
         // To use this class, simply invoke assistActivity() on an Activity that already has its content view set.
-
 
         private View mChildOfContent;
         private int usableHeightPrevious;

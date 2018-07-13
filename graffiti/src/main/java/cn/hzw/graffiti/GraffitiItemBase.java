@@ -9,9 +9,6 @@ import cn.hzw.graffiti.core.IGraffitiItem;
 import cn.hzw.graffiti.core.IGraffitiPen;
 import cn.hzw.graffiti.core.IGraffitiShape;
 
-import static cn.hzw.graffiti.util.DrawUtil.restoreRotatePointInGraffiti;
-import static cn.hzw.graffiti.util.DrawUtil.rotatePointInGraffiti;
-
 /**
  * Created on 29/06/2018.
  */
@@ -19,11 +16,8 @@ import static cn.hzw.graffiti.util.DrawUtil.rotatePointInGraffiti;
 public abstract class GraffitiItemBase implements IGraffitiItem {
 
     private float mItemRotate; // item的旋转角度
-    private int mGraffitiRotate; // 涂鸦图片的旋转角度
-    private float mOriginalX, mOriginalY; // 在原图中的起始位置
 
     private IGraffiti mGraffiti;
-    private float mOriginalPivotX, mOriginalPivotY; // // 原图的中心位置
 
     private PointF mLocation = new PointF();
     private PointF mTemp = new PointF();
@@ -58,17 +52,6 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
         if (graffiti == null) {
             return;
         }
-        mGraffitiRotate = graffiti.getRotate();
-        int bitmapWidth = graffiti.getBitmap().getWidth();
-        int bitmapHeight = graffiti.getBitmap().getHeight();
-        int degree = graffiti.getRotate();
-        if (Math.abs(degree) == 90 || Math.abs(degree) == 270) { // 获取原始图片的宽高
-            int t = bitmapWidth;
-            bitmapWidth = bitmapHeight;
-            bitmapHeight = t;
-        }
-        mOriginalPivotX = bitmapWidth / 2;
-        mOriginalPivotY = bitmapHeight / 2;
     }
 
     @Override
@@ -88,31 +71,13 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
 
     @Override
     public void setLocation(float x, float y) {
-        // 转换成未旋转前的坐标
-        mTemp = restoreRotatePointInGraffiti(mTemp, mGraffiti.getRotate(), mGraffitiRotate, x, y, mOriginalPivotX, mOriginalPivotY);
-        mOriginalX = mTemp.x;
-        mOriginalY = mTemp.y;
-
-        // 使用下面的代码 旋转后移动异常
-//        mOriginalX = x;
-//        mOriginalY = y;
+        mLocation.x = x;
+        mLocation.y = y;
     }
 
     @Override
     public PointF getLocation() {
-        return rotatePointInGraffiti(mLocation, mGraffiti.getRotate(), mGraffitiRotate, mOriginalX, mOriginalY, mOriginalPivotX, mOriginalPivotY);
-    }
-
-    public float getOriginalPivotX() {
-        return mOriginalPivotX;
-    }
-
-    public float getOriginalPivotY() {
-        return mOriginalPivotY;
-    }
-
-    public int getGraffitiRotate() {
-        return mGraffitiRotate;
+        return mLocation;
     }
 
     @Override
@@ -153,7 +118,7 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
         canvas.save();
         mLocation = getLocation(); // 获取旋转后的起始坐标
         canvas.translate(mLocation.x, mLocation.y); // 把坐标系平移到文字矩形范围
-        canvas.rotate(mGraffiti.getRotate() - mGraffitiRotate + mItemRotate, 0, 0); // 旋转坐标系
+        canvas.rotate(mItemRotate, 0, 0); // 旋转坐标系
 
         doDraw(canvas);
 
