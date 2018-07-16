@@ -36,6 +36,7 @@ import cn.forward.androids.utils.LogUtil;
 import cn.forward.androids.utils.StatusBarUtil;
 import cn.forward.androids.utils.Util;
 import cn.hzw.graffiti.core.IGraffiti;
+import cn.hzw.graffiti.core.IGraffitiColor;
 import cn.hzw.graffiti.core.IGraffitiSelectableItem;
 import cn.hzw.graffiti.core.IGraffitiTouchDetector;
 import cn.hzw.graffiti.dialog.ColorPickerDialog;
@@ -249,7 +250,7 @@ public class GraffitiActivity extends Activity {
             public void onSelectedItem(IGraffitiSelectableItem selectableItem, boolean selected) {
                 if (selected) {
                     GraffitiColor color = null;
-                    if (mGraffiti.getColor() instanceof GraffitiColor) {
+                    if (selectableItem.getColor() instanceof GraffitiColor) {
                         color = (GraffitiColor) selectableItem.getColor();
                     }
                     if (color != null) {
@@ -386,6 +387,7 @@ public class GraffitiActivity extends Activity {
         enterBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                enterBtn.setSelected(true);
                 finalDialog.dismiss();
             }
         });
@@ -397,13 +399,15 @@ public class GraffitiActivity extends Activity {
                     mSettingsPanel.removeCallbacks(mHideDelayRunnable);
                     return;
                 }
+                if (!enterBtn.isSelected()) {
+                    return;
+                }
                 String text = (textView.getText() + "").trim();
                 if (TextUtils.isEmpty(text)) {
                     return;
                 }
                 if (graffitiText == null) {
-                    IGraffitiSelectableItem item = new GraffitiText(mGraffiti, text, mGraffiti.getSize(), mGraffiti.getColor().copy(),
-                            0, x, y);
+                    IGraffitiSelectableItem item = new GraffitiText(mGraffiti, text, mGraffiti.getSize(), mGraffiti.getColor().copy(), x, y);
                     mGraffiti.addItem(item);
                     mTouchGestureListener.setSelectedItem(item);
                 } else {
@@ -456,8 +460,7 @@ public class GraffitiActivity extends Activity {
                 Bitmap bitmap = ImageUtils.createBitmapFromPath(pathList.get(0), mGraffitiView.getWidth() / 4, mGraffitiView.getHeight() / 4);
 
                 if (graffitiBitmap == null) {
-                    IGraffitiSelectableItem item = new GraffitiBitmap(mGraffiti, bitmap, mGraffiti.getSize(), new GraffitiColor(Color.TRANSPARENT),
-                            0, x, y);
+                    IGraffitiSelectableItem item = new GraffitiBitmap(mGraffiti, bitmap, mGraffiti.getSize(), new GraffitiColor(Color.TRANSPARENT), x, y);
                     mGraffiti.addItem(item);
                     mTouchGestureListener.setSelectedItem(item);
                 } else {
@@ -711,7 +714,7 @@ public class GraffitiActivity extends Activity {
                 }
                 mDone = true;
             } else if (v.getId() == R.id.btn_undo) {
-                if(!mGraffiti.undo()){
+                if (!mGraffiti.undo()) {
                     Toast.makeText(GraffitiActivity.this, "", Toast.LENGTH_SHORT).show();
                 }
                 mTouchGestureListener.setSelectedItem(null);
@@ -729,12 +732,25 @@ public class GraffitiActivity extends Activity {
                                     public void colorChanged(int color) {
                                         mBtnColor.setBackgroundColor(color);
                                         mGraffiti.setColor(new GraffitiColor(color));
+                                        if (mTouchGestureListener.getSelectedItem() != null) {
+                                            IGraffitiColor c = mTouchGestureListener.getSelectedItem().getColor();
+                                            if (c instanceof GraffitiColor) {
+                                                ((GraffitiColor) c).setColor(color);
+                                            }
+                                        }
                                     }
 
                                     @Override
                                     public void colorChanged(Drawable color) {
                                         mBtnColor.setBackgroundDrawable(color);
-                                        mGraffiti.setColor(new GraffitiColor(ImageUtils.getBitmapFromDrawable(color)));
+                                        Bitmap bitmap = ImageUtils.getBitmapFromDrawable(color);
+                                        mGraffiti.setColor(new GraffitiColor(bitmap));
+                                        if (mTouchGestureListener.getSelectedItem() != null) {
+                                            IGraffitiColor c = mTouchGestureListener.getSelectedItem().getColor();
+                                            if (c instanceof GraffitiColor) {
+                                                ((GraffitiColor) c).setColor(bitmap);
+                                            }
+                                        }
                                     }
                                 }).show();
                     }

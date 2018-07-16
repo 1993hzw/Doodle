@@ -20,7 +20,6 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
     private IGraffiti mGraffiti;
 
     private PointF mLocation = new PointF();
-    private PointF mTemp = new PointF();
 
     private IGraffitiPen mPen; // 画笔类型
     private IGraffitiShape mShape; // 画笔形状
@@ -84,30 +83,37 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
     public IGraffitiPen getPen() {
         return mPen;
     }
+
     @Override
     public void setPen(IGraffitiPen pen) {
         mPen = pen;
     }
+
     @Override
     public IGraffitiShape getShape() {
         return mShape;
     }
+
     @Override
     public void setShape(IGraffitiShape shape) {
         mShape = shape;
     }
+
     @Override
     public float getSize() {
         return mSize;
     }
+
     @Override
     public void setSize(float size) {
         mSize = size;
     }
+
     @Override
     public IGraffitiColor getColor() {
         return mColor;
     }
+
     @Override
     public void setColor(IGraffitiColor color) {
         mColor = color;
@@ -166,21 +172,26 @@ public abstract class GraffitiItemBase implements IGraffitiItem {
 
     /**
      * 仅画在View上，在绘制涂鸦图片之前调用(相当于背景图，但是保存图片时不包含该部分)
+     *
      * @param canvas 为View的Canvas
      */
-    protected void drawBefore(Canvas canvas){
+    protected void drawBefore(Canvas canvas) {
 
     }
+
     /**
      * 绘制item，不限制Canvas
+     *
      * @param canvas
      */
     protected abstract void doDraw(Canvas canvas);
+
     /**
      * 仅画在View上，在绘制涂鸦图片之后调用(相当于前景图，但是保存图片时不包含该部分)
+     *
      * @param canvas 为View的Canvas
      */
-    protected  void drawAfter(Canvas canvas){
+    protected void drawAfter(Canvas canvas) {
 
     }
 

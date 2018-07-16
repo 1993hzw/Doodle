@@ -104,6 +104,8 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
     private Map<IGraffitiPen, IGraffitiTouchDetector> mTouchDetectorMap = new HashMap<>();
 
     private GraffitiViewInner mInner;
+    private RectF mGraffitiBound = new RectF();
+    private PointF mTempPoint = new PointF();
 
     public GraffitiView(Context context, Bitmap bitmap, IGraffitiListener listener) {
         this(context, bitmap, listener, null);
@@ -229,10 +231,7 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
         invalidate();
     }
 
-    private RectF mGraffitiBound = new RectF();
-    private PointF mTempPoint = new PointF();
-
-    private RectF getGraffitiBound() {
+    public RectF getGraffitiBound() {
         rotatePoint(mTempPoint, mGraffitiRotateDegree, mTransX, mTransY, 0, 0);
         mTempPoint.x = mCentreTranX + mRotateTranX + mTempPoint.x;
         mTempPoint.y = mCentreTranY + mRotateTranY + mTempPoint.y;
@@ -565,14 +564,10 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
         mInner.setPivotY(mInner.getHeight() / 2);
         mInner.setRotation(mGraffitiRotateDegree);
 
-        int w, h;
-        if (mGraffitiRotateDegree == 90 || mGraffitiRotateDegree == 270) {
-            w = mBitmap.getHeight();
-            h = mBitmap.getWidth();
-        } else {
-            w = mBitmap.getWidth();
-            h = mBitmap.getHeight();
-        }
+        RectF rectF = getGraffitiBound();
+
+        int w = (int) (rectF.width()/getInnerScale());
+        int h = (int) (rectF.height()/getInnerScale());
         float nw = w * 1f / getWidth();
         float nh = h * 1f / getHeight();
         float scale;
@@ -926,7 +921,10 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
     @Override
     public void addItem(IGraffitiItem graffitiItem) {
         if (this != graffitiItem.getGraffiti()) {
-            throw new RuntimeException("Graffiti is different");
+            throw new RuntimeException("the object Graffiti is illegal");
+        }
+        if (mItemStack.contains(graffitiItem)) {
+            throw new RuntimeException("the item has been added");
         }
         mItemStack.add(graffitiItem);
         graffitiItem.onAdd();
@@ -939,7 +937,6 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
 
     @Override
     public void removeItem(IGraffitiItem graffitiItem) {
-        graffitiItem.setGraffiti(null);
         if (!mItemStack.remove(graffitiItem)) {
             return;
         }

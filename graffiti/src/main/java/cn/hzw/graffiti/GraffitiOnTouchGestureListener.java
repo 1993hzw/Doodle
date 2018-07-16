@@ -3,6 +3,7 @@ package cn.hzw.graffiti;
 import android.animation.ValueAnimator;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import cn.forward.androids.TouchGestureDetector;
 import cn.hzw.graffiti.core.IGraffitiItem;
 import cn.hzw.graffiti.core.IGraffitiSelectableItem;
+import cn.hzw.graffiti.util.DrawUtil;
 
 import static cn.hzw.graffiti.util.DrawUtil.computeAngle;
 
@@ -83,13 +85,18 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
     }
 
     public void setSelectedItem(IGraffitiSelectableItem selectedItem) {
+        IGraffitiSelectableItem old = mSelectedItem;
+        mSelectedItem = selectedItem;
+
+        if (old != null) { // 取消选定
+            old.setSelected(false);
+            mSelectionListener.onSelectedItem(old, false);
+        }
         if (mSelectedItem != null) {
-            mSelectedItem.setSelected(false);
+            mSelectedItem.setSelected(true);
+            mSelectionListener.onSelectedItem(mSelectedItem, true);
         }
-        if (selectedItem != null) {
-            selectedItem.setSelected(true);
-        }
-        this.mSelectedItem = selectedItem;
+
     }
 
     public IGraffitiSelectableItem getSelectedItem() {
@@ -248,7 +255,6 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                     PointF xy = item.getLocation();
                     mSelectedItemX = xy.x;
                     mSelectedItemY = xy.y;
-                    mSelectionListener.onSelectedItem(mSelectedItem, true);
                     break;
                 }
             }
@@ -337,14 +343,29 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
             mAnimTranY = mGraffiti.getTransY();
             mScaleAnimator.setFloatValues(mGraffiti.getScale(), 1);
             mScaleAnimator.start();
+        } else {
+            /*RectF bound = mGraffiti.getGraffitiBound();
+
+            // 使图片居中
+            float x = (mGraffiti.getWidth() - bound.width()) / 2f;
+            float y = (mGraffiti.getHeight() - bound.height()) / 2f;
+            float a= mGraffiti.mCentreTranX,b = mGraffiti.mCentreTranY;
+            float aa = mGraffiti.mRotateTranX, bb = mGraffiti.mRotateTranY;
+            DrawUtil.rotatePoint(mPointF,mGraffiti.getRotate(),x,y,0,0);
+            mGraffiti.setTrans(mPointF.x-a-aa,mPointF.y-b-bb);
+//            mGraffiti.setTrans(0,0);*/
+
+
         }
     }
 
-    public void setGraffitiListener(ISelectionListener graffitiListener) {
+    PointF mPointF= new PointF();
+
+    public void setSelectionListener(ISelectionListener graffitiListener) {
         mSelectionListener = graffitiListener;
     }
 
-    public ISelectionListener getGraffitiListener() {
+    public ISelectionListener getSelectionListener() {
         return mSelectionListener;
     }
 

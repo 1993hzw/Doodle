@@ -19,8 +19,8 @@ public class GraffitiText extends GraffitiSelectableItemBase {
     private final Paint mPaint = new Paint();
     private String mText;
 
-    public GraffitiText(IGraffiti graffiti, String text, float size, IGraffitiColor color, int textRotate, float x, float y) {
-        super(graffiti, textRotate, x, y);
+    public GraffitiText(IGraffiti graffiti, String text, float size, IGraffitiColor color, float x, float y) {
+        super(graffiti, -graffiti.getRotate(), x, y);
         this.mText = text;
         setSize(size);
         setColor(color);
