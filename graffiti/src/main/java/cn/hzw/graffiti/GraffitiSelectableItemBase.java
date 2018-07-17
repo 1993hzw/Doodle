@@ -158,7 +158,7 @@ public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implem
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(2 * unit);
         canvas.drawRect(mRectTemp, paint);
-        // setRotate
+        // setGraffitiRotation
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(2 * unit);
         canvas.drawLine(mRectTemp.right, mRectTemp.top + mRectTemp.height() / 2,
@@ -174,6 +174,7 @@ public abstract class GraffitiSelectableItemBase extends GraffitiItemBase implem
     @Override
     public void setSelected(boolean isSelected) {
         mIsSelected = isSelected;
+        setNeedClipOutside(!isSelected);
         if (getGraffiti() != null) {
             getGraffiti().invalidate();
         }

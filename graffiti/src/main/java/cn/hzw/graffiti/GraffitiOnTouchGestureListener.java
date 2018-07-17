@@ -299,8 +299,8 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
             final float dy = mTouchCentreY - mLastFocusY;
             // 移动图片
             if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-                mGraffiti.setTransX(mGraffiti.getTransX() + dx + pendingX);
-                mGraffiti.setTransY(mGraffiti.getTransY() + dy + pendingY);
+                mGraffiti.setGraffitiTranslationX(mGraffiti.getGraffitiTranslationX() + dx + pendingX);
+                mGraffiti.setGraffitiTranslationY(mGraffiti.getGraffitiTranslationY() + dy + pendingY);
                 pendingX = pendingY = 0;
             } else {
                 pendingX += dx;
@@ -310,8 +310,8 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
 
         if (Math.abs(1 - detector.getScaleFactor()) > 0.005f) {
             // 缩放图片
-            float scale = mGraffiti.getScale() * detector.getScaleFactor() * pendingScale;
-            mGraffiti.setScale(scale, mGraffiti.toX(mTouchCentreX), mGraffiti.toY(mTouchCentreY));
+            float scale = mGraffiti.getGraffitiScale() * detector.getScaleFactor() * pendingScale;
+            mGraffiti.setGraffitiScale(scale, mGraffiti.toX(mTouchCentreX), mGraffiti.toY(mTouchCentreY));
             pendingScale = 1;
         } else {
             pendingScale *= detector.getScaleFactor();
@@ -325,7 +325,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
-        if (mGraffiti.getScale() < 1) { //
+        if (mGraffiti.getGraffitiScale() < 1) { //
             if (mScaleAnimator == null) {
                 mScaleAnimator = new ValueAnimator();
                 mScaleAnimator.setDuration(100);
@@ -334,15 +334,15 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                     public void onAnimationUpdate(ValueAnimator animation) {
                         float value = (float) animation.getAnimatedValue();
                         float fraction = animation.getAnimatedFraction();
-                        mGraffiti.setScale(value, mGraffiti.toX(mTouchCentreX), mGraffiti.toY(mTouchCentreY));
-                        mGraffiti.setTrans(mScaleAnimTransX * (1 - fraction), mScaleAnimTranY * (1 - fraction));
+                        mGraffiti.setGraffitiScale(value, mGraffiti.toX(mTouchCentreX), mGraffiti.toY(mTouchCentreY));
+                        mGraffiti.setGraffitiTranslation(mScaleAnimTransX * (1 - fraction), mScaleAnimTranY * (1 - fraction));
                     }
                 });
             }
             mScaleAnimator.cancel();
-            mScaleAnimTransX = mGraffiti.getTransX();
-            mScaleAnimTranY = mGraffiti.getTransY();
-            mScaleAnimator.setFloatValues(mGraffiti.getScale(), 1);
+            mScaleAnimTransX = mGraffiti.getGraffitiTranslationX();
+            mScaleAnimTranY = mGraffiti.getGraffitiTranslationY();
+            mScaleAnimator.setFloatValues(mGraffiti.getGraffitiScale(), 1);
             mScaleAnimator.start();
         } else { //
             limitBound(true);
@@ -355,34 +355,34 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
      * @param anim 动画效果
      */
     public void limitBound(boolean anim) {
-        if (mGraffiti.getRotate() % 90 != 0) { // 只处理0,90,180,270
+        if (mGraffiti.getGraffitiRotation() % 90 != 0) { // 只处理0,90,180,270
             return;
         }
 
-        final float oldX = mGraffiti.getTransX(), oldY = mGraffiti.getTransY();
+        final float oldX = mGraffiti.getGraffitiTranslationX(), oldY = mGraffiti.getGraffitiTranslationY();
         RectF bound = mGraffiti.getGraffitiBound();
-        float x = mGraffiti.getTransX(), y = mGraffiti.getTransY();
+        float x = mGraffiti.getGraffitiTranslationX(), y = mGraffiti.getGraffitiTranslationY();
         float width = mGraffiti.getCenterWidth() * mGraffiti.getRotateScale(), height = mGraffiti.getCenterHeight() * mGraffiti.getRotateScale();
 
         // 上下都在屏幕内
         if (bound.height() <= mGraffiti.getHeight()) {
-            if (mGraffiti.getRotate() == 0 || mGraffiti.getRotate() == 180) {
-                y = (height - height * mGraffiti.getScale()) / 2;
+            if (mGraffiti.getGraffitiRotation() == 0 || mGraffiti.getGraffitiRotation() == 180) {
+                y = (height - height * mGraffiti.getGraffitiScale()) / 2;
             } else {
-                x = (width - width * mGraffiti.getScale()) / 2;
+                x = (width - width * mGraffiti.getGraffitiScale()) / 2;
             }
         } else {
             float heightDiffTop = bound.top;
             // 只有上在屏幕内
             if (bound.top > 0 && bound.bottom >= mGraffiti.getHeight()) {
-                if (mGraffiti.getRotate() == 0 || mGraffiti.getRotate() == 180) {
-                    if (mGraffiti.getRotate() == 0) {
+                if (mGraffiti.getGraffitiRotation() == 0 || mGraffiti.getGraffitiRotation() == 180) {
+                    if (mGraffiti.getGraffitiRotation() == 0) {
                         y = y - heightDiffTop;
                     } else {
                         y = y + heightDiffTop;
                     }
                 } else {
-                    if (mGraffiti.getRotate() == 90) {
+                    if (mGraffiti.getGraffitiRotation() == 90) {
                         x = x - heightDiffTop;
                     } else {
                         x = x + heightDiffTop;
@@ -390,14 +390,14 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                 }
             } else if (bound.bottom < mGraffiti.getHeight() && bound.top <= 0) { // 只有下在屏幕内
                 float heightDiffBottom = mGraffiti.getHeight() - bound.bottom;
-                if (mGraffiti.getRotate() == 0 || mGraffiti.getRotate() == 180) {
-                    if (mGraffiti.getRotate() == 0) {
+                if (mGraffiti.getGraffitiRotation() == 0 || mGraffiti.getGraffitiRotation() == 180) {
+                    if (mGraffiti.getGraffitiRotation() == 0) {
                         y = y + heightDiffBottom;
                     } else {
                         y = y - heightDiffBottom;
                     }
                 } else {
-                    if (mGraffiti.getRotate() == 90) {
+                    if (mGraffiti.getGraffitiRotation() == 90) {
                         x = x + heightDiffBottom;
                     } else {
                         x = x - heightDiffBottom;
@@ -408,23 +408,23 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
 
         // 左右都在屏幕内
         if (bound.width() <= mGraffiti.getWidth()) {
-            if (mGraffiti.getRotate() == 0 || mGraffiti.getRotate() == 180) {
-                x = (width - width * mGraffiti.getScale()) / 2;
+            if (mGraffiti.getGraffitiRotation() == 0 || mGraffiti.getGraffitiRotation() == 180) {
+                x = (width - width * mGraffiti.getGraffitiScale()) / 2;
             } else {
-                y = (height - height * mGraffiti.getScale()) / 2;
+                y = (height - height * mGraffiti.getGraffitiScale()) / 2;
             }
         } else {
             float widthDiffLeft = bound.left;
             // 只有左在屏幕内
             if (bound.left > 0 && bound.right >= mGraffiti.getWidth()) {
-                if (mGraffiti.getRotate() == 0 || mGraffiti.getRotate() == 180) {
-                    if (mGraffiti.getRotate() == 0) {
+                if (mGraffiti.getGraffitiRotation() == 0 || mGraffiti.getGraffitiRotation() == 180) {
+                    if (mGraffiti.getGraffitiRotation() == 0) {
                         x = x - widthDiffLeft;
                     } else {
                         x = x + widthDiffLeft;
                     }
                 } else {
-                    if (mGraffiti.getRotate() == 90) {
+                    if (mGraffiti.getGraffitiRotation() == 90) {
                         y = y + widthDiffLeft;
                     } else {
                         y = y - widthDiffLeft;
@@ -432,14 +432,14 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                 }
             } else if (bound.right < mGraffiti.getWidth() && bound.left <= 0) { // 只有右在屏幕内
                 float widthDiffRight = mGraffiti.getWidth() - bound.right;
-                if (mGraffiti.getRotate() == 0 || mGraffiti.getRotate() == 180) {
-                    if (mGraffiti.getRotate() == 0) {
+                if (mGraffiti.getGraffitiRotation() == 0 || mGraffiti.getGraffitiRotation() == 180) {
+                    if (mGraffiti.getGraffitiRotation() == 0) {
                         x = x + widthDiffRight;
                     } else {
                         x = x - widthDiffRight;
                     }
                 } else {
-                    if (mGraffiti.getRotate() == 90) {
+                    if (mGraffiti.getGraffitiRotation() == 90) {
                         y = y - widthDiffRight;
                     } else {
                         y = y + widthDiffRight;
@@ -456,7 +456,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
                     public void onAnimationUpdate(ValueAnimator animation) {
                         float value = (float) animation.getAnimatedValue();
                         float fraction = animation.getAnimatedFraction();
-                        mGraffiti.setTrans(value, mTransAnimOldY + (mTransAnimY - mTransAnimOldY) * fraction);
+                        mGraffiti.setGraffitiTranslation(value, mTransAnimOldY + (mTransAnimY - mTransAnimOldY) * fraction);
                     }
                 });
             }
@@ -465,7 +465,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
             mTransAnimY = y;
             mTranslateAnimator.start();
         } else {
-            mGraffiti.setTrans(x, y);
+            mGraffiti.setGraffitiTranslation(x, y);
         }
     }
 

@@ -543,7 +543,7 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
     }
 
     @Override
-    public int getRotate() {
+    public int getGraffitiRotation() {
         return mGraffitiRotateDegree;
     }
 
@@ -554,7 +554,7 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
      */
 
     @Override
-    public void setRotate(int degree) {
+    public void setGraffitiRotation(int degree) {
         mGraffitiRotateDegree = degree;
         mGraffitiRotateDegree = mGraffitiRotateDegree % 360;
         mInner.setPivotX(mInner.getWidth() / 2);
@@ -706,7 +706,7 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
      * @param pivotY
      */
     @Override
-    public void setScale(float scale, float pivotX, float pivotY) {
+    public void setGraffitiScale(float scale, float pivotX, float pivotY) {
         if (scale < mMinScale) {
             scale = mMinScale;
         } else if (scale > mMaxScale) {
@@ -725,7 +725,7 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
     }
 
     @Override
-    public float getScale() {
+    public float getGraffitiScale() {
         return mScale;
     }
 
@@ -769,7 +769,7 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
     }
 
     @Override
-    public void setTrans(float transX, float transY) {
+    public void setGraffitiTranslation(float transX, float transY) {
         mTransX = transX;
         mTransY = transY;
         invalidate();
@@ -781,24 +781,24 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
      * @param transX
      */
     @Override
-    public void setTransX(float transX) {
+    public void setGraffitiTranslationX(float transX) {
         this.mTransX = transX;
         invalidate();
     }
 
     @Override
-    public float getTransX() {
+    public float getGraffitiTranslationX() {
         return mTransX;
     }
 
     @Override
-    public void setTransY(float transY) {
+    public void setGraffitiTranslationY(float transY) {
         this.mTransY = transY;
         invalidate();
     }
 
     @Override
-    public float getTransY() {
+    public float getGraffitiTranslationY() {
         return mTransY;
     }
 
@@ -879,24 +879,24 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
     }
 
     @Override
-    public void setMinScale(float minScale) {
+    public void setGraffitiMinScale(float minScale) {
         mMinScale = minScale;
-        setScale(mScale, 0, 0);
+        setGraffitiScale(mScale, 0, 0);
     }
 
     @Override
-    public float getMinScale() {
+    public float getGraffitiMinScale() {
         return mMinScale;
     }
 
     @Override
-    public void setMaxScale(float maxScale) {
+    public void setGraffitiMaxScale(float maxScale) {
         mMaxScale = maxScale;
-        setScale(mScale, 0, 0);
+        setGraffitiScale(mScale, 0, 0);
     }
 
     @Override
-    public float getMaxScale() {
+    public float getGraffitiMaxScale() {
         return mMaxScale;
     }
 

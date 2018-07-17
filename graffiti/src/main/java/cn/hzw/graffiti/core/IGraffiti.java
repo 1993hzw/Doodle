@@ -23,14 +23,14 @@ public interface IGraffiti {
      *
      * @param degree
      */
-    public void setRotate(int degree);
+    public void setGraffitiRotation(int degree);
 
     /**
      * 获取图片旋转值
      *
      * @return
      */
-    public int getRotate();
+    public int getGraffitiRotation();
 
     /**
      * 设置图片缩放倍数
@@ -39,12 +39,12 @@ public interface IGraffiti {
      * @param pivotX
      * @param pivotY
      */
-    public void setScale(float scale, float pivotX, float pivotY);
+    public void setGraffitiScale(float scale, float pivotX, float pivotY);
 
     /**
      * 获取图片缩放倍数
      */
-    public float getScale();
+    public float getGraffitiScale();
 
     /**
      * 设置画笔
@@ -75,7 +75,7 @@ public interface IGraffiti {
      *
      * @param transX
      */
-    public void setTrans(float transX, float transY);
+    public void setGraffitiTranslation(float transX, float transY);
 
 
     /**
@@ -83,28 +83,28 @@ public interface IGraffiti {
      *
      * @param transX
      */
-    public void setTransX(float transX);
+    public void setGraffitiTranslationX(float transX);
 
     /**
      * 获取图片偏移量x
      *
      * @return
      */
-    public float getTransX();
+    public float getGraffitiTranslationX();
 
     /**
      * 设置图片偏移量y
      *
      * @param transY
      */
-    public void setTransY(float transY);
+    public void setGraffitiTranslationY(float transY);
 
     /**
      * 获取图片偏移量y
      *
      * @return
      */
-    public float getTransY();
+    public float getGraffitiTranslationY();
 
     /**
      * 设置大小
@@ -139,28 +139,28 @@ public interface IGraffiti {
      *
      * @param minScale
      */
-    public void setMinScale(float minScale);
+    public void setGraffitiMinScale(float minScale);
 
     /**
      * 最小缩放倍数限制
      *
      * @return
      */
-    public float getMinScale();
+    public float getGraffitiMinScale();
 
     /**
      * 最大缩放倍数限制
      *
      * @param maxScale
      */
-    public void setMaxScale(float maxScale);
+    public void setGraffitiMaxScale(float maxScale);
 
     /**
      * 最大缩放倍数限制
      *
      * @return
      */
-    public float getMaxScale();
+    public float getGraffitiMaxScale();
 
     /**
      * 添加item

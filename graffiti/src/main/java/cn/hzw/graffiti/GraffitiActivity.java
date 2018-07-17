@@ -296,8 +296,8 @@ public class GraffitiActivity extends Activity {
         mGraffiti.setIsDrawableOutside(mGraffitiParams.mIsDrawableOutside);
         mFrameLayout.addView(mGraffitiView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mOnClickListener = new GraffitiOnClickListener();
-        mGraffiti.setMinScale(mGraffitiParams.mMinScale);
-        mGraffiti.setMaxScale(mGraffitiParams.mMaxScale);
+        mGraffiti.setGraffitiMinScale(mGraffitiParams.mMinScale);
+        mGraffiti.setGraffitiMaxScale(mGraffitiParams.mMaxScale);
 
         initView();
     }
@@ -611,7 +611,7 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.graffiti_btn_rotate).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mGraffiti.setRotate(mGraffiti.getRotate() + 90 );
+                mGraffiti.setGraffitiRotation(mGraffiti.getGraffitiRotation() + 90 );
             }
         });
     }

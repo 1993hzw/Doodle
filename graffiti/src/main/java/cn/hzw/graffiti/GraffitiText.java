@@ -20,7 +20,7 @@ public class GraffitiText extends GraffitiSelectableItemBase {
     private String mText;
 
     public GraffitiText(IGraffiti graffiti, String text, float size, IGraffitiColor color, float x, float y) {
-        super(graffiti, -graffiti.getRotate(), x, y);
+        super(graffiti, -graffiti.getGraffitiRotation(), x, y);
         this.mText = text;
         setSize(size);
         setColor(color);
