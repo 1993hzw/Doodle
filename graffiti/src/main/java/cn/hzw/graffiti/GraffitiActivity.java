@@ -611,7 +611,7 @@ public class GraffitiActivity extends Activity {
         findViewById(R.id.graffiti_btn_rotate).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mGraffiti.setRotate(mGraffiti.getRotate() + 10);
+                mGraffiti.setRotate(mGraffiti.getRotate() + 90 );
             }
         });
     }

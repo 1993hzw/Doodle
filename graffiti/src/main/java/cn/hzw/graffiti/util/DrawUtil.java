@@ -146,6 +146,11 @@ public class DrawUtil {
 
     // 顺时针旋转
     public static PointF rotatePoint(PointF coords, int degree, float x, float y, float px, float py) {
+        if (degree % 360 == 0) {
+            coords.x = x;
+            coords.y = y;
+            return coords;
+        }
         /*角度变成弧度*/
         float radian = (float) (degree * Math.PI / 180);
         coords.x = (float) ((x - px) * Math.cos(radian) - (y - py) * Math.sin(radian) + px);
