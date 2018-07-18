@@ -12,7 +12,7 @@ import cn.hzw.graffiti.core.IGraffitiColor;
  * Created by huangziwei on 2017/3/16.
  */
 
-public class GraffitiBitmap extends GraffitiSelectableItemBase {
+public class GraffitiBitmap extends GraffitiRotatableItemBase {
 
     private Bitmap mBitmap;
     private Rect mSrcRect = new Rect();

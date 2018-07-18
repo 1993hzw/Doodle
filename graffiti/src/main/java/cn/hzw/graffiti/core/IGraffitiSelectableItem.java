@@ -1,6 +1,7 @@
 package cn.hzw.graffiti.core;
 
 import android.graphics.Canvas;
+import android.graphics.Rect;
 
 /**
  * Created on 27/06/2018.
@@ -21,9 +22,15 @@ public interface IGraffitiSelectableItem extends IGraffitiItem {
     public boolean isSelected();
 
     /**
-     * 是否击中
+     * item的矩形范围
+     * @return
      */
-    public boolean isInIt(float x, float y);
+    public Rect getBounds();
+
+    /**
+     * 判断点（x,y）是否在item内，用于判断是否点中item
+     */
+    public boolean contains(float x, float y);
 
     /**
      * 绘制选择时的背景
@@ -31,24 +38,5 @@ public interface IGraffitiSelectableItem extends IGraffitiItem {
      * @param canvas
      */
     public void drawSelectedBackground(Canvas canvas);
-
-    /**
-     * 是否可以旋转
-     */
-    public boolean isCanRotate(float x, float y);
-
-    /**
-     * 是否正在旋转
-     *
-     * @return
-     */
-    public boolean isRotating();
-
-    /**
-     * 设置正在旋转
-     *
-     * @param isRotating
-     */
-    public void setIsRotating(boolean isRotating);
 
 }

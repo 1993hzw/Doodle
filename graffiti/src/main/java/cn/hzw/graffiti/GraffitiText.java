@@ -13,7 +13,7 @@ import cn.hzw.graffiti.core.IGraffitiColor;
  * Created by huangziwei on 2017/3/16.
  */
 
-public class GraffitiText extends GraffitiSelectableItemBase {
+public class GraffitiText extends GraffitiRotatableItemBase {
 
 
     private final Paint mPaint = new Paint();
