@@ -641,7 +641,7 @@ public class GraffitiActivity extends Activity {
                     mColorContainer.setVisibility(View.VISIBLE);
                     mTouchGestureListener.setSelectedItem(null);
                     mGraffiti.setPen(GraffitiPen.COPY);
-                    mGraffiti.setColor(new GraffitiCopyColor(mGraffiti.getBitmap()));
+                    mGraffiti.setColor(new GraffitiColor(mGraffiti.getBitmap()));
                     mPaintSizeBar.setProgress((int) (DEFAULT_COPY_SIZE * mGraffiti.getSizeUnit()));
                 }
                 mDone = true;

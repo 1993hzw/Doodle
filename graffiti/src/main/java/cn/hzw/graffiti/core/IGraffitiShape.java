@@ -15,4 +15,10 @@ public interface IGraffitiShape {
       * @param paint 绘制的画笔
       */
      public void draw(Canvas canvas, IGraffitiItem graffitiItem, Paint paint);
+
+     /**
+      * 深度拷贝
+      * @return
+      */
+     public IGraffitiShape copy();
 }

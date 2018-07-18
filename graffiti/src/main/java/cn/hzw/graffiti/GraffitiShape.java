@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 
+import cn.hzw.graffiti.core.IGraffitiColor;
 import cn.hzw.graffiti.core.IGraffitiItem;
 import cn.hzw.graffiti.core.IGraffitiShape;
 
@@ -60,5 +61,10 @@ public enum GraffitiShape implements IGraffitiShape {
             default:
                 throw new RuntimeException("unknown shape:" + shape);
         }
+    }
+
+    @Override
+    public IGraffitiShape copy() {
+        return this;
     }
 }

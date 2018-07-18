@@ -64,8 +64,8 @@ public class GraffitiPath extends GraffitiItemBase {
 
     public static GraffitiPath toShape(IGraffiti graffiti, float sx, float sy, float dx, float dy) {
         GraffitiPath path = new GraffitiPath(graffiti);
-        path.setPen(graffiti.getPen());
-        path.setShape(graffiti.getShape());
+        path.setPen(graffiti.getPen().copy());
+        path.setShape(graffiti.getShape().copy());
         path.setSize(graffiti.getSize());
         path.setColor(graffiti.getColor().copy());
 
@@ -81,8 +81,8 @@ public class GraffitiPath extends GraffitiItemBase {
 
     public static GraffitiPath toPath(IGraffiti graffiti, Path p) {
         GraffitiPath path = new GraffitiPath(graffiti);
-        path.setPen(graffiti.getPen());
-        path.setShape(graffiti.getShape());
+        path.setPen(graffiti.getPen().copy());
+        path.setShape(graffiti.getShape().copy());
         path.setSize(graffiti.getSize());
         path.setColor(graffiti.getColor().copy());
 
@@ -103,6 +103,7 @@ public class GraffitiPath extends GraffitiItemBase {
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setAntiAlias(true);
 
+        getPen().config(this, mPaint);
         getColor().config(this, mPaint);
         getShape().draw(canvas, this, mPaint);
     }

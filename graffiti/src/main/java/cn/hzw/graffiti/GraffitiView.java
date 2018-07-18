@@ -388,7 +388,7 @@ public class GraffitiView extends FrameLayout implements IGraffiti {
         }
         canvas.restore();
 
-        mPen.draw(canvas, this);
+        mPen.drawHelpers(canvas, this);
     }
 
     public float getAllScale() {

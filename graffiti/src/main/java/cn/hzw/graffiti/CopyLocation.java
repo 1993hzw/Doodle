@@ -109,7 +109,7 @@ public class CopyLocation {
     /**
      * 判断是否点中
      */
-    public boolean isInIt(float x, float y, float mPaintSize) {
+    public boolean contains(float x, float y, float mPaintSize) {
         if ((mX - x) * (mX - x) + (mY - y) * (mY - y) <= mPaintSize * mPaintSize) {
             return true;
         }

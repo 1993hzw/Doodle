@@ -8,14 +8,11 @@ import android.graphics.Shader;
 
 import cn.hzw.graffiti.core.IGraffitiColor;
 import cn.hzw.graffiti.core.IGraffitiItem;
-import cn.hzw.graffiti.core.IGraffitiPen;
-import cn.hzw.graffiti.util.DrawUtil;
 
 /**
  * 涂鸦画笔颜色，用于手绘
- *
  */
-public class GraffitiColor implements IGraffitiColor{
+public class GraffitiColor implements IGraffitiColor {
 
     public enum Type {
         COLOR, // 颜色值
@@ -25,6 +22,7 @@ public class GraffitiColor implements IGraffitiColor{
     private int mColor;
     private Bitmap mBitmap;
     private Type mType;
+    private Matrix mMatrix;
 
     // bitmap相关
     private Shader.TileMode mTileX = Shader.TileMode.MIRROR;
@@ -36,12 +34,15 @@ public class GraffitiColor implements IGraffitiColor{
     }
 
     public GraffitiColor(Bitmap bitmap) {
-        mType = Type.BITMAP;
-        mBitmap = bitmap;
+        this(bitmap, null);
+    }
+    public GraffitiColor(Bitmap bitmap, Matrix matrix) {
+        this(bitmap, matrix, Shader.TileMode.MIRROR, Shader.TileMode.MIRROR);
     }
 
-    public GraffitiColor(Bitmap bitmap, Shader.TileMode tileX, Shader.TileMode tileY) {
+    public GraffitiColor(Bitmap bitmap, Matrix matrix, Shader.TileMode tileX, Shader.TileMode tileY) {
         mType = Type.BITMAP;
+        mMatrix = matrix;
         mBitmap = bitmap;
         mTileX = tileX;
         mTileY = tileY;
@@ -54,6 +55,7 @@ public class GraffitiColor implements IGraffitiColor{
             paint.setColor(mColor);
         } else if (mType == Type.BITMAP) {
             BitmapShader shader = new BitmapShader(mBitmap, mTileX, mTileY);
+            shader.setLocalMatrix(mMatrix);
             paint.setShader(shader);
         }
     }
@@ -68,11 +70,26 @@ public class GraffitiColor implements IGraffitiColor{
         mBitmap = bitmap;
     }
 
-    public void setColor(Bitmap bitmap, Shader.TileMode tileX, Shader.TileMode tileY) {
+    public void setColor(Bitmap bitmap, Matrix matrix) {
+        mType = Type.BITMAP;
+        mMatrix = matrix;
+        mBitmap = bitmap;
+    }
+
+    public void setColor(Bitmap bitmap, Matrix matrix, Shader.TileMode tileX, Shader.TileMode tileY) {
         mType = Type.BITMAP;
         mBitmap = bitmap;
+        mMatrix = matrix;
         mTileX = tileX;
         mTileY = tileY;
+    }
+
+    public void setMatrix(Matrix matrix) {
+        mMatrix = matrix;
+    }
+
+    public Matrix getMatrix() {
+        return mMatrix;
     }
 
     public int getColor() {

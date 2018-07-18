@@ -113,7 +113,7 @@ public class GraffitiOnTouchGestureListener extends TouchGestureDetector.OnTouch
         } else {
             mGraffiti.enableAmplifier(true); // 涂鸦时开启放大镜
             // 点击copy
-            if (mGraffiti.getPen() == GraffitiPen.COPY && mCopyLocation.isInIt(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY), mGraffiti.getSize())) {
+            if (mGraffiti.getPen() == GraffitiPen.COPY && mCopyLocation.contains(mGraffiti.toX(mTouchX), mGraffiti.toY(mTouchY), mGraffiti.getSize())) {
                 mCopyLocation.setRelocating(true);
                 mCopyLocation.setCopying(false);
             } else {
