@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/doodle_selectable_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="#88000000"
+            android:padding="10dp"
+            android:textColor="#ffffff"
+            android:textSize="26dp" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_gravity="bottom"
+            android:background="#ffffff"
+            android:clickable="true"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp">
+
+            <TextView
+                android:id="@+id/doodle_text_cancel_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="bottom|left"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="@string/doodle_cancel"
+                android:textColor="#232323"
+                android:textSize="16dp" />
+
+            <TextView
+                android:id="@+id/doodle_text_enter_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="bottom|right"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="@string/doodle_enter"
+                android:textColor="#232323"
+                android:textSize="16dp" />
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

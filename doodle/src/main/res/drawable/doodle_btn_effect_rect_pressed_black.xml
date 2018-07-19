@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/doodle_shape_rect_pressed_black" android:state_pressed="true" />
+    <item android:drawable="@drawable/doodle_shape_rect_pressed_black" android:state_selected="true" />
+    <item android:drawable="@drawable/doodle_shape_rect_pressed_black" android:state_checked="true" />
+</selector>
+

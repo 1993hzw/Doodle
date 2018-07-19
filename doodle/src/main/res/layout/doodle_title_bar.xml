@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:background="#181818"
+             android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/title_bar_height"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <cn.forward.androids.views.MaskImageView
+            android:id="@+id/doodle_btn_back"
+            android:layout_width="@dimen/title_bar_height"
+            android:layout_height="match_parent"
+            android:scaleType="centerInside"
+            android:src="@drawable/doodle_btn_back"
+            android:visibility="visible"
+            app:miv_is_ignore_alpha="true"
+            app:miv_mask_color="#a8a8a8"/>
+
+        <FrameLayout
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="15dp"
+            android:layout_marginTop="15dp"
+            android:background="#101010"/>
+
+        <cn.forward.androids.views.STextView
+            android:id="@+id/doodle_txt_title"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginLeft="12dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:text="涂鸦"
+            app:stv_text_color_pressed="#aaffffff"
+            android:textColor="#ffffff"
+            android:textSize="18dp"/>
+
+
+        <cn.forward.androids.views.MaskImageView
+            android:id="@+id/doodle_btn_rotate"
+            android:layout_width="@dimen/title_bar_height"
+            android:layout_height="@dimen/title_bar_height"
+            android:padding="5dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/doodle_rotate"
+            android:textSize="20dp"
+            app:miv_is_ignore_alpha="true"
+            app:miv_mask_color="#a8a8a8"/>
+
+        <cn.forward.androids.views.MaskImageView
+            android:id="@+id/doodle_btn_hide_panel"
+            android:layout_width="@dimen/title_bar_height"
+            android:layout_height="@dimen/title_bar_height"
+            android:padding="13dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/doodle_btn_effect_panel"
+            android:visibility="visible"
+            app:miv_is_ignore_alpha="true"
+            app:miv_mask_color="#a8a8a8"/>
+
+        <cn.forward.androids.views.MaskImageView
+            android:id="@+id/doodle_btn_finish"
+            android:layout_width="@dimen/title_bar_height"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/doodle_btn_finish"
+            android:visibility="visible"
+            app:miv_is_ignore_alpha="true"
+            app:miv_mask_color="#a8a8a8"/>
+    </LinearLayout>
+
+</FrameLayout>

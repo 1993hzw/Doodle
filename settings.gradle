@@ -1,1 +1,1 @@
-include ':app', ':graffiti'
+include ':app', ':doodle'

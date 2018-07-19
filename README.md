@@ -22,25 +22,25 @@
     
 ### 界面
 
- ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/01.png)
- ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/02.png)
- ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Graffiti/03.png)
+ ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/01.png)
+ ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/02.png)
+ ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/03.png)
 
 
 ### 使用
 ```groovy
-compile 'com.hzw.graffiti:graffiti:4.3.1'
+compile 'com.hzw.doodle:doodle:4.3.1'
 ```
 
 ```java
 // 涂鸦参数
-GraffitiParams params = new GraffitiParams();
+DoodleParams params = new DoodleParams();
 // 图片路径
 params.mImagePath = list.get(0);
 // 初始画笔大小
 params.mPaintSize = 20;
 // 启动涂鸦页面
-GraffitiActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_GRAFFITI);
+DoodleActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_DOODLE);
 
 ```
 
@@ -60,10 +60,10 @@ dependencies {
 
 ```java
 /**
- * 涂鸦界面，根据GraffitiView的接口，提供页面交互
+ * 涂鸦界面，根据DoodleView的接口，提供页面交互
  *
  */
-public class GraffitiActivity extends Activity {
+public class DoodleActivity extends Activity {
 /**
      * 启动涂鸦界面
      *
@@ -71,9 +71,9 @@ public class GraffitiActivity extends Activity {
      * @param params      涂鸦参数
      * @param requestCode startActivityForResult的请求码
      */
-    public static void startActivityForResult(Activity activity, GraffitiParams params, int requestCode) {
-        Intent intent = new Intent(activity, GraffitiActivity.class);
-        intent.putExtra(GraffitiActivity.KEY_PARAMS, params);
+    public static void startActivityForResult(Activity activity, DoodleParams params, int requestCode) {
+        Intent intent = new Intent(activity, DoodleActivity.class);
+        intent.putExtra(DoodleActivity.KEY_PARAMS, params);
         activity.startActivityForResult(intent, requestCode);
     }
  }
@@ -81,12 +81,12 @@ public class GraffitiActivity extends Activity {
 
 ```java
 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-   if (requestCode == REQ_CODE_GRAFFITI) {
-        if (resultCode == GraffitiActivity.RESULT_OK) {
+   if (requestCode == REQ_CODE_DOODLE) {
+        if (resultCode == DoodleActivity.RESULT_OK) {
         // 获取涂鸦后的图片
-            String path = data.getStringExtra(GraffitiActivity.KEY_IMAGE_PATH);
+            String path = data.getStringExtra(DoodleActivity.KEY_IMAGE_PATH);
             ...
-        } else if (resultCode == GraffitiActivity.RESULT_ERROR) {
+        } else if (resultCode == DoodleActivity.RESULT_ERROR) {
            ...
         }
     }
@@ -97,13 +97,13 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
  /**
  * 涂鸦参数
  */
-public static class GraffitiParams implements Parcelable {
+public static class DoodleParams implements Parcelable {
     /**
      * 图片路径
      */
     public String mImagePath;
     /**
-     * 　保存路径，如果为null，则图片保存在根目录下/DCIM/Graffiti/
+     * 　保存路径，如果为null，则图片保存在根目录下/DCIM/Doodle/
      */
     public String mSavePath;
     /**

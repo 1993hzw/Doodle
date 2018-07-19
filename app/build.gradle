@@ -4,7 +4,7 @@ android {
     compileSdkVersion COMPILE_SDK_VERSION as int
 
     defaultConfig {
-        applicationId "cn.hzw.graffitidemo"
+        applicationId "cn.hzw.doodledemo"
         minSdkVersion MIN_SDK_VERSION as int
         targetSdkVersion TARGET_SDK_VERSION as int
         versionCode 1
@@ -21,7 +21,6 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(':graffiti')
-//    compile project(':ImageSelctorLib-release')
+    compile project(':doodle')
     compile 'cn.hzw.imageselector:library:1.0'
 }
