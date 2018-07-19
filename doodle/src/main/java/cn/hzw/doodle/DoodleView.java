@@ -142,7 +142,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
 
-        mPen = DoodlePen.HAND;
+        mPen = DoodlePen.BRUSH;
         mShape = DoodleShape.HAND_WRITE;
 
         mAmplifierPaint = new Paint();

@@ -6,7 +6,6 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -461,7 +460,7 @@ public class DoodleActivity extends Activity {
                 Bitmap bitmap = ImageUtils.createBitmapFromPath(pathList.get(0), mDoodleView.getWidth() / 4, mDoodleView.getHeight() / 4);
 
                 if (doodleBitmap == null) {
-                    IDoodleSelectableItem item = new DoodleBitmap(mDoodle, bitmap, mDoodle.getSize(), new DoodleColor(Color.TRANSPARENT), x, y);
+                    IDoodleSelectableItem item = new DoodleBitmap(mDoodle, bitmap, mDoodle.getSize(), x, y);
                     mDoodle.addItem(item);
                     mTouchGestureListener.setSelectedItem(item);
                 } else {
@@ -619,12 +618,12 @@ public class DoodleActivity extends Activity {
         public void onClick(final View v) {
             mDone = false;
             if (v.getId() == R.id.btn_pen_hand) {
-                if (mDoodle.getPen() != DoodlePen.HAND) {
+                if (mDoodle.getPen() != DoodlePen.BRUSH) {
                     mBtnColorContainer.setVisibility(View.VISIBLE);
                     mShapeModeContainer.setVisibility(View.VISIBLE);
                     mColorContainer.setVisibility(View.VISIBLE);
                     mTouchGestureListener.setSelectedItem(null);
-                    mDoodle.setPen(DoodlePen.HAND);
+                    mDoodle.setPen(DoodlePen.BRUSH);
                     Drawable colorBg = mBtnColor.getBackground();
                     if (colorBg instanceof ColorDrawable) {
                         mDoodle.setColor(new DoodleColor(((ColorDrawable) colorBg).getColor()));

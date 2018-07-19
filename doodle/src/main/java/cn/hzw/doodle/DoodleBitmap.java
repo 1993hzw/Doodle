@@ -18,11 +18,10 @@ public class DoodleBitmap extends DoodleRotatableItemBase {
     private Rect mSrcRect = new Rect();
     private Rect mDstRect = new Rect();
 
-    public DoodleBitmap(IDoodle doodle, Bitmap bitmap, float size, IDoodleColor color, float x, float y) {
+    public DoodleBitmap(IDoodle doodle, Bitmap bitmap, float size, float x, float y) {
         super(doodle, -doodle.getDoodleRotation(), x, y);
         this.mBitmap = bitmap;
         setSize(size);
-        setColor(color);
         resetBounds(getBounds());
     }
 

@@ -13,7 +13,7 @@ import cn.hzw.doodle.core.IDoodlePen;
  */
 public enum DoodlePen implements IDoodlePen {
 
-    HAND, // 手绘
+    BRUSH, // 画笔
     COPY, // 仿制
     ERASER, // 橡皮擦
     TEXT(true), // 文本
