@@ -1,204 +1,83 @@
+# Doodle
 
-## [Android图片涂鸦](http://blog.csdn.net/u012964944/article/details/52661940)
+Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Also, a powerful, customizable and extensible doodle framework.
 
-### 主要功能
+适用于Android的图像涂鸦，具有撤消、缩放、移动、添加文字，贴图等功能。还是一个功能强大，可自定义和可扩展的涂鸦框架。
 
-  * 设置画笔及形状
+![]()
 
-    画笔可以选择手绘、仿制、橡皮擦、文字，其中仿制功能跟PS中的类似，复制图片中的某处地方。形状可以选择手绘、箭头、直线、圆、矩形等。画笔的底色可以选择颜色，或者选择一张画布。
+# Feature
 
-  * 撤销及清屏
+  * Brushes and shapes
 
-    可每一步的操作都可以撤销，清屏时将清除所有的操作。
+    The brush can choose hand-painted, imitation, eraser, text, texture, and the imitation function is similar to that in PS, copying somewhere in the picture. Shapes can be selected from hand-drawn, arrows, lines, circles, rectangles, and so on. The background color of the brush can be selected as a color, or an image.
+
+  * Undo
+
+    Each step of the doodle operation can be undone.
+
+  * Zoom, move, and rotate
+
+    In the process of doodle, you can freely zoom and move the picture with gestures. Support for rotating pictures.
+
+  * Amplifier
+
+    In order to doodle more finely, an amplifier can be set up during the doodle process.
+
+  * 画笔及形状
+
+    画笔可以选择手绘、仿制、橡皮擦、文字、贴图，其中仿制功能跟PS中的类似，复制图片中的某处地方。形状可以选择手绘、箭头、直线、圆、矩形等。画笔的底色可以选择颜色，或者一张图片。
+
+  * 撤销
+
+    每一步的涂鸦操作都可以撤销。
 
   * 放缩、移动及旋转
 
-    在涂鸦的过程中，可以自由地通过手势缩放和移动图片，同时在多次缩放后，可快速居中图片；支持旋转图片。
+    在涂鸦的过程中，可以自由地通过手势缩放和移动图片。支持旋转图片。
 
   * 放大器
 
-    为了更细微地涂鸦，涂鸦过程中可以设置出现放大器．
-    
-    
-### 界面
+    为了更细微地涂鸦，涂鸦过程中可以设置出现放大器。
 
- ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/01.png)
- ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/02.png)
- ![IMG](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/03.png)
+# Usage 用法
 
+# Extend 拓展
 
-### 使用
-```groovy
-compile 'com.hzw.doodle:doodle:4.3.1'
-```
+# The developer 开发者
 
-```java
-// 涂鸦参数
-DoodleParams params = new DoodleParams();
-// 图片路径
-params.mImagePath = list.get(0);
-// 初始画笔大小
-params.mPaintSize = 20;
-// 启动涂鸦页面
-DoodleActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_DOODLE);
+hzw19933@gmail.com
 
-```
+154330138@qq.com
 
+Q&A <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=c79470c973e39f4f8e35da33fed431101354b67281766b6c12e9f310289d6c34"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="Doodle-涂鸦交流群" title="Doodle-涂鸦交流群"></a>
 
-### 依赖
-```groovy
-dependencies {
-    compile 'com.forward.androids:androids:1.1.8'
-}
-```
+Visit [My Blog](https://blog.csdn.net/u012964944) for more articles about Doodle.
 
-  * [Androids](https://github.com/1993hzw/Androids)
-  * [ImageSelector](https://github.com/1993hzw/ImageSelector)
+欢迎大家访问[我的博客](https://blog.csdn.net/u012964944)，以便获取更多关于Doodle的文章哦.
 
+# License
 
-### 接口说明
-
-```java
-/**
- * 涂鸦界面，根据DoodleView的接口，提供页面交互
- *
- */
-public class DoodleActivity extends Activity {
-/**
-     * 启动涂鸦界面
-     *
-     * @param activity
-     * @param params      涂鸦参数
-     * @param requestCode startActivityForResult的请求码
-     */
-    public static void startActivityForResult(Activity activity, DoodleParams params, int requestCode) {
-        Intent intent = new Intent(activity, DoodleActivity.class);
-        intent.putExtra(DoodleActivity.KEY_PARAMS, params);
-        activity.startActivityForResult(intent, requestCode);
-    }
- }
-```
-
-```java
-protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-   if (requestCode == REQ_CODE_DOODLE) {
-        if (resultCode == DoodleActivity.RESULT_OK) {
-        // 获取涂鸦后的图片
-            String path = data.getStringExtra(DoodleActivity.KEY_IMAGE_PATH);
-            ...
-        } else if (resultCode == DoodleActivity.RESULT_ERROR) {
-           ...
-        }
-    }
-}
-```
-
-```java
- /**
- * 涂鸦参数
- */
-public static class DoodleParams implements Parcelable {
-    /**
-     * 图片路径
-     */
-    public String mImagePath;
-    /**
-     * 　保存路径，如果为null，则图片保存在根目录下/DCIM/Doodle/
-     */
-    public String mSavePath;
-    /**
-     * 　保存路径是否为目录，如果为目录，则在该目录生成由时间戳组成的图片名称
-     */
-    public boolean mSavePathIsDir;
-    /**
-     * 　橡皮擦底图，如果为null，则底图为当前图片路径
-     */
-    public String mEraserPath;
-    /**
-     * 橡皮擦底图是否调整大小，如果为true则调整到跟当前涂鸦图片一样的大小．
-     * 默认为true
-     */
-    public boolean mEraserImageIsResizeable = true;
-    /**
-     * 触摸时，图片区域外是否绘制涂鸦轨迹
-     */
-    public boolean mIsDrawableOutside;
-    /**
-     * 涂鸦时（手指按下）隐藏设置面板的延长时间(ms)，当小于等于0时则为不尝试隐藏面板（即保持面板当前状态不变）;当大于0时表示需要触摸屏幕超过一定时间后才隐藏
-     * 或者手指抬起时展示面板的延长时间(ms)，或者表示需要离开屏幕超过一定时间后才展示
-     * 默认为800ms
-     */
-    public long mChangePanelVisibilityDelay = 800; //ms
-    /**
-     * 设置放大镜的倍数，当小于等于0时表示不使用放大器功能
-     * 放大器只有在设置面板被隐藏的时候才会出现
-     * 默认为2.5倍
-     */
-    public float mAmplifierScale = 2.5f;
-    /**
-     * 初始化的画笔大小
-     * 默认为30px
-     */
-    public float mPaintSize = 30;
-}
-```
-
-### 相关文章
-
-  * 功能介绍：
-
-   [android图片涂鸦，具有设置画笔，撤销，缩放移动等功能(一)](http://blog.csdn.net/u012964944/article/details/52661940)
-
-
-  * 原理介绍：
-
-  [android图片涂鸦，具有设置画笔，撤销，缩放移动等功能(二)](http://blog.csdn.net/u012964944/article/details/52769273)
-
-  [android图片涂鸦——旋转与文字功能的实现原理](http://blog.csdn.net/u012964944/article/details/62889219)
-
-
-### 更新日志
-
- * 2017-07-17 v4.3.1(9)
-
-   （1)修复：切换横竖屏时异常
-   
-
- * 2017-07-17 v4.3(8)
-
-    (1)增加贴图功能.
-    
-
- * 2017-03-16 v4.2(7)
-
-    (1)美化涂鸦界面.
+  ```
+  MIT License
   
-    (2)修复：移动模式中按返回键异常.
+  Copyright (c) 2018 huangziwei
   
-    (3)加入到JCenter仓库.
-
-
-  * 2017-03-16 v4.1(5)
-
-    (1)加入文字功能，支持输入文字并对文字进行编辑、旋转等．
-
-
-  * 2017-02-18 v4.0(4)
-
-    (1)加入旋转图片的功能，并且支持撤销旋转前的涂鸦操作．
-
-
-  * 2017-01-24 v3.0(3)
-
-    (1)合并图片坐标系和画布坐标系，简化原理．
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
   
-    (2)更新原理介绍的文章．
-
-
-  * 2016-12-23 v2.0(2)
-
-    (1)增加放大器功能．
-
-    (2)新增接口：涂鸦时面板自动隐藏．
-
-    (3)修复：使用长图，缩放移动时不能自由移动．
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+  ```
