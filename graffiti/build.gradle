@@ -2,7 +2,6 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion COMPILE_SDK_VERSION as int
-    buildToolsVersion BUILD_TOOLS_VERSION
 
     defaultConfig {
         minSdkVersion MIN_SDK_VERSION as int
@@ -21,8 +20,4 @@ android {
 dependencies {
     // https://github.com/1993hzw/Androids
     compile 'com.forward.androids:androids:1.2.1'
-}
-
-if (isForUpload2Maven()) {
-    apply from: "https://raw.githubusercontent.com/1993hzw/common/master/bintrayUpload.gradle"
 }
