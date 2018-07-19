@@ -2,13 +2,13 @@
 
 Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Also, a powerful, customizable and extensible doodle framework.
 
-适用于Android的图像涂鸦，具有撤消、缩放、移动、添加文字，贴图等功能。还是一个功能强大，可自定义和可扩展的涂鸦框架。
+Android图片涂鸦，具有撤消、缩放、移动、添加文字，贴图等功能。还是一个功能强大，可自定义和可扩展的涂鸦框架。
 
 ![]()
 
-# Feature
+# Feature 特性
 
-  * Brushes and shapes
+  * Brush and shape
 
     The brush can choose hand-painted, imitation, eraser, text, texture, and the imitation function is similar to that in PS, copying somewhere in the picture. Shapes can be selected from hand-drawn, arrows, lines, circles, rectangles, and so on. The background color of the brush can be selected as a color, or an image.
 
@@ -93,7 +93,7 @@ if (mDoodle.getPen() == DoodlePen.TEXT) {
 IDoodleTouchDetector detector = new DoodleTouchDetector(getApplicationContext(), mTouchGestureListener);
 mDoodleView.setDefaultTouchDetector(detector);
 ```
-Add the DoodleView to your layout. Now you can start freely. 把DoodleView添加到布局中，然后开始涂鸦。
+Add the DoodleView to your layout. Now you can start doodling freely. 把DoodleView添加到布局中，然后开始涂鸦。
 
 DoodleView has implemented IDoodle. DoodleView实现了IDoodle接口。
 ```java
@@ -145,13 +145,13 @@ Now I think you should know that DoodleActivity has used DoodleView. You also ca
 
 # Extend 拓展
 
-You can create a customized item like DoodlePath, DoodleText, DoodleBitmap. Then call IDoodle.addItem(yourItem).
+You can create a customized item like DoodlePath, DoodleText, DoodleBitmap which implement IDoodleItem. 实现IDoodleItem接口用于创建自定义item，比如DoodlePath, DoodleText, DoodleBitmap
 
-You can create a customize pen like DoodlePen which implements IDoodlePen.
+You can create a customized pen like DoodlePen which implements IDoodlePen. 实现IDoodlePen接口用于创建自定义pen，比如DoodlePen
 
-You can create a customize shape like DoodleShape which implements IDoodleShape.
+You can create a customized shape like DoodleShape which implements IDoodleShape. 实现IDoodleShape接口用于创建自定义shape，比如DoodleShape
 
-You can crate a customize touch gesture detector like DoodleTouchDetector which implements IDoodleTouchDetector.
+You can create a customized touch gesture detector like DoodleTouchDetector which implements IDoodleTouchDetector. 实现IDoodleTouchDetector接口用于创建自定义手势识别器，比如DoodleTouchDetector
 
 For example, what should we do to achieve the Mosaic effect? Later...
 
@@ -161,7 +161,7 @@ hzw19933@gmail.com
 
 154330138@qq.com
 
-Q&A <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=c79470c973e39f4f8e35da33fed431101354b67281766b6c12e9f310289d6c34"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="Doodle-涂鸦交流群" title="Doodle-涂鸦交流群"></a>  6762102
+Q&A <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=d225a990b29a135d4a601be7a198f04572f1dbd96ccd5be944ff2ef87dda5c11"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="Doodle-涂鸦交流群" title="Doodle-涂鸦交流群"></a>  6762102
 
 Visit [My Blog](https://blog.csdn.net/u012964944) for more articles about Doodle.
 

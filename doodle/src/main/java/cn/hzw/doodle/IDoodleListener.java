@@ -12,10 +12,10 @@ import cn.hzw.doodle.core.IDoodleSelectableItem;
 public interface IDoodleListener {
 
     /**
-     * 保存图片
+     * called when save the doodled iamge. 保存涂鸦图像时调用
      *
      * @param doodleBitmap       涂鸦后的图片
-     * @param callback  保存后的回调，如果需要继续涂鸦，必须调用该回调
+     * @param callback  called after saving the bitmap, if you continue to doodle. 保存后的回调，如果需要继续涂鸦，必须调用该回调
      */
     void onSaved(Bitmap doodleBitmap, Runnable callback);
 
@@ -28,7 +28,8 @@ public interface IDoodleListener {
     void onError(int i, String msg);
 
     /**
-     * 准备工作已经完成
+     * called when it is ready to doodle because the view has been measured. Now, you can set size, color, pen, shape, etc.
+     * 此时view已经测量完成，涂鸦前的准备工作已经完成，在这里可以设置大小、颜色、画笔、形状等。
      */
     void onReady();
 

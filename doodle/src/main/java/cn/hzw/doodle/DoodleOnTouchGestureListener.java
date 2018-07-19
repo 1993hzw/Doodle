@@ -456,14 +456,16 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
 
     public interface ISelectionListener {
         /**
-         * 选中
+         * called when the item(such as text, texture) is selected/unselected.
+         * item（如文字，贴图）被选中或取消选中时回调
          *
          * @param selected 是否选中，false表示从选中变成不选中
          */
         void onSelectedItem(IDoodleSelectableItem selectableItem, boolean selected);
 
         /**
-         * 新建一个可选的item
+         * called when you click the view to create a item(such as text, texture).
+         * 点击View中的某个点创建可选择的item（如文字，贴图）时回调
          *
          * @param x
          * @param y
