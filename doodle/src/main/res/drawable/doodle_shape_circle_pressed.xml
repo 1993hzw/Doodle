@@ -2,5 +2,8 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval"
     android:useLevel="false">
+        <stroke
+            android:width="0.5dp"
+            android:color="@color/doodle_btn_border" />
         <solid android:color="@color/doodle_btn_pressed_color" /> <!-- 定义填充的颜色值 -->
 </shape>

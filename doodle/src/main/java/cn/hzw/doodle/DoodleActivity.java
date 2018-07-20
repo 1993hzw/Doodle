@@ -492,6 +492,13 @@ public class DoodleActivity extends Activity {
         findViewById(R.id.btn_fill_rect).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_clear).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_undo).setOnClickListener(mOnClickListener);
+        findViewById(R.id.btn_undo).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                findViewById(R.id.btn_clear).performClick();
+                return true;
+            }
+        });
         findViewById(R.id.doodle_selectable_edit).setOnClickListener(mOnClickListener);
         findViewById(R.id.doodle_selectable_remove).setOnClickListener(mOnClickListener);
         findViewById(R.id.doodle_selectable_top).setOnClickListener(mOnClickListener);

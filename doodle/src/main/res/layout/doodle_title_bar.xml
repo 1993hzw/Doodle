@@ -8,13 +8,13 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/title_bar_height"
+        android:layout_height="@dimen/doodle_title_bar_height"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <cn.forward.androids.views.MaskImageView
             android:id="@+id/doodle_btn_back"
-            android:layout_width="@dimen/title_bar_height"
+            android:layout_width="@dimen/doodle_title_bar_height"
             android:layout_height="match_parent"
             android:scaleType="centerInside"
             android:src="@drawable/doodle_btn_back"
@@ -47,8 +47,8 @@
 
         <cn.forward.androids.views.MaskImageView
             android:id="@+id/doodle_btn_rotate"
-            android:layout_width="@dimen/title_bar_height"
-            android:layout_height="@dimen/title_bar_height"
+            android:layout_width="@dimen/doodle_title_bar_height"
+            android:layout_height="@dimen/doodle_title_bar_height"
             android:padding="5dp"
             android:scaleType="fitXY"
             android:src="@drawable/doodle_rotate"
@@ -58,8 +58,8 @@
 
         <cn.forward.androids.views.MaskImageView
             android:id="@+id/doodle_btn_hide_panel"
-            android:layout_width="@dimen/title_bar_height"
-            android:layout_height="@dimen/title_bar_height"
+            android:layout_width="@dimen/doodle_title_bar_height"
+            android:layout_height="@dimen/doodle_title_bar_height"
             android:padding="13dp"
             android:scaleType="fitCenter"
             android:src="@drawable/doodle_btn_effect_panel"
@@ -69,7 +69,7 @@
 
         <cn.forward.androids.views.MaskImageView
             android:id="@+id/doodle_btn_finish"
-            android:layout_width="@dimen/title_bar_height"
+            android:layout_width="@dimen/doodle_title_bar_height"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:src="@drawable/doodle_btn_finish"
