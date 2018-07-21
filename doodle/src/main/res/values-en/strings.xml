@@ -1,0 +1,16 @@
+<resources>
+    <string name="doodle_app_name">Doodle</string>
+
+    <string name="doodle_clear_screen">Clear</string>
+    <string name="doodle_cant_undo_after_clearing">Are you sure to clear alla?</string>
+    <string name="doodle_saving_picture">Save before exit?</string>
+    <string name="doodle_enter">Enter</string>
+    <string name="doodle_cancel">Cancel</string>
+    <string name="doodle_success">Success</string>
+    <string name="doodle_failed">Failed</string>
+
+    <string name="doodle_edit">Edit</string>
+    <string name="doodle_remove">Delete</string>
+    <string name="doodle_top">Top</string>
+    <string name="doodle_bottom">Bottom</string>
+</resources>

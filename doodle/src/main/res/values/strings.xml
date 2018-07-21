@@ -1,5 +1,5 @@
 <resources>
-    <string name="doodle_app_name">Doodle</string>
+    <string name="doodle_app_name">涂鸦</string>
 
     <string name="doodle_clear_screen">清屏</string>
     <string name="doodle_cant_undo_after_clearing">清屏后不可撤销</string>

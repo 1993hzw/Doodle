@@ -55,7 +55,6 @@ public class MainActivity extends Activity {
                 params.mImagePath = list.get(0);
                 // 初始画笔大小
                 params.mPaintUnitSize = DoodleView.DEFAULT_SIZE;
-                params.mAmplifierScale = 0;
                 // 启动涂鸦页面
                 DoodleActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_DOODLE);
             }

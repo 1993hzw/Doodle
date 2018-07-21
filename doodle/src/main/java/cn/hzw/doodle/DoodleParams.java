@@ -42,7 +42,7 @@ public class DoodleParams implements Parcelable {
      * 放大器只有在设置面板被隐藏的时候才会出现
      * 默认为2.5倍
      */
-    public float mAmplifierScale = 2.5f;
+    public float mZoomerScale = 2.5f;
 
     /**
      * 是否全屏显示，即是否隐藏状态栏
@@ -76,7 +76,7 @@ public class DoodleParams implements Parcelable {
             params.mSavePathIsDir = in.readInt() == 1;
             params.mIsDrawableOutside = in.readInt() == 1;
             params.mChangePanelVisibilityDelay = in.readLong();
-            params.mAmplifierScale = in.readFloat();
+            params.mZoomerScale = in.readFloat();
             params.mIsFullScreen = in.readInt() == 1;
             params.mPaintPixelSize = in.readFloat();
             params.mPaintUnitSize = in.readFloat();
@@ -99,7 +99,7 @@ public class DoodleParams implements Parcelable {
         dest.writeInt(mSavePathIsDir ? 1 : 0);
         dest.writeInt(mIsDrawableOutside ? 1 : 0);
         dest.writeLong(mChangePanelVisibilityDelay);
-        dest.writeFloat(mAmplifierScale);
+        dest.writeFloat(mZoomerScale);
         dest.writeInt(mIsFullScreen ? 1 : 0);
         dest.writeFloat(mPaintPixelSize);
         dest.writeFloat(mPaintUnitSize);

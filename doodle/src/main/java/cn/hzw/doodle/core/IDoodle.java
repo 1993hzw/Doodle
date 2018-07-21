@@ -186,16 +186,16 @@ public interface IDoodle {
     /**
      * 设置放大镜倍数
      *
-     * @param amplifierScale
+     * @param scale
      */
-    public void setAmplifierScale(float amplifierScale);
+    public void setZoomerScale(float scale);
 
     /**
      * 获取放大镜倍数
      *
      * @return
      */
-    public float getAmplifierScale();
+    public float getZoomerScale();
 
 
     /**

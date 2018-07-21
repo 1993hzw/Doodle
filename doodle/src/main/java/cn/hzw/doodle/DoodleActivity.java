@@ -237,11 +237,12 @@ public class DoodleActivity extends Activity {
                 mPaintSizeBar.setProgress((int) (mDoodle.getSize() + 0.5f));
                 mPaintSizeBar.setMax(Math.min(mDoodleView.getWidth(), mDoodleView.getHeight()));
                 mPaintSizeView.setText("" + mPaintSizeBar.getProgress());
-                // 当设置面板隐藏时才显示放大器
-                mDoodle.setAmplifierScale(mDoodleParams.mAmplifierScale);
                 // 选择画笔
                 findViewById(R.id.btn_pen_hand).performClick();
                 findViewById(R.id.btn_hand_write).performClick();
+                if (mDoodleParams.mZoomerScale <= 0) {
+                    findViewById(R.id.btn_zoomer).setVisibility(View.GONE);
+                }
             }
         }, null);
 
@@ -491,6 +492,7 @@ public class DoodleActivity extends Activity {
         findViewById(R.id.btn_holl_rect).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_fill_rect).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_clear).setOnClickListener(mOnClickListener);
+        findViewById(R.id.btn_zoomer).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_undo).setOnClickListener(mOnClickListener);
         findViewById(R.id.btn_undo).setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -714,10 +716,17 @@ public class DoodleActivity extends Activity {
                 }
                 mDone = true;
             } else if (v.getId() == R.id.btn_undo) {
-                if (!mDoodle.undo()) {
-                    Toast.makeText(DoodleActivity.this, "", Toast.LENGTH_SHORT).show();
-                }
                 mTouchGestureListener.setSelectedItem(null);
+                mDoodle.undo();
+                mDone = true;
+            } else if (v.getId() == R.id.btn_zoomer) {
+                v.setSelected(!v.isSelected());
+                if (v.isSelected()) {
+                    mDoodle.setZoomerScale(mDoodleParams.mZoomerScale);
+                    Toast.makeText(DoodleActivity.this, "x" + mDoodleParams.mZoomerScale, Toast.LENGTH_SHORT).show();
+                } else {
+                    mDoodle.setZoomerScale(0);
+                }
                 mDone = true;
             } else if (v.getId() == R.id.btn_set_color) {
                 DoodleColor color = null;
@@ -727,6 +736,13 @@ public class DoodleActivity extends Activity {
                 if (color != null) {
                     if (!(DoodleParams.getDialogInterceptor() != null
                             && DoodleParams.getDialogInterceptor().onShow(DoodleActivity.this, mDoodle, DoodleParams.DialogType.COLOR_PICKER))) {
+                        boolean fullScreen = (getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
+                        int themeId;
+                        if (fullScreen) {
+                            themeId = android.R.style.Theme_Translucent_NoTitleBar_Fullscreen;
+                        } else {
+                            themeId = android.R.style.Theme_Translucent_NoTitleBar;
+                        }
                         new ColorPickerDialog(DoodleActivity.this, color.getColor(), "画笔颜色",
                                 new ColorPickerDialog.OnColorChangedListener() {
                                     public void colorChanged(int color) {
@@ -752,7 +768,7 @@ public class DoodleActivity extends Activity {
                                             }
                                         }
                                     }
-                                }).show();
+                                }, themeId).show();
                     }
                 }
                 mDone = true;

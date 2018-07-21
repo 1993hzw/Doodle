@@ -79,20 +79,20 @@ public class DoodleView extends FrameLayout implements IDoodle {
     private boolean mIsDrawableOutside = false; // 触摸时，图片区域外是否绘制涂鸦轨迹
     private boolean mReady = false;
 
-    private float mTouchX, mTouchY;
-    private boolean mEnableAmplifier = false; // 放大镜功能
-
     // 保存涂鸦操作，便于撤销
     private CopyOnWriteArrayList<IDoodleItem> mItemStack = new CopyOnWriteArrayList<IDoodleItem>();
 
     private IDoodlePen mPen;
     private IDoodleShape mShape;
 
-    private float mAmplifierRadius;
-    private Path mAmplifierPath;
-    private float mAmplifierScale = 0; // 放大镜的倍数
-    private Paint mAmplifierPaint;
-    private int mAmplifierHorizonX; // 放大器的位置的x坐标，使其水平居中
+    private float mTouchX, mTouchY;
+    private boolean mEnableZoomer = false; // 放大镜功能
+    private float mLastZoomerY;
+    private float mZoomerRadius;
+    private Path mZoomerPath;
+    private float mZoomerScale = 0; // 放大镜的倍数
+    private Paint mZooomerPaint;
+    private int mZoomerHorizonX; // 放大器的位置的x坐标，使其水平居中
 
     private float mDoodleSizeUnit = 1; // 长度单位，不同大小的图片的长度单位不一样。该单位的意义同dp的作用类似，独立于图片之外的单位长度
     private int mDoodleRotateDegree = 0; // 相对于初始图片旋转的角度
@@ -145,13 +145,13 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mPen = DoodlePen.BRUSH;
         mShape = DoodleShape.HAND_WRITE;
 
-        mAmplifierPaint = new Paint();
-        mAmplifierPaint.setColor(0xaaffffff);
-        mAmplifierPaint.setStyle(Paint.Style.STROKE);
-        mAmplifierPaint.setAntiAlias(true);
-        mAmplifierPaint.setStrokeJoin(Paint.Join.ROUND);
-        mAmplifierPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
-        mAmplifierPaint.setStrokeWidth(Util.dp2px(getContext(), 10));
+        mZooomerPaint = new Paint();
+        mZooomerPaint.setColor(0xaaffffff);
+        mZooomerPaint.setStyle(Paint.Style.STROKE);
+        mZooomerPaint.setAntiAlias(true);
+        mZooomerPaint.setStrokeJoin(Paint.Join.ROUND);
+        mZooomerPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
+        mZooomerPaint.setStrokeWidth(Util.dp2px(getContext(), 10));
 
         mDefaultTouchDetector = defaultDetector;
 
@@ -214,10 +214,10 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mCentreTranX = (getWidth() - mCenterWidth) / 2f;
         mCentreTranY = (getHeight() - mCenterHeight) / 2f;
 
-        mAmplifierRadius = Math.min(getWidth(), getHeight()) / 4;
-        mAmplifierPath = new Path();
-        mAmplifierPath.addCircle(mAmplifierRadius, mAmplifierRadius, mAmplifierRadius, Path.Direction.CCW);
-        mAmplifierHorizonX = (int) (Math.min(getWidth(), getHeight()) / 2 - mAmplifierRadius);
+        mZoomerRadius = Math.min(getWidth(), getHeight()) / 4;
+        mZoomerPath = new Path();
+        mZoomerPath.addCircle(mZoomerRadius, mZoomerRadius, mZoomerRadius, Path.Direction.CCW);
+        mZoomerHorizonX = (int) (Math.min(getWidth(), getHeight()) / 2 - mZoomerRadius);
 
         mDoodleSizeUnit = Util.dp2px(getContext(), 1) / mCenterScale;
 
@@ -233,6 +233,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
     /**
      * 获取当前图片在View坐标系中的巨型区域
+     *
      * @return
      */
     public RectF getDoodleBound() {
@@ -276,16 +277,16 @@ public class DoodleView extends FrameLayout implements IDoodle {
             float rtY = toTouchY(0);
 
             //转换到View坐标系
-            rotatePoint(mTempPoint, mDoodleRotateDegree, ltX,ltY, mInner.getWidth() / 2, mInner.getHeight() / 2);
+            rotatePoint(mTempPoint, mDoodleRotateDegree, ltX, ltY, mInner.getWidth() / 2, mInner.getHeight() / 2);
             ltX = mTempPoint.x;
             ltY = mTempPoint.y;
-            rotatePoint(mTempPoint, mDoodleRotateDegree, rbX,rbY, mInner.getWidth() / 2, mInner.getHeight() / 2);
+            rotatePoint(mTempPoint, mDoodleRotateDegree, rbX, rbY, mInner.getWidth() / 2, mInner.getHeight() / 2);
             rbX = mTempPoint.x;
             rbY = mTempPoint.y;
-            rotatePoint(mTempPoint, mDoodleRotateDegree, lbX,lbY, mInner.getWidth() / 2, mInner.getHeight() / 2);
+            rotatePoint(mTempPoint, mDoodleRotateDegree, lbX, lbY, mInner.getWidth() / 2, mInner.getHeight() / 2);
             lbX = mTempPoint.x;
             lbY = mTempPoint.y;
-            rotatePoint(mTempPoint, mDoodleRotateDegree, rtX,rtY, mInner.getWidth() / 2, mInner.getHeight() / 2);
+            rotatePoint(mTempPoint, mDoodleRotateDegree, rtX, rtY, mInner.getWidth() / 2, mInner.getHeight() / 2);
             rtX = mTempPoint.x;
             rtY = mTempPoint.y;
 
@@ -311,26 +312,27 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mPaint.setStrokeWidth(20);
         canvas.drawRect(getDoodleBound(), mPaint);*/
 
-        if (mEnableAmplifier && mAmplifierScale > 0) { //启用放大镜
+        if (mEnableZoomer && mZoomerScale > 0) { //启用放大镜
             canvas.save();
 
-            if (mTouchY <= mAmplifierRadius * 2) { // 在放大镜的范围内， 把放大镜仿制底部
-                canvas.translate(mAmplifierHorizonX, getHeight() - mAmplifierRadius * 2);
-            } else {
-                canvas.translate(mAmplifierHorizonX, 0);
+            if (mTouchY <= mZoomerRadius * 2) { // 在放大镜的范围内， 把放大镜仿制底部
+                mLastZoomerY = getHeight() - mZoomerRadius * 2;
+            } else if (mTouchY >= getHeight() - mZoomerRadius * 2) {
+                mLastZoomerY = 0;
             }
-            canvas.clipPath(mAmplifierPath);
+            canvas.translate(mZoomerHorizonX, mLastZoomerY);
+            canvas.clipPath(mZoomerPath);
             canvas.drawColor(0xff000000);
 
             canvas.save();
-            float scale = mAmplifierScale / mScale; // 除以mScale，无论当前图片缩放多少，都产生图片在居中状态下缩放mAmplifierScale倍的效果
+            float scale = mZoomerScale / mScale; // 除以mScale，无论当前图片缩放多少，都产生图片在居中状态下缩放mAmplifierScale倍的效果
             canvas.scale(scale, scale);
-            canvas.translate(-mTouchX + mAmplifierRadius / scale, -mTouchY + mAmplifierRadius / scale);
+            canvas.translate(-mTouchX + mZoomerRadius / scale, -mTouchY + mZoomerRadius / scale);
             super.dispatchDraw(canvas);
             canvas.restore();
 
             // 画放大器的边框
-            drawCircle(canvas, mAmplifierRadius, mAmplifierRadius, mAmplifierRadius, mAmplifierPaint);
+            drawCircle(canvas, mZoomerRadius, mZoomerRadius, mZoomerRadius, mZooomerPaint);
             canvas.restore();
         }
 
@@ -435,7 +437,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
      * 坐标换算
      * （公式由toX()中的公式推算出）
      *
-     * @param touchX    触摸坐标
+     * @param touchX  触摸坐标
      * @param doodleX 在涂鸦图片中的坐标
      * @return 偏移量
      */
@@ -593,7 +595,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mRotateTranX = tx;
         mRotateTranY = ty;
 
-        notifyActionOccur(ACTION_ROTATION,null);
+        notifyActionOccur(ACTION_ROTATION, null);
 
         invalidate();
     }
@@ -835,17 +837,17 @@ public class DoodleView extends FrameLayout implements IDoodle {
     /**
      * 设置放大镜的倍数，当小于等于0时表示不使用放大器功能
      *
-     * @param amplifierScale
+     * @param scale
      */
     @Override
-    public void setAmplifierScale(float amplifierScale) {
-        mAmplifierScale = amplifierScale;
+    public void setZoomerScale(float scale) {
+        mZoomerScale = scale;
         invalidate();
     }
 
     @Override
-    public float getAmplifierScale() {
-        return mAmplifierScale;
+    public float getZoomerScale() {
+        return mZoomerScale;
     }
 
     /**
@@ -853,15 +855,15 @@ public class DoodleView extends FrameLayout implements IDoodle {
      *
      * @param enable
      */
-    public void enableAmplifier(boolean enable) {
-        mEnableAmplifier = enable;
+    public void enableZoomer(boolean enable) {
+        mEnableZoomer = enable;
     }
 
     /**
      * 是否开启放大镜
      */
-    public boolean isEnableAmplifier() {
-        return mEnableAmplifier;
+    public boolean isEnableZoomer() {
+        return mEnableZoomer;
     }
 
     @Override

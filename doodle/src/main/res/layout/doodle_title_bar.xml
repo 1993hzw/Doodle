@@ -39,7 +39,7 @@
             android:gravity="center_vertical"
             android:maxLines="1"
             android:singleLine="true"
-            android:text="涂鸦"
+            android:text="@string/doodle_app_name"
             app:stv_text_color_pressed="#aaffffff"
             android:textColor="#ffffff"
             android:textSize="18dp"/>

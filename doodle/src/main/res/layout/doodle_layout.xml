@@ -113,9 +113,19 @@
                         android:id="@+id/btn_undo"
                         android:layout_width="@dimen/doodle_btn_pen_size"
                         android:layout_height="@dimen/doodle_btn_pen_size"
+                        android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_round"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_undo"/>
+
+                    <ImageView
+                        android:id="@+id/btn_zoomer"
+                        android:layout_width="@dimen/doodle_btn_pen_size"
+                        android:layout_height="@dimen/doodle_btn_pen_size"
+                        android:background="@drawable/doodle_btn_effect_round"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/doodle_ic_zoomer"/>
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -128,64 +138,64 @@
                     android:visibility="visible">
 
                     <ImageView
-                        android:layout_marginRight="5dp"
                         android:id="@+id/btn_hand_write"
                         android:layout_width="@dimen/doodle_btn_shape_size"
                         android:layout_height="@dimen/doodle_btn_shape_size"
+                        android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_handwrite"/>
 
                     <ImageView
-                        android:layout_marginRight="5dp"
                         android:id="@+id/btn_arrow"
                         android:layout_width="@dimen/doodle_btn_shape_size"
                         android:layout_height="@dimen/doodle_btn_shape_size"
+                        android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_arrow"/>
 
                     <ImageView
-                        android:layout_marginRight="5dp"
                         android:id="@+id/btn_line"
                         android:layout_width="@dimen/doodle_btn_shape_size"
                         android:layout_height="@dimen/doodle_btn_shape_size"
+                        android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_line"/>
 
                     <ImageView
-                        android:layout_marginRight="5dp"
                         android:id="@+id/btn_holl_circle"
                         android:layout_width="@dimen/doodle_btn_shape_size"
                         android:layout_height="@dimen/doodle_btn_shape_size"
+                        android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_hollow_circle"/>
 
                     <ImageView
-                        android:layout_marginRight="5dp"
                         android:id="@+id/btn_fill_circle"
                         android:layout_width="@dimen/doodle_btn_shape_size"
                         android:layout_height="@dimen/doodle_btn_shape_size"
+                        android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_fill_circle"/>
 
                     <ImageView
-                        android:layout_marginRight="5dp"
                         android:id="@+id/btn_holl_rect"
                         android:layout_width="@dimen/doodle_btn_shape_size"
                         android:layout_height="@dimen/doodle_btn_shape_size"
+                        android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_hollow_rect"/>
 
                     <ImageView
-                        android:layout_marginRight="5dp"
                         android:id="@+id/btn_fill_rect"
                         android:layout_width="@dimen/doodle_btn_shape_size"
                         android:layout_height="@dimen/doodle_btn_shape_size"
+                        android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_fill_rect"/>

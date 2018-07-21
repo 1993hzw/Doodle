@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import cn.forward.androids.utils.Util;
@@ -38,7 +39,7 @@ public class ColorPickerDialog extends Dialog {
      */
     public ColorPickerDialog(Context context, String title,
                              OnColorChangedListener listener) {
-        this(context, Color.BLACK, title, listener);
+        this(context, Color.BLACK, title, listener, android.R.style.Theme_Translucent_NoTitleBar);
     }
 
     /**
@@ -48,8 +49,8 @@ public class ColorPickerDialog extends Dialog {
      * @param listener     回调
      */
     public ColorPickerDialog(Context context, int initialColor,
-                             String title, OnColorChangedListener listener) {
-        super(context, android.R.style.Theme_Translucent_NoTitleBar);
+                             String title, OnColorChangedListener listener, int themeResId) {
+        super(context, themeResId);
         this.context = context;
         mListener = listener;
         mInitialColor = initialColor;

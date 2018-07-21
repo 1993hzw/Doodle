@@ -83,7 +83,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
     public boolean onDown(MotionEvent e) {
         mTouchX = mTouchDownX = e.getX();
         mTouchY = mTouchDownY = e.getY();
-        mDoodle.enableAmplifier(false); // 关闭放大镜
+        mDoodle.enableZoomer(false); // 关闭放大镜
         return true;
     }
 
@@ -111,7 +111,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                 }
             }
         } else {
-            mDoodle.enableAmplifier(true); // 涂鸦时开启放大镜
+            mDoodle.enableZoomer(true); // 涂鸦时开启放大镜
             // 点击copy
             if (mDoodle.getPen() == DoodlePen.COPY && mCopyLocation.contains(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY), mDoodle.getSize())) {
                 mCopyLocation.setRelocating(true);
@@ -159,7 +159,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                 mCurrDoodlePath = null;
             }
         }
-        mDoodle.enableAmplifier(false); // 关闭放大镜
+        mDoodle.enableZoomer(false); // 关闭放大镜
         mDoodle.invalidate();
     }
 
@@ -259,7 +259,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
     public boolean onScaleBegin(ScaleGestureDetector detector) {
         mLastFocusX = null;
         mLastFocusY = null;
-        mDoodle.enableAmplifier(false);
+        mDoodle.enableZoomer(false);
         return true;
     }
 
