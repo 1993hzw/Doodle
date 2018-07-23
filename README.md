@@ -3,8 +3,11 @@
 Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Also, a powerful, customizable and extensible doodle framework.
 
 ***Android图片涂鸦，具有撤消、缩放、移动、添加文字，贴图等功能。还是一个功能强大，可自定义和可扩展的涂鸦框架。***
+![01.gif](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/01.gif)
 
-![]()
+![01](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/01.png)
+![02](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/02.png)
+![03](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/03.png)
 
 # Feature 特性
 
@@ -26,9 +29,9 @@ Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Als
     
     ***在涂鸦的过程中，可以自由地通过手势缩放和移动图片。支持旋转图片。***
 
-  * Amplifier ***放大器***
+  * Zoomer ***放大器***
 
-    In order to doodle more finely, an amplifier can be set up during the doodle process.
+    In order to doodle more finely, an zoomer can be set up during the doodle process.
     
     ***为了更细微地涂鸦，涂鸦过程中可以设置出现放大器。***
 
@@ -42,6 +45,8 @@ params.mImagePath = imagePath; // the file path of image
 DoodleActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_DOODLE);
 ```
 See [DoodleParams](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleParams.java) for more details.
+
+***查看[DoodleParams](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleParams.java)获取更多涂鸦参数信息。***
 
   * B. Recommend, use DoodleView and customize your layout. 
   
