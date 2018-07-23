@@ -13,4 +13,6 @@
     <string name="doodle_remove">Delete</string>
     <string name="doodle_top">Top</string>
     <string name="doodle_bottom">Bottom</string>
+
+    <string name="doodle_select_image">Select a image</string>
 </resources>

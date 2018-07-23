@@ -178,22 +178,18 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mTouchX = event.getX();
         mTouchY = event.getY();
 
-        if (mDoodleRotateDegree == 0 || mDoodleRotateDegree == 180) {
-            return super.dispatchTouchEvent(event);
-        } else {
-            // 把事件转发给innerView，避免在区域外不可点击
-            MotionEvent transformedEvent = MotionEvent.obtain(event);
+        // 把事件转发给innerView，避免在区域外不可点击
+        MotionEvent transformedEvent = MotionEvent.obtain(event);
 //        final float offsetX = mInner.getScrollX() - mInner.getLeft();
 //        final float offsetY = mInner.getScrollY() - mInner.getTop();
 //        transformedEvent.offsetLocation(offsetX, offsetY);
-            mTouchEventMatrix.reset();
-            mTouchEventMatrix.setRotate(-mDoodleRotateDegree, mInner.getWidth() / 2, mInner.getHeight() / 2);
-            transformedEvent.transform(mTouchEventMatrix);
-            boolean handled = mInner.dispatchTouchEvent(transformedEvent);
-            transformedEvent.recycle();
+        mTouchEventMatrix.reset();
+        mTouchEventMatrix.setRotate(-mDoodleRotateDegree, mInner.getWidth() / 2, mInner.getHeight() / 2);
+        transformedEvent.transform(mTouchEventMatrix);
+        boolean handled = mInner.dispatchTouchEvent(transformedEvent);
+        transformedEvent.recycle();
 
-            return handled;
-        }
+        return handled;
     }
 
     private void initDoodleBitmap() {// 不用resize preview
@@ -1044,18 +1040,11 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
         public DoodleViewInner(Context context) {
             super(context);
+            // 关闭硬件加速，因为bitmap的Canvas不支持硬件加速
+            if (Build.VERSION.SDK_INT >= 11) {
+                setLayerType(LAYER_TYPE_SOFTWARE, null);
+            }
         }
-
-        @Override
-        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-            super.onSizeChanged(w, h, oldw, oldh);
-        }
-
-        @Override
-        public boolean dispatchTouchEvent(MotionEvent event) {
-            return super.dispatchTouchEvent(event);
-        }
-
 
         @Override
         public boolean onTouchEvent(MotionEvent event) {

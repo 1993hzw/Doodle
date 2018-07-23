@@ -553,34 +553,6 @@ public class DoodleActivity extends Activity {
             }
         });
 
-        mDoodleView.setOnTouchListener(new View.OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                // 隐藏设置面板
-                if (!mBtnHidePanel.isSelected()  // 设置面板没有被隐藏
-                        && mDoodleParams.mChangePanelVisibilityDelay > 0) {
-                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                        case MotionEvent.ACTION_DOWN:
-                            mSettingsPanel.removeCallbacks(mHideDelayRunnable);
-                            mSettingsPanel.removeCallbacks(mShowDelayRunnable);
-                            //触摸屏幕超过一定时间才判断为需要隐藏设置面板
-                            mSettingsPanel.postDelayed(mHideDelayRunnable, mDoodleParams.mChangePanelVisibilityDelay);
-                            break;
-                        case MotionEvent.ACTION_CANCEL:
-                        case MotionEvent.ACTION_UP:
-                            mSettingsPanel.removeCallbacks(mHideDelayRunnable);
-                            mSettingsPanel.removeCallbacks(mShowDelayRunnable);
-                            //离开屏幕超过一定时间才判断为需要显示设置面板
-                            mSettingsPanel.postDelayed(mShowDelayRunnable, mDoodleParams.mChangePanelVisibilityDelay);
-                            break;
-                    }
-                }
-
-                return false;
-            }
-        });
-
         // 长按标题栏显示原图
         findViewById(R.id.doodle_txt_title).setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -884,6 +856,33 @@ public class DoodleActivity extends Activity {
     @Override
     public void onBackPressed() { // 返回键监听
         findViewById(R.id.doodle_btn_back).performClick();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getX() <= mDoodleView.getTop()) {
+            return super.dispatchTouchEvent(ev);
+        }
+        // 隐藏设置面板
+        if (!mBtnHidePanel.isSelected()  // 设置面板没有被隐藏
+                && mDoodleParams.mChangePanelVisibilityDelay > 0) {
+            switch (ev.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN:
+                    mSettingsPanel.removeCallbacks(mHideDelayRunnable);
+                    mSettingsPanel.removeCallbacks(mShowDelayRunnable);
+                    //触摸屏幕超过一定时间才判断为需要隐藏设置面板
+                    mSettingsPanel.postDelayed(mHideDelayRunnable, mDoodleParams.mChangePanelVisibilityDelay);
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP:
+                    mSettingsPanel.removeCallbacks(mHideDelayRunnable);
+                    mSettingsPanel.removeCallbacks(mShowDelayRunnable);
+                    //离开屏幕超过一定时间才判断为需要显示设置面板
+                    mSettingsPanel.postDelayed(mShowDelayRunnable, mDoodleParams.mChangePanelVisibilityDelay);
+                    break;
+            }
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
     private void showView(View view) {
