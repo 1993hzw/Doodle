@@ -172,9 +172,15 @@ public class DoodleView extends FrameLayout implements IDoodle {
     }
 
     private Matrix mTouchEventMatrix = new Matrix();
+    private OnTouchListener mOnTouchListener;
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
+        if (mOnTouchListener != null) {
+            if (mOnTouchListener.onTouch(this, event)) {
+                return true;
+            }
+        }
         mTouchX = event.getX();
         mTouchY = event.getY();
 
@@ -190,6 +196,12 @@ public class DoodleView extends FrameLayout implements IDoodle {
         transformedEvent.recycle();
 
         return handled;
+    }
+
+    @Override
+    public void setOnTouchListener(OnTouchListener l) {
+        mOnTouchListener = l;
+        super.setOnTouchListener(l);
     }
 
     private void initDoodleBitmap() {// 不用resize preview
