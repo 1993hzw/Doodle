@@ -36,6 +36,7 @@ public class DoodleColor implements IDoodleColor {
     public DoodleColor(Bitmap bitmap) {
         this(bitmap, null);
     }
+
     public DoodleColor(Bitmap bitmap, Matrix matrix) {
         this(bitmap, matrix, Shader.TileMode.MIRROR, Shader.TileMode.MIRROR);
     }
@@ -114,6 +115,7 @@ public class DoodleColor implements IDoodleColor {
         }
         color.mTileX = mTileX;
         color.mTileY = mTileY;
+        color.mMatrix = new Matrix(mMatrix);
         return color;
     }
 }
