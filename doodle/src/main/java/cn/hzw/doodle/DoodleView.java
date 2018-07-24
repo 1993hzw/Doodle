@@ -541,6 +541,12 @@ public class DoodleView extends FrameLayout implements IDoodle {
     }
 
     @Override
+    public void invalidate() {
+        mInner.invalidate();
+        super.invalidate();
+    }
+
+    @Override
     public int getDoodleRotation() {
         return mDoodleRotateDegree;
     }

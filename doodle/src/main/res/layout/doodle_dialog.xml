@@ -74,11 +74,13 @@
                 android:gravity="center"
                 android:text=""
                 android:textColor="#bebebe"
+                android:background="#00000000"
                 android:textSize="20dp"
                 app:injectListener="true"
                 app:stv_text_color_pressed="#88bebebe"/>
 
             <cn.forward.androids.views.STextView
+                android:background="#00000000"
                 android:id="@+id/dialog_enter_btn_02"
                 android:layout_width="wrap_content"
                 android:layout_height="50dp"
