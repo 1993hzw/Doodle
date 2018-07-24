@@ -105,10 +105,34 @@ if (mDoodle.getPen() == DoodlePen.TEXT) {
 // 创建手势识别器，识别滚动，缩放，点击等手势
 IDoodleTouchDetector detector = new DoodleTouchDetector(getApplicationContext(), mTouchGestureListener);
 mDoodleView.setDefaultTouchDetector(detector);
+
+// Setting parameters.设置参数
+mDoodleView.setPen(DoodlePen.TEXT);
+mDoodleView.setShape(DoodleShape.HAND_WRITE);
+mDoodleView.setColor(new DoodleColor(Color.RED));
+
 ```
-Add the DoodleView to your layout. Now you can start doodling freely.
+Then, add the DoodleView to your layout. Now you can start doodling freely.
 
 *** 把DoodleView添加到布局中，然后开始涂鸦。***
+
+# Demo 实例
+
+Here are other simple examples to teach you how to use the doodle framework.
+
+1. **[Mosaic effect](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/MosaicDemo.java)**
+
+***[马赛克效果](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/MosaicDemo.java)***
+
+2. **[Change text's size by scale gesture](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/ScaleGestureItemDemo.java)**
+
+***[手势缩放文本大小](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/ScaleGestureItemDemo.java)***
+
+More...
+
+Now I think you should know that DoodleActivity has used DoodleView. You also can customize your layout like DoodleActivity. See [DoodleActivity](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleActivity.java) for more details.
+
+***现在你应该知道DoodleActivity就是使用了DoodleView实现涂鸦，你可以参照[DoodleActivity](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleActivity.java)是怎么实现涂鸦界面的交互来实现自己的自定义页面。***
 
 DoodleView has implemented IDoodle.
 
@@ -156,10 +180,6 @@ public enum DoodleShape implements IDoodleShape {
 }
 ```
 
-Now I think you should know that DoodleActivity has used DoodleView. You also can customize your layout like DoodleActivity. See [DoodleActivity](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleActivity.java) for more details.
-
-***现在你应该知道DoodleActivity就是使用了DoodleView实现涂鸦，你可以参照[DoodleActivity](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleActivity.java)是怎么实现涂鸦界面的交互来实现自己的自定义页面。***
-
 # Extend 拓展
 
 You can create a customized item like [DoodlePath, DoodleText, DoodleBitmap](https://github.com/1993hzw/Doodle/tree/master/doodle/src/main/java/cn/hzw/doodle) which extend [DoodleItemBase](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleItemBase.java) or implement [IDoodleItem](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/core/IDoodleItem.java). 
@@ -181,10 +201,6 @@ You can create a customized color like DoodleColor which implements [IDoodleColo
 You can create a customized touch gesture detector like [DoodleTouchDetector](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleTouchDetector.java)([GestureListener](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleOnTouchGestureListener.java)) which implements [IDoodleTouchDetector](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/core/IDoodleTouchDetector.java). 
 
 ***实现[IDoodleTouchDetector](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/core/IDoodleTouchDetector.java)接口用于创建自定义手势识别器，比如DoodleTouchDetector***
-
-For example, what should we do to achieve the Mosaic effect? See **[Mosaic Demo](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/MosaicDemo.java)**
-
-***举个例子，如何实现马赛克效果呢？详见 [Mosaic Demo](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/MosaicDemo.java)***
 
 # The developer 开发者
 

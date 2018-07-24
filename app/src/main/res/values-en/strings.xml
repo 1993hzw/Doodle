@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Doodle</string>
+    <string name="mosaic">Mosaic</string>
+    <string name="scale_gesture_item">Scale gesture</string>
 </resources>

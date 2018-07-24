@@ -40,6 +40,12 @@ public class MainActivity extends Activity {
                 startActivity(new Intent(getApplicationContext(), MosaicDemo.class));
             }
         });
+        findViewById(R.id.btn_scale_gesture).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), ScaleGestureItemDemo.class));
+            }
+        });
         mPath = (TextView) findViewById(R.id.img_path);
     }
 
