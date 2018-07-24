@@ -34,6 +34,12 @@ public class MainActivity extends Activity {
                 ImageSelectorActivity.startActivityForResult(REQ_CODE_SELECT_IMAGE, MainActivity.this, null, false);
             }
         });
+        findViewById(R.id.btn_mosaic).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), MosaicDemo.class));
+            }
+        });
         mPath = (TextView) findViewById(R.id.img_path);
     }
 

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -15,8 +14,7 @@
         android:id="@+id/btn_select_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="选择图片"
-        />
+        android:text="@string/doodle_select_image" />
 
     <TextView
         android:id="@+id/img_path"
@@ -28,29 +26,60 @@
         android:ellipsize="middle"
         android:text=""
         android:textColor="#ffffff"
-        android:textSize="12dp"
-        />
+        android:textSize="12dp" />
 
-    <TextView
-        android:id="@+id/author"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/btn_select_image"
-        android:layout_alignParentBottom="true"
-        android:layout_marginLeft="10dp"
-        android:layout_toRightOf="@id/btn_select_image"
-        android:gravity="center"
-        android:text="by hzw\nQQ:154330138"
-        android:textColor="#ffffff"
-        android:textSize="16dp"
-        />
+        android:layout_centerInParent="true"
+        android:orientation="vertical">
 
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/ic_launcher" />
+
+        <TextView
+            android:id="@+id/author"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="by hzw\nQQ:154330138"
+            android:textColor="#ffffff"
+            android:textSize="16dp" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/img"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/author"
-        android:layout_below="@id/btn_select_image"/>
+        android:layout_above="@id/txt_demoe"
+        android:layout_below="@id/btn_select_image" />
 
+    <TextView
+        android:id="@+id/txt_demoe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/demo"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:padding="5dp"
+        android:text="Demo"
+        android:textColor="#888888"
+        android:textSize="16dp" />
+
+    <LinearLayout
+        android:id="@+id/demo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_mosaic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/mosaic" />
+    </LinearLayout>
 </RelativeLayout>

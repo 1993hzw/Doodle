@@ -78,7 +78,7 @@ mTouchGestureListener = new DoodleOnTouchGestureListener(mDoodleView, new Doodle
      item（如文字，贴图）被选中或取消选中时回调
      */
     @Override
-    public void onSelectedItem(IDoodleSelectableItem selectableItem, boolean selected) {
+    public void onSelectedItem(IDoodle doodle, IDoodleSelectableItem selectableItem, boolean selected) {
         //do something
     }
 
@@ -87,7 +87,7 @@ mTouchGestureListener = new DoodleOnTouchGestureListener(mDoodleView, new Doodle
      点击View中的某个点创建可选择的item（如文字，贴图）时回调
      */
     @Override
-    public void onCreateSelectableItem(float x, float y) {
+    public void onCreateSelectableItem(IDoodle doodle, float x, float y) {
         //do something
         /*
 if (mDoodle.getPen() == DoodlePen.TEXT) {
@@ -182,9 +182,9 @@ You can create a customized touch gesture detector like [DoodleTouchDetector](ht
 
 ***实现[IDoodleTouchDetector](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/core/IDoodleTouchDetector.java)接口用于创建自定义手势识别器，比如DoodleTouchDetector***
 
-For example, what should we do to achieve the Mosaic effect? Later...
+For example, what should we do to achieve the Mosaic effect? See **[Mosaic Demo](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/MosaicDemo.java)**
 
-***举个例子，如何实现马赛克效果呢？后面再说……***
+***举个例子，如何实现马赛克效果呢？详见 [Mosaic Demo](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/MosaicDemo.java)***
 
 # The developer 开发者
 
