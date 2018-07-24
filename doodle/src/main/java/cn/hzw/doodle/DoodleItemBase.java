@@ -16,17 +16,16 @@ import cn.hzw.doodle.core.IDoodleShape;
 public abstract class DoodleItemBase implements IDoodleItem {
 
     private float mItemRotate; // item的旋转角度
-
     private IDoodle mDoodle;
-
     private PointF mLocation = new PointF();
-
     private IDoodlePen mPen; // 画笔类型
     private IDoodleShape mShape; // 画笔形状
     private float mSize; // 大小
     private IDoodleColor mColor; // 颜色
     private boolean mIsDrawOptimize = false; //优化绘制
     private boolean mIsNeedClipOutside = true; // 是否需要裁剪图片区域外的部分
+
+    private boolean mHasAdded = false;
 
     public DoodleItemBase(IDoodle doodle) {
         this(doodle, null);
@@ -61,6 +60,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     @Override
     public void setItemRotate(float textRotate) {
         mItemRotate = textRotate;
+        refresh();
     }
 
     @Override
@@ -72,6 +72,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     public void setLocation(float x, float y) {
         mLocation.x = x;
         mLocation.y = y;
+        refresh();
     }
 
     @Override
@@ -87,6 +88,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     @Override
     public void setPen(IDoodlePen pen) {
         mPen = pen;
+        refresh();
     }
 
     @Override
@@ -97,6 +99,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     @Override
     public void setShape(IDoodleShape shape) {
         mShape = shape;
+        refresh();
     }
 
     @Override
@@ -107,6 +110,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     @Override
     public void setSize(float size) {
         mSize = size;
+        refresh();
     }
 
     @Override
@@ -117,6 +121,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     @Override
     public void setColor(IDoodleColor color) {
         mColor = color;
+        refresh();
     }
 
     @Override
@@ -162,12 +167,19 @@ public abstract class DoodleItemBase implements IDoodleItem {
 
     @Override
     public void onAdd() {
-
+        mHasAdded = true;
     }
 
     @Override
     public void onRemove() {
+        mHasAdded = false;
+    }
 
+    @Override
+    public void refresh() {
+        if (mHasAdded && mDoodle != null) {
+            mDoodle.refresh();
+        }
     }
 
     /**

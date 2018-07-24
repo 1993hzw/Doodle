@@ -227,7 +227,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mTransX = mTransY = 0;
         mScale = 1;
 
-        invalidate();
+        refresh();
     }
 
     /**
@@ -514,7 +514,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     /**
      * 强制刷新，包括重新刷新涂鸦图片
      */
-    public void invalidateForce() {
+    public void refreshForce() {
         initCanvas();
         // 重新绘制到图片上
         for (IDoodleItem item : mItemStack) {
@@ -528,10 +528,10 @@ public class DoodleView extends FrameLayout implements IDoodle {
                 item.draw(mBitmapCanvas);
             }
         }
-        invalidate();
+        refresh();
     }
 
-    public void invalidate(IDoodleItem item) {
+    public void refresh(IDoodleItem item) {
         if (!mItemStack.contains(item)) {
             throw new RuntimeException("doodle doesn't include the item");
         }
@@ -540,6 +540,11 @@ public class DoodleView extends FrameLayout implements IDoodle {
         } else {
 
         }
+        refresh();
+    }
+
+    @Override
+    public void refresh() {
         invalidate();
     }
 
@@ -600,7 +605,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mRotateTranX = tx;
         mRotateTranY = ty;
 
-        invalidate();
+        refresh();
     }
 
     /**
@@ -624,12 +629,12 @@ public class DoodleView extends FrameLayout implements IDoodle {
             public void run() {
                 // 还原涂鸦图片，确保在ui线程刷新
                 if (Looper.myLooper() == Looper.getMainLooper()) {
-                    invalidateForce();
+                    refreshForce();
                 } else {
                     post(new Runnable() {
                         @Override
                         public void run() {
-                            invalidateForce();
+                            refreshForce();
                         }
                     });
                 }
@@ -644,7 +649,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     public void clear() {
         int size = mItemStack.size();
         mItemStack.clear();
-        invalidateForce();
+        refreshForce();
     }
 
     @Override
@@ -675,7 +680,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     @Override
     public void setShowOriginal(boolean justDrawOriginal) {
         isJustDrawOriginal = justDrawOriginal;
-        invalidate();
+        refresh();
     }
 
     @Override
@@ -691,7 +696,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     @Override
     public void setColor(IDoodleColor color) {
         mColor = color;
-        invalidate();
+        refresh();
     }
 
     @Override
@@ -723,7 +728,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mTransX = toTransX(touchX, pivotX);
         mTransY = toTransY(touchY, pivotY);
 
-        invalidate();
+        refresh();
     }
 
     @Override
@@ -743,7 +748,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         }
         IDoodlePen old = mPen;
         mPen = pen;
-        invalidate();
+        refresh();
     }
 
     @Override
@@ -762,7 +767,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
             throw new RuntimeException("Shape can't be null");
         }
         mShape = shape;
-        invalidate();
+        refresh();
     }
 
     @Override
@@ -774,7 +779,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     public void setDoodleTranslation(float transX, float transY) {
         mTransX = transX;
         mTransY = transY;
-        invalidate();
+        refresh();
     }
 
     /**
@@ -785,7 +790,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     @Override
     public void setDoodleTranslationX(float transX) {
         this.mTransX = transX;
-        invalidate();
+        refresh();
     }
 
     @Override
@@ -796,7 +801,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     @Override
     public void setDoodleTranslationY(float transY) {
         this.mTransY = transY;
-        invalidate();
+        refresh();
     }
 
     @Override
@@ -808,7 +813,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     @Override
     public void setSize(float paintSize) {
         mSize = paintSize;
-        invalidate();
+        refresh();
     }
 
     @Override
@@ -842,7 +847,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     @Override
     public void setZoomerScale(float scale) {
         mZoomerScale = scale;
-        invalidate();
+        refresh();
     }
 
     @Override
@@ -870,14 +875,14 @@ public class DoodleView extends FrameLayout implements IDoodle {
     public void topItem(IDoodleItem item) {
         mItemStack.remove(item);
         mItemStack.add(item);
-        invalidate();
+        refresh();
     }
 
     @Override
     public void bottomItem(IDoodleItem item) {
         mItemStack.remove(item);
         mItemStack.add(0, item);
-        invalidate();
+        refresh();
     }
 
     @Override
@@ -921,7 +926,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         if (((DoodleItemBase) doodleItem).isDrawOptimize()) { // // 优化绘制
             doodleItem.draw(mBitmapCanvas); // 提前保存到图片中
         }
-        invalidate();
+        refresh();
     }
 
     @Override
@@ -933,9 +938,9 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
         if (doodleItem instanceof DoodleItemBase &&
                 ((DoodleItemBase) doodleItem).isDrawOptimize()) { // 由于优化绘制，需要重新绘制抹掉图片上的痕迹
-            invalidateForce();
+            refreshForce();
         }
-        invalidate();
+        refresh();
     }
 
     @Override

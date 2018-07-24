@@ -279,6 +279,6 @@ public interface IDoodle {
     /**
      * 刷新
      */
-    public void invalidate();
+    public void refresh();
 
 }

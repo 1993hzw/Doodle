@@ -2,8 +2,6 @@ package cn.hzw.doodle;
 
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -12,16 +10,13 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.PersistableBundle;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -42,7 +37,6 @@ import cn.hzw.doodle.core.IDoodleTouchDetector;
 import cn.hzw.doodle.dialog.ColorPickerDialog;
 import cn.hzw.doodle.dialog.DialogController;
 import cn.hzw.doodle.imagepicker.ImageSelectorView;
-import cn.hzw.doodle.util.DrawUtil;
 
 /**
  * 涂鸦界面，根据DoodleView的接口，提供页面交互
@@ -304,105 +298,14 @@ public class DoodleActivity extends Activity {
 
     // 添加文字
     private void createDoodleText(final DoodleText doodleText, final float x, final float y) {
-        Activity activity = this;
         if (isFinishing()) {
             return;
         }
 
-        boolean fullScreen = (activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
-        Dialog dialog = null;
-        if (fullScreen) {
-            dialog = new Dialog(activity,
-                    android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
-        } else {
-            dialog = new Dialog(activity,
-                    android.R.style.Theme_Translucent_NoTitleBar);
-        }
-        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        dialog.show();
-        final Dialog finalDialog1 = dialog;
-        activity.getWindow().getDecorView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-            @Override
-            public void onViewAttachedToWindow(View v) {
-
-            }
-
-            @Override
-            public void onViewDetachedFromWindow(View v) {
-                finalDialog1.dismiss();
-            }
-        });
-
-        ViewGroup container = (ViewGroup) View.inflate(getApplicationContext(), R.layout.doodle_create_text, null);
-        final Dialog finalDialog = dialog;
-        container.setOnClickListener(new View.OnClickListener() {
+        DialogController.showInputTextDialog(this, doodleText == null ? null : doodleText.getText(), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finalDialog.dismiss();
-            }
-        });
-        dialog.setContentView(container);
-
-        if (fullScreen) {
-            DrawUtil.assistActivity(dialog.getWindow());
-        }
-
-        final EditText textView = (EditText) container.findViewById(R.id.doodle_selectable_edit);
-        final View cancelBtn = container.findViewById(R.id.doodle_text_cancel_btn);
-        final TextView enterBtn = (TextView) container.findViewById(R.id.doodle_text_enter_btn);
-
-        textView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String text = (textView.getText() + "").trim();
-                if (TextUtils.isEmpty(text)) {
-                    enterBtn.setEnabled(false);
-                    enterBtn.setTextColor(0xffb3b3b3);
-                } else {
-                    enterBtn.setEnabled(true);
-                    enterBtn.setTextColor(0xff232323);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-        textView.setText(doodleText == null ? "" : doodleText.getText());
-
-        cancelBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cancelBtn.setSelected(true);
-                finalDialog.dismiss();
-            }
-        });
-
-        enterBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                enterBtn.setSelected(true);
-                finalDialog.dismiss();
-            }
-        });
-
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                if (cancelBtn.isSelected()) {
-                    mSettingsPanel.removeCallbacks(mHideDelayRunnable);
-                    return;
-                }
-                if (!enterBtn.isSelected()) {
-                    return;
-                }
-                String text = (textView.getText() + "").trim();
+                String text = (v.getTag() + "").trim();
                 if (TextUtils.isEmpty(text)) {
                     return;
                 }
@@ -413,10 +316,9 @@ public class DoodleActivity extends Activity {
                 } else {
                     doodleText.setText(text);
                 }
-                mDoodle.invalidate();
+                mDoodle.refresh();
             }
-        });
-
+        }, null);
         if (doodleText == null) {
             mSettingsPanel.removeCallbacks(mHideDelayRunnable);
         }
@@ -424,39 +326,13 @@ public class DoodleActivity extends Activity {
 
     // 添加贴图
     private void createDoodleBitmap(final DoodleBitmap doodleBitmap, final float x, final float y) {
-        Activity activity = this;
-
-        boolean fullScreen = (activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
-        Dialog dialog = null;
-        if (fullScreen) {
-            dialog = new Dialog(activity,
-                    android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
-        } else {
-            dialog = new Dialog(activity,
-                    android.R.style.Theme_Translucent_NoTitleBar);
-        }
-        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        dialog.show();
-        ViewGroup container = (ViewGroup) View.inflate(getApplicationContext(), R.layout.doodle_create_bitmap, null);
-        final Dialog finalDialog = dialog;
-        container.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finalDialog.dismiss();
-            }
-        });
-        dialog.setContentView(container);
-
-        ViewGroup selectorContainer = (ViewGroup) finalDialog.findViewById(R.id.doodle_image_selector_container);
-        ImageSelectorView selectorView = new ImageSelectorView(this, false, 1, null, new ImageSelectorView.ImageSelectorListener() {
+        DialogController.showSelectImageDialog(this, new ImageSelectorView.ImageSelectorListener() {
             @Override
             public void onCancel() {
-                finalDialog.dismiss();
             }
 
             @Override
             public void onEnter(List<String> pathList) {
-                finalDialog.dismiss();
                 Bitmap bitmap = ImageUtils.createBitmapFromPath(pathList.get(0), mDoodleView.getWidth() / 4, mDoodleView.getHeight() / 4);
 
                 if (doodleBitmap == null) {
@@ -466,13 +342,10 @@ public class DoodleActivity extends Activity {
                 } else {
                     doodleBitmap.setBitmap(bitmap);
                 }
-                mDoodle.invalidate();
+                mDoodle.refresh();
             }
         });
-        selectorView.setColumnCount(4);
-        selectorContainer.addView(selectorView);
     }
-
 
     //++++++++++++++++++以下为一些初始化操作和点击监听+++++++++++++++++++++++++++++++++++++++++
 

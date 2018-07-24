@@ -127,9 +127,7 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
     public void setSelected(boolean isSelected) {
         mIsSelected = isSelected;
         setNeedClipOutside(!isSelected);
-        if (getDoodle() != null) {
-            getDoodle().invalidate();
-        }
+        refresh();
     }
 
     protected abstract void resetBounds(Rect rect);

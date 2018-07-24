@@ -143,7 +143,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                 mDoodle.addItem(mCurrDoodlePath);
             }
         }
-        mDoodle.invalidate();
+        mDoodle.refresh();
     }
 
     @Override
@@ -160,12 +160,12 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         } else {
             if (mCurrDoodlePath != null) {
                 /*mCurrDoodlePath.setDrawOptimize(true);
-                mDoodle.invalidate(mCurrDoodlePath);*/
+                mDoodle.refresh(mCurrDoodlePath);*/
                 mCurrDoodlePath = null;
             }
         }
         mDoodle.enableZoomer(false); // 关闭放大镜
-        mDoodle.invalidate();
+        mDoodle.refresh();
     }
 
     @Override
@@ -209,7 +209,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                 }
             }
         }
-        mDoodle.invalidate();
+        mDoodle.refresh();
         return true;
     }
 
@@ -260,7 +260,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
             onScroll(e, e, 0, 0);
             onScrollEnd(e);
         }
-        mDoodle.invalidate();
+        mDoodle.refresh();
         return true;
     }
 

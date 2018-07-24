@@ -115,4 +115,9 @@ public interface IDoodleItem {
      * 移除涂鸦时回调
      */
     public void onRemove();
+
+    /**
+     * 刷新
+     */
+    public void refresh();
 }
