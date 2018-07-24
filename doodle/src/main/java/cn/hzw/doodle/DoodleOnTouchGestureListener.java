@@ -10,6 +10,7 @@ import android.view.ScaleGestureDetector;
 import java.util.List;
 
 import cn.forward.androids.TouchGestureDetector;
+import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleItem;
 import cn.hzw.doodle.core.IDoodleSelectableItem;
 
@@ -66,11 +67,15 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
 
         if (old != null) { // 取消选定
             old.setSelected(false);
-            mSelectionListener.onSelectedItem(old, false);
+            if (mSelectionListener != null) {
+                mSelectionListener.onSelectedItem(mDoodle, old, false);
+            }
         }
         if (mSelectedItem != null) {
             mSelectedItem.setSelected(true);
-            mSelectionListener.onSelectedItem(mSelectedItem, true);
+            if (mSelectionListener != null) {
+                mSelectionListener.onSelectedItem(mDoodle, mSelectedItem, true);
+            }
         }
 
     }
@@ -104,10 +109,10 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                 mSelectedItemX = xy.x;
                 mSelectedItemY = xy.y;
                 if (mSelectedItem instanceof DoodleRotatableItemBase
-                        && (((DoodleRotatableItemBase)mSelectedItem).canRotate(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY)))) {
-                        ((DoodleRotatableItemBase) mSelectedItem).setIsRotating(true);
-                        mRotateTextDiff = mSelectedItem.getItemRotate() -
-                                computeAngle(xy.x, xy.y, mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
+                        && (((DoodleRotatableItemBase) mSelectedItem).canRotate(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY)))) {
+                    ((DoodleRotatableItemBase) mSelectedItem).setIsRotating(true);
+                    mRotateTextDiff = mSelectedItem.getItemRotate() -
+                            computeAngle(xy.x, xy.y, mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
                 }
             }
         } else {
@@ -149,8 +154,8 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         mTouchY = e.getY();
 
         if (mDoodle.getPen().isSelectable()) {
-            if(mSelectedItem instanceof DoodleRotatableItemBase) {
-                ((DoodleRotatableItemBase)mSelectedItem).setIsRotating(false);
+            if (mSelectedItem instanceof DoodleRotatableItemBase) {
+                ((DoodleRotatableItemBase) mSelectedItem).setIsRotating(false);
             }
         } else {
             if (mCurrDoodlePath != null) {
@@ -172,7 +177,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
 
         if (mDoodle.getPen().isSelectable()) { //画笔是否是可选择的
             if (mSelectedItem != null) {
-                if ((mSelectedItem instanceof DoodleRotatableItemBase)&&(((DoodleRotatableItemBase)mSelectedItem).isRotating())) { // 旋转item
+                if ((mSelectedItem instanceof DoodleRotatableItemBase) && (((DoodleRotatableItemBase) mSelectedItem).isRotating())) { // 旋转item
                     PointF xy = mSelectedItem.getLocation();
                     mSelectedItem.setItemRotate(mRotateTextDiff + computeAngle(
                             xy.x, xy.y, mDoodle.toX(mTouchX), mDoodle.toY(mTouchY)
@@ -240,9 +245,13 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                 if (mSelectedItem != null) { // 取消选定
                     IDoodleSelectableItem old = mSelectedItem;
                     setSelectedItem(null);
-                    mSelectionListener.onSelectedItem(old, false);
+                    if (mSelectionListener != null) {
+                        mSelectionListener.onSelectedItem(mDoodle, old, false);
+                    }
                 } else {
-                    mSelectionListener.onCreateSelectableItem(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
+                    if (mSelectionListener != null) {
+                        mSelectionListener.onCreateSelectableItem(mDoodle, mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
+                    }
                 }
             }
         } else {
@@ -461,7 +470,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
          *
          * @param selected 是否选中，false表示从选中变成不选中
          */
-        void onSelectedItem(IDoodleSelectableItem selectableItem, boolean selected);
+        void onSelectedItem(IDoodle doodle, IDoodleSelectableItem selectableItem, boolean selected);
 
         /**
          * called when you click the view to create a item(such as text, texture).
@@ -470,7 +479,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
          * @param x
          * @param y
          */
-        void onCreateSelectableItem(float x, float y);
+        void onCreateSelectableItem(IDoodle doodle, float x, float y);
     }
 
 }

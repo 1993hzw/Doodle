@@ -12,11 +12,12 @@ import cn.hzw.doodle.DoodleColor;
 
 public interface IDoodle {
     /**
+     * Gets the unit size in the current doodle coordinate system, which refers to the dp, independent of the image
      * 获取当前涂鸦坐标系中的单位大小，该单位参考dp，独立于图片
      *
      * @return
      */
-    public float getSizeUnit();
+    public float getUnitSize();
 
     /**
      * 设置图片旋转值

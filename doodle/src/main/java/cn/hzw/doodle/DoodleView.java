@@ -15,7 +15,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,12 +37,6 @@ import static cn.hzw.doodle.util.DrawUtil.rotatePoint;
  * Created by huangziwei on 2016/9/3.
  */
 public class DoodleView extends FrameLayout implements IDoodle {
-
-    // ACTION
-    public final static int ACTION_ROTATION = 1; // 旋转
-    public final static int ACTION_SAVE = 2; // 保存
-    public final static int ACTION_UNDO = 3; // 撤销
-    public final static int ACTION_CLEAR = 4; // 清空
 
     public final static float MAX_SCALE = 4f; // 最大缩放倍数
     public final static float MIN_SCALE = 0.25f; // 最小缩放倍数
@@ -96,8 +89,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
     private float mDoodleSizeUnit = 1; // 长度单位，不同大小的图片的长度单位不一样。该单位的意义同dp的作用类似，独立于图片之外的单位长度
     private int mDoodleRotateDegree = 0; // 相对于初始图片旋转的角度
-
-    private List<WeakReference<IDoodleViewListener>> mListenerList = new CopyOnWriteArrayList<>();
 
     // 手势相关
     private IDoodleTouchDetector mDefaultTouchDetector;
@@ -166,7 +157,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         initCanvas();
         initDoodleBitmap();
         if (!mReady) {
-            mDoodleListener.onReady();
+            mDoodleListener.onReady(this);
             mReady = true;
         }
     }
@@ -609,8 +600,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mRotateTranX = tx;
         mRotateTranY = ty;
 
-        notifyActionOccur(ACTION_ROTATION, null);
-
         invalidate();
     }
 
@@ -630,7 +619,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         }
         mDoodleBitmap = ImageUtils.rotate(mDoodleBitmap, mDoodleRotateDegree, true);
 
-        mDoodleListener.onSaved(mDoodleBitmap, new Runnable() {
+        mDoodleListener.onSaved(this, mDoodleBitmap, new Runnable() {
             @Override
             public void run() {
                 // 还原涂鸦图片，确保在ui线程刷新
@@ -646,7 +635,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
                 }
             }
         });
-        notifyActionOccur(ACTION_SAVE, null);
     }
 
     /**
@@ -656,7 +644,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
     public void clear() {
         int size = mItemStack.size();
         mItemStack.clear();
-        notifyActionOccur(ACTION_CLEAR, size);
         invalidateForce();
     }
 
@@ -667,7 +654,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
             step = Math.min(mItemStack.size(), step);
             IDoodleItem item = mItemStack.get(mItemStack.size() - step);
             removeItem(item);
-            notifyActionOccur(ACTION_UNDO, item);
             return true;
         }
         return false;
@@ -917,7 +903,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     }
 
     @Override
-    public float getSizeUnit() {
+    public float getUnitSize() {
         return mDoodleSizeUnit;
     }
 
@@ -967,35 +953,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
         return mDoodleBitmap;
     }
 
-
-    /**
-     * 添加回调
-     *
-     * @param listener
-     */
-    public void addDoodleViewListener(IDoodleViewListener listener) {
-        if (listener == null || mListenerList.contains(listener)) {
-            return;
-        }
-        mListenerList.add(new WeakReference<>(listener));
-    }
-
-    /**
-     * 移除回调
-     *
-     * @param listener
-     */
-    public void removeDoodleViewListener(IDoodleViewListener listener) {
-        IDoodleViewListener callBack;
-        for (WeakReference<IDoodleViewListener> ref : mListenerList) {
-            callBack = ref.get();
-            if (callBack == null || callBack == listener) {
-                mListenerList.remove(ref);
-            }
-        }
-    }
-
-
     public int getCenterWidth() {
         return mCenterWidth;
     }
@@ -1026,32 +983,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
     public float getRotateTranY() {
         return mRotateTranY;
-    }
-
-    private void notifyActionOccur(int action, Object obj) {
-        IDoodleViewListener callBack;
-        for (WeakReference<IDoodleViewListener> ref : mListenerList) {
-            callBack = ref.get();
-            if (callBack != null) {
-                callBack.onActionOccur(action, obj);
-            } else { // 刪除无用的引用
-                mListenerList.remove(ref);
-            }
-        }
-    }
-
-    /**
-     * 监听涂鸦中的事件
-     */
-    public interface IDoodleViewListener {
-
-        /**
-         * 操作发生后回调
-         *
-         * @param action
-         * @param obj    动作相关的对象信息
-         */
-        public void onActionOccur(int action, Object obj);
     }
 
     private class DoodleViewInner extends View {

@@ -58,12 +58,7 @@ DoodleView mDoodle = mDoodleView = new DoodleView(this, bitmap, new IDoodleListe
             保存涂鸦图像时调用
              */
             @Override
-            public void onSaved(Bitmap bitmap, Runnable callback) {
-               //do something
-            }
-
-            @Override
-            public void onError(int i, String msg) { // errors
+            public void onSaved(IDoodle doodle, Bitmap bitmap, Runnable callback) {
                //do something
             }
 
@@ -72,7 +67,7 @@ DoodleView mDoodle = mDoodleView = new DoodleView(this, bitmap, new IDoodleListe
              此时view已经测量完成，涂鸦前的准备工作已经完成，在这里可以设置大小、颜色、画笔、形状等。
              */
             @Override
-            public void onReady() {
+            public void onReady(IDoodle doodle) {
                 //do something
             }
         });
@@ -96,10 +91,10 @@ mTouchGestureListener = new DoodleOnTouchGestureListener(mDoodleView, new Doodle
         //do something
         /*
 if (mDoodle.getPen() == DoodlePen.TEXT) {
-        IDoodleSelectableItem item = new DoodleText(mDoodle, "hello", 20 * mDoodle.getSizeUnit(), new DoodleColor(Color.RED), x, y);
+        IDoodleSelectableItem item = new DoodleText(mDoodle, "hello", 20 * mDoodle.getUnitSize(), new DoodleColor(Color.RED), x, y);
         mDoodle.addItem(item);
 } else if (mDoodle.getPen() == DoodlePen.BITMAP) {
-        IDoodleSelectableItem item = new DoodleBitmap(mDoodle, bitmap, 80 * mDoodle.getSizeUnit(), x, y);
+        IDoodleSelectableItem item = new DoodleBitmap(mDoodle, bitmap, 80 * mDoodle.getUnitSize(), x, y);
         mDoodle.addItem(item);
 }
         */
@@ -121,7 +116,7 @@ DoodleView has implemented IDoodle.
 ```java
 public interface IDoodle {
 ...
-    public float getSizeUnit();
+    public float getUnitSize();
     public void setDoodleRotation(int degree);
     public void setDoodleScale(float scale, float pivotX, float pivotY);
     public void setPen(IDoodlePen pen);

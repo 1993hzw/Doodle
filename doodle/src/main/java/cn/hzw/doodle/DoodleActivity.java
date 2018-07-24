@@ -181,7 +181,7 @@ public class DoodleActivity extends Activity {
 
         mDoodle = mDoodleView = new DoodleView(this, bitmap, new IDoodleListener() {
             @Override
-            public void onSaved(Bitmap bitmap, Runnable callback) { // 保存图片为jpg格式
+            public void onSaved(IDoodle doodle, Bitmap bitmap, Runnable callback) { // 保存图片为jpg格式
                 File doodleFile = null;
                 File file = null;
                 String savePath = mDoodleParams.mSavePath;
@@ -220,15 +220,14 @@ public class DoodleActivity extends Activity {
                 }
             }
 
-            @Override
             public void onError(int i, String msg) {
                 setResult(RESULT_ERROR);
                 finish();
             }
 
             @Override
-            public void onReady() {
-                float size = mDoodleParams.mPaintUnitSize > 0 ? mDoodleParams.mPaintUnitSize * mDoodle.getSizeUnit() : 0;
+            public void onReady(IDoodle doodle) {
+                float size = mDoodleParams.mPaintUnitSize > 0 ? mDoodleParams.mPaintUnitSize * mDoodle.getUnitSize() : 0;
                 if (size <= 0) {
                     size = mDoodleParams.mPaintPixelSize > 0 ? mDoodleParams.mPaintPixelSize : mDoodle.getSize();
                 }
@@ -248,7 +247,7 @@ public class DoodleActivity extends Activity {
 
         mTouchGestureListener = new DoodleOnTouchGestureListener(mDoodleView, new DoodleOnTouchGestureListener.ISelectionListener() {
             @Override
-            public void onSelectedItem(IDoodleSelectableItem selectableItem, boolean selected) {
+            public void onSelectedItem(IDoodle doodle, IDoodleSelectableItem selectableItem, boolean selected) {
                 if (selected) {
                     DoodleColor color = null;
                     if (selectableItem.getColor() instanceof DoodleColor) {
@@ -282,7 +281,7 @@ public class DoodleActivity extends Activity {
             }
 
             @Override
-            public void onCreateSelectableItem(float x, float y) {
+            public void onCreateSelectableItem(IDoodle doodle, float x, float y) {
                 if (mDoodle.getPen() == DoodlePen.TEXT) {
                     createDoodleText(null, x, y);
                 } else if (mDoodle.getPen() == DoodlePen.BITMAP) {
@@ -639,7 +638,7 @@ public class DoodleActivity extends Activity {
                     } else {
                         mDoodle.setColor(new DoodleColor(((BitmapDrawable) colorBg).getBitmap()));
                     }
-                    mPaintSizeBar.setProgress((int) (DoodleView.DEFAULT_SIZE * mDoodle.getSizeUnit()));
+                    mPaintSizeBar.setProgress((int) (DoodleView.DEFAULT_SIZE * mDoodle.getUnitSize()));
                 }
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_copy) {
@@ -650,7 +649,7 @@ public class DoodleActivity extends Activity {
                     mTouchGestureListener.setSelectedItem(null);
                     mDoodle.setPen(DoodlePen.COPY);
                     mDoodle.setColor(new DoodleColor(mDoodle.getBitmap()));
-                    mPaintSizeBar.setProgress((int) (DEFAULT_COPY_SIZE * mDoodle.getSizeUnit()));
+                    mPaintSizeBar.setProgress((int) (DEFAULT_COPY_SIZE * mDoodle.getUnitSize()));
                 }
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_eraser) {
@@ -661,7 +660,7 @@ public class DoodleActivity extends Activity {
                     mTouchGestureListener.setSelectedItem(null);
                     mDoodle.setPen(DoodlePen.ERASER);
                     mDoodle.setColor(new DoodleColor(mDoodle.getBitmap()));
-                    mPaintSizeBar.setProgress((int) (DoodleView.DEFAULT_SIZE * mDoodle.getSizeUnit()));
+                    mPaintSizeBar.setProgress((int) (DoodleView.DEFAULT_SIZE * mDoodle.getUnitSize()));
                 }
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_text) {
@@ -677,7 +676,7 @@ public class DoodleActivity extends Activity {
                     } else {
                         mDoodle.setColor(new DoodleColor(((BitmapDrawable) colorBg).getBitmap()));
                     }
-                    mPaintSizeBar.setProgress((int) (DEFAULT_TEXT_SIZE * mDoodle.getSizeUnit() + 0.5f));
+                    mPaintSizeBar.setProgress((int) (DEFAULT_TEXT_SIZE * mDoodle.getUnitSize() + 0.5f));
                 }
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_bitmap) {
@@ -687,7 +686,7 @@ public class DoodleActivity extends Activity {
                     mColorContainer.setVisibility(View.VISIBLE);
                     mTouchGestureListener.setSelectedItem(null);
                     mDoodle.setPen(DoodlePen.BITMAP);
-                    mPaintSizeBar.setProgress((int) (DEFAULT_BITMAP_SIZE * mDoodle.getSizeUnit() + 0.5f));
+                    mPaintSizeBar.setProgress((int) (DEFAULT_BITMAP_SIZE * mDoodle.getUnitSize() + 0.5f));
                 }
                 mDone = true;
             }

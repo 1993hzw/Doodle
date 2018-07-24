@@ -30,7 +30,7 @@ public abstract class DoodleRotatableItemBase extends DoodleSelectableItemBase {
     @Override
     public void doDrawSelectedBackground(Canvas canvas) {
         mRectTemp.set(getBounds());
-        float unit = getDoodle().getSizeUnit();
+        float unit = getDoodle().getUnitSize();
         mRectTemp.left -= 10 * unit;
         mRectTemp.top -= 10 * unit;
         mRectTemp.right += 10 * unit;
@@ -88,12 +88,12 @@ public abstract class DoodleRotatableItemBase extends DoodleSelectableItemBase {
         PointF xy = rotatePoint(mTemp, (int) -getItemRotate(), x, y, 0, 0);
 
         mRectTemp.set(getBounds());
-        float unit = doodle.getSizeUnit();
+        float unit = doodle.getUnitSize();
         mRectTemp.left -= 13 * unit;
         mRectTemp.top -= 13 * unit;
         mRectTemp.right += 13 * unit;
         mRectTemp.bottom += 13 * unit;
-        return xy.x >= mRectTemp.right && xy.x <= mRectTemp.right + ITEM_CAN_ROTATE_BOUND * doodle.getSizeUnit()
+        return xy.x >= mRectTemp.right && xy.x <= mRectTemp.right + ITEM_CAN_ROTATE_BOUND * doodle.getUnitSize()
                 && xy.y >= mRectTemp.top && xy.y <= mRectTemp.bottom;
     }
 

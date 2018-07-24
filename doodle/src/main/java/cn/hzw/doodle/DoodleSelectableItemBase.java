@@ -62,7 +62,7 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
         // 把变换后相对于矩形的触摸点，还原回未变换前的点，然后判断是否矩形中
         mTemp = rotatePoint(mTemp, (int) -getItemRotate(), x, y, 0, 0);
         mRectTemp.set(mRect);
-        float unit = getDoodle().getSizeUnit();
+        float unit = getDoodle().getUnitSize();
         mRectTemp.left -= 10 * unit;
         mRectTemp.top -= 10 * unit;
         mRectTemp.right += 10 * unit;
@@ -96,7 +96,7 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
 
     public void doDrawSelectedBackground(Canvas canvas) {
         mRectTemp.set(getBounds());
-        float unit = getDoodle().getSizeUnit();
+        float unit = getDoodle().getUnitSize();
         mRectTemp.left -= 10 * unit;
         mRectTemp.top -= 10 * unit;
         mRectTemp.right += 10 * unit;
