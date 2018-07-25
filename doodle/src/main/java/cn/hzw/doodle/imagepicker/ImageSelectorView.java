@@ -82,7 +82,7 @@ public class ImageSelectorView extends FrameLayout implements View.OnClickListen
                                     mAdapter.addSelected(list.get(i));
                                 }
                             }
-                            mBtnEnter.setText(getContext().getString(R.string.doodle_enter)+"(" + mAdapter.getSelectedSet().size() + ")");
+                            mBtnEnter.setText(getContext().getString(R.string.doodle_enter) + "(" + mAdapter.getSelectedSet().size() + ")");
                             mGridView.setAdapter(mAdapter);
                         } else {
                             mAdapter.refreshPathList(mPathList);
@@ -116,6 +116,7 @@ public class ImageSelectorView extends FrameLayout implements View.OnClickListen
 
     /**
      * 列数
+     *
      * @param count
      */
     public void setColumnCount(int count) {
@@ -229,7 +230,7 @@ public class ImageSelectorView extends FrameLayout implements View.OnClickListen
                     mLastSelected = selectedView;
                 }
             }
-            mBtnEnter.setText("确定(" + mAdapter.getSelectedSet().size() + ")");
+            mBtnEnter.setText(getResources().getString(R.string.doodle_enter) + "(" + mAdapter.getSelectedSet().size() + ")");
         }
     }
 

@@ -9,7 +9,7 @@ Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Als
 
 ![01](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/01.png)
 ![02](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/02.png)
-![03](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/03.png)
+![03](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/03_2.png)
 
 # Feature 特性
 
