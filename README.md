@@ -169,28 +169,9 @@ public interface IDoodle {
 ...
 }
 ```
-```java
-public enum DoodlePen implements IDoodlePen {
-    BRUSH, // 画笔
-    COPY, // 仿制
-    ERASER, // 橡皮擦
-    TEXT(true), // 文本
-    BITMAP(true); // 贴图
-...
-}
-```
-```java
-public enum DoodleShape implements IDoodleShape {
-    HAND_WRITE, // 手绘
-    ARROW, // 箭头
-    LINE, // 直线
-    FILL_CIRCLE, // 实心圆
-    HOLLOW_CIRCLE, // 空心圆
-    FILL_RECT, // 实心矩形
-    HOLLOW_RECT; // 空心矩形
-...
-}
-```
+Framework diagram. ***框架图***
+
+![structure](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/structure.png)
 
 # Extend 拓展
 
@@ -221,8 +202,6 @@ hzw19933@gmail.com
 154330138@qq.com
 
 Q&A <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=d225a990b29a135d4a601be7a198f04572f1dbd96ccd5be944ff2ef87dda5c11"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="Doodle-涂鸦交流群" title="Doodle-涂鸦交流群"></a>  6762102
-
-Visit [My Blog](https://blog.csdn.net/u012964944) for more articles about Doodle.
 
 ***欢迎大家访问[我的博客](https://blog.csdn.net/u012964944)，以便获取更多关于Doodle的文章哦.***
 
