@@ -133,12 +133,10 @@ Then, add the DoodleView to your layout. Now you can start doodling freely.
 Here are other simple examples to teach you how to use the doodle framework.
 
 1. **[Mosaic effect](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/MosaicDemo.java)**
-
-***[马赛克效果](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/MosaicDemo.java)***
+ ***[马赛克效果](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/MosaicDemo.java)***
 
 2. **[Change text's size by scale gesture](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/ScaleGestureItemDemo.java)**
-
-***[手势缩放文本大小](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/ScaleGestureItemDemo.java)***
+ ***[手势缩放文本大小](https://github.com/1993hzw/Doodle/blob/master/app/src/main/java/cn/hzw/doodledemo/ScaleGestureItemDemo.java)***
 
 More...
 
@@ -169,7 +167,7 @@ public interface IDoodle {
 ...
 }
 ```
-Framework diagram. ***框架图***
+# Framework diagram 框架图
 
 ![structure](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/structure.png)
 
