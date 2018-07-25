@@ -1,5 +1,7 @@
 # Doodle
 
+[ ![Download](https://api.bintray.com/packages/hzw/maven/Doodle/images/download.svg) ](https://bintray.com/hzw/maven/Doodle/_latestVersion)
+
 Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Also, a powerful, customizable and extensible doodle framework.
 
 ***Android图片涂鸦，具有撤消、缩放、移动、添加文字，贴图等功能。还是一个功能强大，可自定义和可扩展的涂鸦框架。***
@@ -36,6 +38,16 @@ Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Als
     ***为了更细微地涂鸦，涂鸦过程中可以设置出现放大器。***
 
 # Usage 用法
+
+Add the following dependency to your build.gradle file:
+```gradle
+compile 'cn.hzw.doodle:doodle:5.0'
+```
+
+There are two ways to use the Doodle library:
+
+***这里有两种方式使用Doodle涂鸦库***
+
   * A. Launch DoodleActivity directly (the layout is like demo images above). 
   
   ***使用写好的涂鸦界面，直接启动.启动的页面可参看上面的演示图片。***
