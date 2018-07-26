@@ -1,6 +1,6 @@
 # Doodle
 
-[ ![Download](https://api.bintray.com/packages/hzw/maven/Doodle/images/download.svg) ](https://bintray.com/hzw/maven/Doodle/_latestVersion)
+[![](https://jitpack.io/v/1993hzw/Doodle.svg)](https://jitpack.io/#1993hzw/Doodle)
 
 Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Also, a powerful, customizable and extensible doodle framework.
 
