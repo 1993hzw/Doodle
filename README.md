@@ -39,9 +39,19 @@ Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Als
 
 # Usage 用法
 
-Add the following dependency to your build.gradle file:
-```gradle
-compile 'cn.hzw.doodle:doodle:5.0'
+#### Gradle 
+
+```
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
+}
+ 
+dependencies {
+    compile 'com.github.1993hzw:Doodle:5.0'
+}
 ```
 
 There are two ways to use the Doodle library:
