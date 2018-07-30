@@ -148,7 +148,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
         mInner = new DoodleViewInner(context);
         addView(mInner);
-        setClipChildren(false);
     }
 
     @Override
@@ -303,7 +302,11 @@ public class DoodleView extends FrameLayout implements IDoodle {
             return;
         }
 
-        super.dispatchDraw(canvas);
+        // draw inner
+        canvas.save();
+        canvas.rotate(mDoodleRotateDegree, mInner.getWidth() / 2, mInner.getHeight() / 2);
+        mInner.draw(canvas);
+        canvas.restore();
 
         /*// test
         mPaint.setStyle(Paint.Style.STROKE);
@@ -327,7 +330,9 @@ public class DoodleView extends FrameLayout implements IDoodle {
             float scale = mZoomerScale / mScale; // 除以mScale，无论当前图片缩放多少，都产生图片在居中状态下缩放mAmplifierScale倍的效果
             canvas.scale(scale, scale);
             canvas.translate(-mTouchX + mZoomerRadius / scale, -mTouchY + mZoomerRadius / scale);
-            super.dispatchDraw(canvas);
+            // draw inner
+            canvas.rotate(mDoodleRotateDegree, mInner.getWidth() / 2, mInner.getHeight() / 2);
+            mInner.draw(canvas);
             canvas.restore();
 
             // 画放大器的边框
@@ -546,12 +551,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
     @Override
     public void refresh() {
         invalidate();
-    }
-
-    @Override
-    public void invalidate() {
-        mInner.invalidate();
-        super.invalidate();
     }
 
     @Override
