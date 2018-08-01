@@ -22,5 +22,7 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':doodle')
-    compile 'cn.hzw.imageselector:library:1.0'
+    compile ('cn.hzw.imageselector:library:1.0'){
+        transitive = false
+    }
 }

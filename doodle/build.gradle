@@ -19,5 +19,5 @@ android {
 
 dependencies {
     // https://github.com/1993hzw/Androids
-    compile 'com.forward.androids:androids:1.2.1'
+    compile 'com.github.1993hzw:Androids:1.2.2'
 }

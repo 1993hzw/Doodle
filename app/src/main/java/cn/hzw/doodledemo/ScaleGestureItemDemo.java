@@ -6,11 +6,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import cn.forward.androids.ScaleGestureDetectorApi27;
 import cn.hzw.doodle.DoodleColor;
 import cn.hzw.doodle.DoodleOnTouchGestureListener;
 import cn.hzw.doodle.DoodlePen;
@@ -108,7 +108,7 @@ public class ScaleGestureItemDemo extends Activity {
         }
 
         @Override
-        public boolean onScale(ScaleGestureDetector detector) {
+        public boolean onScale(ScaleGestureDetectorApi27 detector) {
             if (getSelectedItem() != null) {
                 IDoodleItem item = getSelectedItem();
                 item.setSize(item.getSize() * detector.getScaleFactor());

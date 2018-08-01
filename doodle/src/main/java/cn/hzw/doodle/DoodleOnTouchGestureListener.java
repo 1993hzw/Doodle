@@ -5,10 +5,10 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 
 import java.util.List;
 
+import cn.forward.androids.ScaleGestureDetectorApi27;
 import cn.forward.androids.TouchGestureDetector;
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleItem;
@@ -265,7 +265,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
     }
 
     @Override
-    public boolean onScaleBegin(ScaleGestureDetector detector) {
+    public boolean onScaleBegin(ScaleGestureDetectorApi27 detector) {
         mLastFocusX = null;
         mLastFocusY = null;
         mDoodle.enableZoomer(false);
@@ -275,7 +275,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
     private float pendingX, pendingY, pendingScale = 1;
 
     @Override
-    public boolean onScale(ScaleGestureDetector detector) {
+    public boolean onScale(ScaleGestureDetectorApi27 detector) {
         // 屏幕上的焦点
         mTouchCentreX = detector.getFocusX();
         mTouchCentreY = detector.getFocusY();
@@ -310,7 +310,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
     }
 
     @Override
-    public void onScaleEnd(ScaleGestureDetector detector) {
+    public void onScaleEnd(ScaleGestureDetectorApi27 detector) {
         if (mDoodle.getDoodleScale() < 1) { //
             if (mScaleAnimator == null) {
                 mScaleAnimator = new ValueAnimator();
