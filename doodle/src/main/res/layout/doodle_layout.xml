@@ -302,6 +302,15 @@
                     android:textColor="#ffffff"
                     android:textSize="16dp"/>
             </LinearLayout>
+            <Button
+                android:id="@+id/doodle_btn_brush_edit"
+                android:layout_margin="10dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit"
+                />
         </RelativeLayout>
 
 

@@ -8,6 +8,7 @@ import cn.hzw.doodle.core.IDoodleColor;
 import cn.hzw.doodle.core.IDoodleItem;
 import cn.hzw.doodle.core.IDoodlePen;
 import cn.hzw.doodle.core.IDoodleShape;
+import cn.hzw.doodle.util.DrawUtil;
 
 /**
  * Created on 29/06/2018.
@@ -24,6 +25,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     private IDoodleColor mColor; // 颜色
     private boolean mIsDrawOptimize = false; //优化绘制
     private boolean mIsNeedClipOutside = true; // 是否需要裁剪图片区域外的部分
+    private float mPivotX, mPivotY;
 
     private boolean mHasAdded = false;
 
@@ -56,6 +58,28 @@ public abstract class DoodleItemBase implements IDoodleItem {
     public IDoodle getDoodle() {
         return mDoodle;
     }
+
+    @Override
+    public void setPivotX(float pivotX) {
+        mPivotX = pivotX;
+    }
+
+    @Override
+    public float getPivotX() {
+        return mPivotX;
+    }
+
+    @Override
+    public void setPivotY(float pivotY) {
+        mPivotY = pivotY;
+    }
+
+    @Override
+    public float getPivotY() {
+        return mPivotY;
+    }
+
+    private PointF mPointF = new PointF();
 
     @Override
     public void setItemRotate(float textRotate) {

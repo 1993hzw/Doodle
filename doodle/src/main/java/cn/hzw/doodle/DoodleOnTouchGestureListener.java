@@ -257,7 +257,8 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         } else {
             // 模拟一次滑动
             onScrollBegin(e);
-            onScroll(e, e, 0, 0);
+            e.offsetLocation(VALUE, VALUE);
+            onScroll(e, e, VALUE, VALUE);
             onScrollEnd(e);
         }
         mDoodle.refresh();

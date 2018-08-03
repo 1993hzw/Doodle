@@ -55,6 +55,7 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
      */
     @Override
     public boolean contains(float x, float y) {
+        resetBounds(mRect);
         PointF location = getLocation();
         // 把触摸点转换成在文字坐标系（即以文字起始点作为坐标原点）内的点
         x = x - location.x;

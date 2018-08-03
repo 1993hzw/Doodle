@@ -61,6 +61,11 @@ public enum DoodlePen implements IDoodlePen {
         return mIsSelectable;
     }
 
+    @Override
+    public void setSelectable(boolean selectable) {
+        mIsSelectable = selectable;
+    }
+
     public CopyLocation getCopyLocation() {
         if (this != COPY) {
             return null;

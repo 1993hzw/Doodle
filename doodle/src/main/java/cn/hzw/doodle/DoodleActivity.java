@@ -116,6 +116,8 @@ public class DoodleActivity extends Activity {
     private View mSelectedTextEditContainer;
     private View mColorContainer;
 
+    private View mBtnBrushEdit;
+
     private AlphaAnimation mViewShowAnimation, mViewHideAnimation; // view隐藏和显示时用到的渐变动画
 
     private DoodleParams mDoodleParams;
@@ -255,7 +257,9 @@ public class DoodleActivity extends Activity {
                         }
                     }
                     mPaintSizeBar.setProgress((int) (selectableItem.getSize() + 0.5f));
-                    mSelectedTextEditContainer.setVisibility(View.VISIBLE);
+                    if (doodle.getPen() == DoodlePen.TEXT || doodle.getPen() == DoodlePen.BITMAP) {
+                        mSelectedTextEditContainer.setVisibility(View.VISIBLE);
+                    }
                 } else {
                     DoodleColor color = null;
                     if (mDoodle.getColor() instanceof DoodleColor) {
@@ -378,6 +382,8 @@ public class DoodleActivity extends Activity {
         findViewById(R.id.doodle_selectable_top).setOnClickListener(mOnClickListener);
         findViewById(R.id.doodle_selectable_bottom).setOnClickListener(mOnClickListener);
         findViewById(R.id.doodle_btn_rotate).setOnClickListener(mOnClickListener);
+        mBtnBrushEdit = findViewById(R.id.doodle_btn_brush_edit);
+        mBtnBrushEdit.setOnClickListener(mOnClickListener);
         mShapeModeContainer = findViewById(R.id.bar_shape_mode);
         mSelectedTextEditContainer = findViewById(R.id.doodle_selectable_edit_container);
         mBtnHidePanel = findViewById(R.id.doodle_btn_hide_panel);
@@ -500,6 +506,7 @@ public class DoodleActivity extends Activity {
             mDone = false;
             if (v.getId() == R.id.btn_pen_hand) {
                 if (mDoodle.getPen() != DoodlePen.BRUSH) {
+                    mBtnBrushEdit.setVisibility(View.VISIBLE);
                     mBtnColorContainer.setVisibility(View.VISIBLE);
                     mShapeModeContainer.setVisibility(View.VISIBLE);
                     mColorContainer.setVisibility(View.VISIBLE);
@@ -516,6 +523,7 @@ public class DoodleActivity extends Activity {
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_copy) {
                 if (mDoodle.getPen() != DoodlePen.COPY) {
+                    mBtnBrushEdit.setVisibility(View.GONE);
                     mBtnColorContainer.setVisibility(View.GONE);
                     mShapeModeContainer.setVisibility(View.VISIBLE);
                     mColorContainer.setVisibility(View.VISIBLE);
@@ -527,6 +535,7 @@ public class DoodleActivity extends Activity {
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_eraser) {
                 if (mDoodle.getPen() != DoodlePen.ERASER) {
+                    mBtnBrushEdit.setVisibility(View.GONE);
                     mBtnColorContainer.setVisibility(View.GONE);
                     mShapeModeContainer.setVisibility(View.VISIBLE);
                     mColorContainer.setVisibility(View.VISIBLE);
@@ -538,6 +547,7 @@ public class DoodleActivity extends Activity {
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_text) {
                 if (mDoodle.getPen() != DoodlePen.TEXT) {
+                    mBtnBrushEdit.setVisibility(View.GONE);
                     mBtnColorContainer.setVisibility(View.VISIBLE);
                     mShapeModeContainer.setVisibility(View.GONE);
                     mColorContainer.setVisibility(View.VISIBLE);
@@ -554,6 +564,7 @@ public class DoodleActivity extends Activity {
                 mDone = true;
             } else if (v.getId() == R.id.btn_pen_bitmap) {
                 if (mDoodle.getPen() != DoodlePen.BITMAP) {
+                    mBtnBrushEdit.setVisibility(View.GONE);
                     mBtnColorContainer.setVisibility(View.GONE);
                     mShapeModeContainer.setVisibility(View.GONE);
                     mColorContainer.setVisibility(View.VISIBLE);
@@ -569,6 +580,15 @@ public class DoodleActivity extends Activity {
                 }
                 v.setSelected(true);
                 mLastPenView = v;
+                return;
+            }
+
+            if (v.getId() == R.id.doodle_btn_brush_edit) {
+                mDoodle.getPen().setSelectable(!mDoodle.getPen().isSelectable());
+                v.setSelected(mDoodle.getPen().isSelectable());
+                mDone = true;
+            }
+            if (mDone) {
                 return;
             }
 

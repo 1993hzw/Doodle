@@ -17,54 +17,63 @@ public interface IDoodleItem {
 
     /**
      * 获取画笔
+     *
      * @return
      */
     public IDoodlePen getPen();
 
     /**
      * 设置画笔
+     *
      * @param pen
      */
     public void setPen(IDoodlePen pen);
 
     /**
      * 获取画笔形状
+     *
      * @return
      */
     public IDoodleShape getShape();
 
     /**
      * 设置画笔形状
+     *
      * @param shape
      */
     public void setShape(IDoodleShape shape);
 
     /**
      * 获取大小
+     *
      * @return
      */
     public float getSize();
 
     /**
      * 设置大小
+     *
      * @param size
      */
     public void setSize(float size);
 
     /**
      * 获取颜色
+     *
      * @return
      */
     public IDoodleColor getColor();
 
     /**
      * 设置颜色
+     *
      * @param color
      */
     public void setColor(IDoodleColor color);
 
     /**
      * 绘制item
+     *
      * @param canvas
      */
     public void draw(Canvas canvas);
@@ -83,25 +92,53 @@ public interface IDoodleItem {
     public PointF getLocation();
 
     /**
-     * 设置item的旋转值
+     * item中心点x
+     *
+     * @param pivotX
+     */
+    public void setPivotX(float pivotX);
+
+    /**
+     * item中心点x
+     */
+    public float getPivotX();
+
+    /**
+     * item中心点y
+     *
+     * @param pivotY
+     */
+    public void setPivotY(float pivotY);
+
+    /**
+     * item中心点y
+     */
+    public float getPivotY();
+
+    /**
+     * 设置item的旋转值，围绕中心点Pivot旋转
+     *
      * @param degree
      */
     public void setItemRotate(float degree);
 
     /**
      * 获取item的旋转值
+     *
      * @return
      */
     public float getItemRotate();
 
     /**
      * 是否需要裁剪图片区域外的部分
+     *
      * @return
      */
     public boolean isNeedClipOutside();
 
     /**
      * 设置是否需要裁剪图片区域外的部分
+     *
      * @param clip
      */
     public void setNeedClipOutside(boolean clip);

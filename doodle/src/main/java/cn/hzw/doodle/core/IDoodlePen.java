@@ -20,6 +20,13 @@ public interface IDoodlePen {
     public boolean isSelectable();
 
     /**
+     * 设置是否可选，用于旋转、移动等特定操作
+     * @param isSelectable
+     * @return
+     */
+    public void setSelectable(boolean isSelectable);
+
+    /**
      * 绘制画笔辅助工具，由IDoodle绘制，不属于IDoodleItem的内容
      * 比如可以用于仿制功能时 定位器的绘制
      *
