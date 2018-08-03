@@ -15,4 +15,6 @@
     <string name="doodle_bottom">置底</string>
 
     <string name="doodle_select_image">选择图片</string>
+
+    <string name="doodle_edit_mode">编辑模式</string>
 </resources>

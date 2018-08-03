@@ -586,6 +586,9 @@ public class DoodleActivity extends Activity {
             if (v.getId() == R.id.doodle_btn_brush_edit) {
                 mDoodle.getPen().setSelectable(!mDoodle.getPen().isSelectable());
                 v.setSelected(mDoodle.getPen().isSelectable());
+                if (v.isSelected()) {
+                    Toast.makeText(DoodleActivity.this, R.string.doodle_edit_mode, Toast.LENGTH_SHORT).show();
+                }
                 mDone = true;
             }
             if (mDone) {

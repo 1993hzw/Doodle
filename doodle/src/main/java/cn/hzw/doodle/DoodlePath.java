@@ -8,17 +8,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 import cn.hzw.doodle.core.IDoodle;
-
-import static cn.hzw.doodle.DoodleShape.ARROW;
-import static cn.hzw.doodle.DoodleShape.FILL_CIRCLE;
-import static cn.hzw.doodle.DoodleShape.FILL_RECT;
-import static cn.hzw.doodle.DoodleShape.HOLLOW_CIRCLE;
-import static cn.hzw.doodle.DoodleShape.HOLLOW_RECT;
-import static cn.hzw.doodle.DoodleShape.LINE;
-import static cn.hzw.doodle.util.DrawUtil.drawArrow;
-import static cn.hzw.doodle.util.DrawUtil.drawCircle;
-import static cn.hzw.doodle.util.DrawUtil.drawLine;
-import static cn.hzw.doodle.util.DrawUtil.drawRect;
+import cn.hzw.doodle.util.DrawUtil;
 
 /**
  * 涂鸦轨迹
@@ -36,16 +26,33 @@ public class DoodlePath extends DoodleRotatableItemBase {
     private CopyLocation mCopyLocation;
 
     public DoodlePath(IDoodle doodle) {
-        super(doodle, -doodle.getDoodleRotation(), 0, 0);
+        super(doodle, 0, 0, 0);// 这里默认item旋转角度为0
     }
 
     public DoodlePath(IDoodle doodle, DoodlePaintAttrs attrs) {
-        super(doodle, attrs, -doodle.getDoodleRotation(), 0, 0);
+        super(doodle, attrs, 0, 0, 0);
     }
 
     public void updateXY(float sx, float sy, float dx, float dy) {
         mSxy.set(sx, sy);
         mDxy.set(dx, dy);
+        if (mPath == null) {
+            mPath = new Path();
+        }
+        mPath.reset();
+
+        if (DoodleShape.ARROW.equals(getShape())) {
+            updateArrowPath(mPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+        } else if (DoodleShape.LINE.equals(getShape())) {
+            updateLinePath(mPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+        } else if (DoodleShape.FILL_CIRCLE.equals(getShape()) || DoodleShape.HOLLOW_CIRCLE.equals(getShape())) {
+            updateCirclePath(mPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+        } else if (DoodleShape.FILL_RECT.equals(getShape()) || DoodleShape.HOLLOW_RECT.equals(getShape())) {
+            updateRectPath(mPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+        }
+        mPath.computeBounds(mBound, false);
+        setPivotX(mBound.left);
+        setPivotY(mBound.top);
     }
 
     public void updatePath(Path path) {
@@ -72,11 +79,11 @@ public class DoodlePath extends DoodleRotatableItemBase {
         return mPath;
     }
 
-    public PointF getDxy() {
+    private PointF getDxy() {
         return mDxy;
     }
 
-    public PointF getSxy() {
+    private PointF getSxy() {
         return mSxy;
     }
 
@@ -87,8 +94,7 @@ public class DoodlePath extends DoodleRotatableItemBase {
         path.setSize(doodle.getSize());
         path.setColor(doodle.getColor().copy());
 
-        path.mSxy.set(sx, sy);
-        path.mDxy.set(dx, dy);
+        path.updateXY(sx, sy, dx, dy);
         if (path.getPen() == DoodlePen.COPY) {
             if (doodle instanceof DoodleView) {
                 path.mCopyLocation = DoodlePen.COPY.getCopyLocation().copy();
@@ -104,7 +110,7 @@ public class DoodlePath extends DoodleRotatableItemBase {
         path.setSize(doodle.getSize());
         path.setColor(doodle.getColor().copy());
 
-        path.mPath = p;
+        path.updatePath(p);
         if (doodle instanceof DoodleView) {
             path.mCopyLocation = DoodlePen.COPY.getCopyLocation().copy();
         } else {
@@ -130,32 +136,79 @@ public class DoodlePath extends DoodleRotatableItemBase {
 
     @Override
     protected void resetBounds(Rect rect) {
-        int diff = (int) (getSize() / 2);
         if (mPath != null) {
+            int diff = (int) (getSize() / 2);
             mPath.computeBounds(mBound, false);
             rect.set((int) (mBound.left - diff), (int) (mBound.top - diff), (int) (mBound.right + diff), (int) (mBound.bottom + diff));
+        }
+    }
+
+
+    //---------计算Path
+    private Path mArrowTrianglePath;
+
+    private void updateArrowPath(Path path, float sx, float sy, float ex, float ey, float size) {
+        float arrowSize = size;
+        double H = arrowSize; // 箭头高度
+        double L = arrowSize / 2; // 底边的一�?
+
+        double awrad = Math.atan(L / 2 / H); // 箭头角度
+        double arraow_len = Math.sqrt(L / 2 * L / 2 + H * H) - 5; // 箭头的长�?
+        double[] arrXY_1 = DrawUtil.rotateVec(ex - sx, ey - sy, awrad, true, arraow_len);
+        double[] arrXY_2 = DrawUtil.rotateVec(ex - sx, ey - sy, -awrad, true, arraow_len);
+        float x_3 = (float) (ex - arrXY_1[0]); // (x3,y3)是第�?端点
+        float y_3 = (float) (ey - arrXY_1[1]);
+        float x_4 = (float) (ex - arrXY_2[0]); // (x4,y4)是第二端�?
+        float y_4 = (float) (ey - arrXY_2[1]);
+        // 画线
+        path.moveTo(sx, sy);
+        path.lineTo(x_3, y_3);
+        path.lineTo(x_4, y_4);
+        path.close();
+
+        awrad = Math.atan(L / H); // 箭头角度
+        arraow_len = Math.sqrt(L * L + H * H); // 箭头的长�?
+        arrXY_1 = DrawUtil.rotateVec(ex - sx, ey - sy, awrad, true, arraow_len);
+        arrXY_2 = DrawUtil.rotateVec(ex - sx, ey - sy, -awrad, true, arraow_len);
+        x_3 = (float) (ex - arrXY_1[0]); // (x3,y3)是第�?端点
+        y_3 = (float) (ey - arrXY_1[1]);
+        x_4 = (float) (ex - arrXY_2[0]); // (x4,y4)是第二端�?
+        y_4 = (float) (ey - arrXY_2[1]);
+        if (mArrowTrianglePath == null) {
+            mArrowTrianglePath = new Path();
+        }
+        mArrowTrianglePath.reset();
+        mArrowTrianglePath.moveTo(ex, ey);
+        mArrowTrianglePath.lineTo(x_3, y_3);
+        mArrowTrianglePath.lineTo(x_4, y_4);
+        mArrowTrianglePath.close();
+        path.addPath(mArrowTrianglePath);
+    }
+
+    private void updateLinePath(Path path, float sx, float sy, float ex, float ey, float size) {
+        path.moveTo(sx, sy);
+        path.lineTo(ex, ey);
+    }
+
+    private void updateCirclePath(Path path, float sx, float sy, float dx, float dy, float size) {
+        float radius = (float) Math.sqrt((sx - dx) * (sx - dx) + (sy - dy) * (sy - dy));
+        path.addCircle(sx, sy, radius, Path.Direction.CCW);
+
+    }
+
+    private void updateRectPath(Path path, float sx, float sy, float dx, float dy, float size) {
+        // 保证　左上角　与　右下角　的对应关系
+        if (sx < dx) {
+            if (sy < dy) {
+                path.addRect(sx, sy, dx, dy, Path.Direction.CCW);
+            } else {
+                path.addRect(sx, dy, dx, sy, Path.Direction.CCW);
+            }
         } else {
-            if (DoodleShape.ARROW.equals(getShape())) {
-            } else if (DoodleShape.LINE.equals(getShape())) {
-            } else if (DoodleShape.FILL_CIRCLE.equals(getShape()) || DoodleShape.HOLLOW_CIRCLE.equals(getShape())) {
-                float radius = (float) Math.sqrt((mSxy.x - mDxy.x) * (mSxy.y - mDxy.y) + (mSxy.x - mDxy.x) * (mSxy.y - mDxy.y));
-                rect.set((int) (mSxy.x - radius - diff), (int) (mSxy.y - radius - diff), (int) (mSxy.x + radius + diff), (int) (mSxy.y + radius + diff));
-            } else if (DoodleShape.FILL_RECT.equals(getShape()) || DoodleShape.HOLLOW_RECT.equals(getShape())) {
-                // 保证　左上角　与　右下角　的对应关系
-                if (mSxy.x < mDxy.x) {
-                    if (mSxy.y < mDxy.y) {
-                        rect.set((int) mSxy.x, (int) mSxy.y, (int) mDxy.x, (int) mDxy.y);
-                    } else {
-                        rect.set((int) mSxy.x, (int) mDxy.y, (int) mDxy.x, (int) mSxy.y);
-                    }
-                } else {
-                    if (mSxy.y < mDxy.y) {
-                        rect.set((int) mDxy.x, (int) mSxy.y, (int) mSxy.x, (int) mDxy.y);
-                    } else {
-                        rect.set((int) mDxy.x, (int) mDxy.y, (int) mSxy.x, (int) mSxy.y);
-                    }
-                }
-                rect.set(rect.left - diff, rect.top - diff, rect.right + diff, rect.bottom + diff);
+            if (sy < dy) {
+                path.addRect(dx, sy, sx, dy, Path.Direction.CCW);
+            } else {
+                path.addRect(dx, dy, sx, sy, Path.Direction.CCW);
             }
         }
     }

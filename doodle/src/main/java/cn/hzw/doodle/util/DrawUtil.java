@@ -81,12 +81,8 @@ public class DrawUtil {
         canvas.drawLine(sx, sy, dx, dy, paint);
     }
 
-    private static Path sPath = new Path();
     public static void drawCircle(Canvas canvas, float cx, float cy, float radius, Paint paint) {
-        sPath.reset();
-        sPath.addCircle(cx,cy,radius, Path.Direction.CW);
-//        canvas.drawCircle(cx, cy, radius, paint);
-        canvas.drawPath(sPath, paint);
+        canvas.drawCircle(cx, cy, radius, paint);
     }
 
     public static void drawRect(Canvas canvas, float sx, float sy, float dx, float dy, Paint paint) {

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="fill_parent"
-             android:layout_height="fill_parent"
-             android:background="#232323"
-             android:fitsSystemWindows="true"
-             android:orientation="vertical">
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#232323"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="fill_parent"
@@ -13,13 +13,13 @@
 
         <include
             android:id="@+id/doodle_title_bar"
-            layout="@layout/doodle_title_bar"/>
+            layout="@layout/doodle_title_bar" />
 
         <FrameLayout
             android:id="@+id/doodle_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/doodle_title_bar"/>
+            android:layout_below="@id/doodle_title_bar" />
 
         <RelativeLayout
             android:id="@+id/doodle_panel"
@@ -50,7 +50,7 @@
                         android:background="@drawable/doodle_btn_effect_round"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_pen"
-                        android:visibility="visible"/>
+                        android:visibility="visible" />
 
                     <ImageView
                         android:id="@+id/btn_pen_copy"
@@ -60,7 +60,7 @@
                         android:background="@drawable/doodle_btn_effect_round"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_copy"
-                        android:visibility="visible"/>
+                        android:visibility="visible" />
 
                     <ImageView
                         android:id="@+id/btn_pen_eraser"
@@ -70,7 +70,7 @@
                         android:background="@drawable/doodle_btn_effect_round"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_eraser"
-                        android:visibility="visible"/>
+                        android:visibility="visible" />
 
                     <ImageView
                         android:id="@+id/btn_pen_text"
@@ -80,7 +80,7 @@
                         android:background="@drawable/doodle_btn_effect_round"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_text"
-                        android:visibility="visible"/>
+                        android:visibility="visible" />
 
                     <ImageView
                         android:id="@+id/btn_pen_bitmap"
@@ -90,13 +90,13 @@
                         android:background="@drawable/doodle_btn_effect_round"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_texture"
-                        android:visibility="visible"/>
+                        android:visibility="visible" />
 
                     <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:minWidth="10dp"/>
+                        android:minWidth="10dp" />
 
                     <ImageView
                         android:id="@+id/btn_clear"
@@ -106,8 +106,7 @@
                         android:background="@drawable/doodle_btn_effect_round"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_clear"
-                        android:visibility="gone"
-                        />
+                        android:visibility="gone" />
 
                     <ImageView
                         android:id="@+id/btn_undo"
@@ -116,7 +115,7 @@
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_round"
                         android:scaleType="centerInside"
-                        android:src="@drawable/doodle_ic_undo"/>
+                        android:src="@drawable/doodle_ic_undo" />
 
                     <ImageView
                         android:id="@+id/btn_zoomer"
@@ -124,7 +123,7 @@
                         android:layout_height="@dimen/doodle_btn_pen_size"
                         android:background="@drawable/doodle_btn_effect_round"
                         android:scaleType="centerInside"
-                        android:src="@drawable/doodle_ic_zoomer"/>
+                        android:src="@drawable/doodle_ic_zoomer" />
 
                 </LinearLayout>
 
@@ -144,7 +143,7 @@
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
-                        android:src="@drawable/doodle_ic_handwrite"/>
+                        android:src="@drawable/doodle_ic_handwrite" />
 
                     <ImageView
                         android:id="@+id/btn_arrow"
@@ -153,7 +152,7 @@
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
-                        android:src="@drawable/doodle_ic_arrow"/>
+                        android:src="@drawable/doodle_ic_arrow" />
 
                     <ImageView
                         android:id="@+id/btn_line"
@@ -162,7 +161,7 @@
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
-                        android:src="@drawable/doodle_ic_line"/>
+                        android:src="@drawable/doodle_ic_line" />
 
                     <ImageView
                         android:id="@+id/btn_holl_circle"
@@ -171,7 +170,7 @@
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
-                        android:src="@drawable/doodle_ic_hollow_circle"/>
+                        android:src="@drawable/doodle_ic_hollow_circle" />
 
                     <ImageView
                         android:id="@+id/btn_fill_circle"
@@ -180,7 +179,7 @@
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
-                        android:src="@drawable/doodle_ic_fill_circle"/>
+                        android:src="@drawable/doodle_ic_fill_circle" />
 
                     <ImageView
                         android:id="@+id/btn_holl_rect"
@@ -189,7 +188,7 @@
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
-                        android:src="@drawable/doodle_ic_hollow_rect"/>
+                        android:src="@drawable/doodle_ic_hollow_rect" />
 
                     <ImageView
                         android:id="@+id/btn_fill_rect"
@@ -198,7 +197,21 @@
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:scaleType="centerInside"
-                        android:src="@drawable/doodle_ic_fill_rect"/>
+                        android:src="@drawable/doodle_ic_fill_rect" />
+
+                    <Space
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content" />
+                    <ImageView
+                        android:id="@+id/doodle_btn_brush_edit"
+                        android:layout_width="@dimen/doodle_btn_pen_size"
+                        android:layout_height="@dimen/doodle_btn_pen_size"
+                        android:background="@drawable/doodle_btn_effect_round"
+                        android:padding="5dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/doodle_ic_move"
+                        android:visibility="visible" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -219,7 +232,7 @@
                         <ImageView
                             android:id="@+id/btn_set_color"
                             android:layout_width="fill_parent"
-                            android:layout_height="fill_parent"/>
+                            android:layout_height="fill_parent" />
                     </FrameLayout>
 
                     <SeekBar
@@ -233,7 +246,7 @@
                         android:paddingRight="10dp"
                         android:progressDrawable="@drawable/doodle_seekbar_bg"
                         android:thumb="@drawable/doodle_thumb_seekbarr"
-                        android:thumbOffset="0dp"/>
+                        android:thumbOffset="0dp" />
 
                     <TextView
                         android:id="@+id/paint_size_text"
@@ -244,7 +257,7 @@
                         android:minWidth="40dp"
                         android:text=""
                         android:textColor="#ffffff"
-                        android:textSize="14dp"/>
+                        android:textSize="14dp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -267,7 +280,7 @@
                     android:gravity="center"
                     android:text="@string/doodle_edit"
                     android:textColor="#ffffff"
-                    android:textSize="16dp"/>
+                    android:textSize="16dp" />
 
                 <TextView
                     android:id="@+id/doodle_selectable_bottom"
@@ -278,7 +291,7 @@
                     android:gravity="center"
                     android:text="@string/doodle_bottom"
                     android:textColor="#ffffff"
-                    android:textSize="16dp"/>
+                    android:textSize="16dp" />
 
                 <TextView
                     android:id="@+id/doodle_selectable_top"
@@ -289,7 +302,7 @@
                     android:gravity="center"
                     android:text="@string/doodle_top"
                     android:textColor="#ffffff"
-                    android:textSize="16dp"/>
+                    android:textSize="16dp" />
 
                 <TextView
                     android:id="@+id/doodle_selectable_remove"
@@ -300,17 +313,8 @@
                     android:gravity="center"
                     android:text="@string/doodle_remove"
                     android:textColor="#ffffff"
-                    android:textSize="16dp"/>
+                    android:textSize="16dp" />
             </LinearLayout>
-            <Button
-                android:id="@+id/doodle_btn_brush_edit"
-                android:layout_margin="10dp"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentBottom="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Edit"
-                />
         </RelativeLayout>
 
 
