@@ -2,16 +2,9 @@ package cn.hzw.doodle;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.PointF;
 
-import cn.hzw.doodle.core.IDoodleColor;
 import cn.hzw.doodle.core.IDoodleItem;
 import cn.hzw.doodle.core.IDoodleShape;
-
-import static cn.hzw.doodle.util.DrawUtil.drawArrow;
-import static cn.hzw.doodle.util.DrawUtil.drawCircle;
-import static cn.hzw.doodle.util.DrawUtil.drawLine;
-import static cn.hzw.doodle.util.DrawUtil.drawRect;
 
 /**
  * 常用图形
@@ -28,6 +21,10 @@ public enum DoodleShape implements IDoodleShape {
 
     @Override
     public void draw(Canvas canvas, IDoodleItem doodleItem, Paint paint) {
+        if (doodleItem.getShape() == DoodleShape.ARROW) {
+            paint.setStrokeWidth(doodleItem.getDoodle().getUnitSize());
+            paint.setStyle(Paint.Style.FILL);
+        }
         DoodlePath doodlePath = (DoodlePath) doodleItem;
         canvas.drawPath(doodlePath.getPath(), paint);
     }

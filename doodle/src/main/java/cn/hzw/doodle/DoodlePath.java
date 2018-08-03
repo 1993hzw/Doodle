@@ -15,7 +15,7 @@ import cn.hzw.doodle.util.DrawUtil;
  * Created by huangziwei on 2017/3/16.
  */
 
-public class DoodlePath extends DoodleRotatableItemBase {
+public class DoodlePath extends DoodleSelectableItemBase {
     private Path mPath; // 画笔的路径
 
     private PointF mSxy = new PointF(); // 映射后的起始坐标，（手指点击）
@@ -139,6 +139,9 @@ public class DoodlePath extends DoodleRotatableItemBase {
         if (mPath != null) {
             int diff = (int) (getSize() / 2);
             mPath.computeBounds(mBound, false);
+            if (getShape() == DoodleShape.ARROW) {
+                diff = (int) getDoodle().getUnitSize();
+            }
             rect.set((int) (mBound.left - diff), (int) (mBound.top - diff), (int) (mBound.right + diff), (int) (mBound.bottom + diff));
         }
     }
@@ -179,8 +182,8 @@ public class DoodlePath extends DoodleRotatableItemBase {
         }
         mArrowTrianglePath.reset();
         mArrowTrianglePath.moveTo(ex, ey);
-        mArrowTrianglePath.lineTo(x_3, y_3);
         mArrowTrianglePath.lineTo(x_4, y_4);
+        mArrowTrianglePath.lineTo(x_3, y_3);
         mArrowTrianglePath.close();
         path.addPath(mArrowTrianglePath);
     }
