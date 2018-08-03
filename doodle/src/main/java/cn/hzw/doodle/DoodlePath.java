@@ -139,7 +139,7 @@ public class DoodlePath extends DoodleSelectableItemBase {
         if (mPath != null) {
             int diff = (int) (getSize() / 2);
             mPath.computeBounds(mBound, false);
-            if (getShape() == DoodleShape.ARROW) {
+            if (getShape() == DoodleShape.ARROW || getShape() == DoodleShape.FILL_CIRCLE || getShape() == DoodleShape.FILL_RECT) {
                 diff = (int) getDoodle().getUnitSize();
             }
             rect.set((int) (mBound.left - diff), (int) (mBound.top - diff), (int) (mBound.right + diff), (int) (mBound.bottom + diff));

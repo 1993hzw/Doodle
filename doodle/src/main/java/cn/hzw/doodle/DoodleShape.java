@@ -21,8 +21,7 @@ public enum DoodleShape implements IDoodleShape {
 
     @Override
     public void draw(Canvas canvas, IDoodleItem doodleItem, Paint paint) {
-        if (doodleItem.getShape() == DoodleShape.ARROW) {
-            paint.setStrokeWidth(doodleItem.getDoodle().getUnitSize());
+        if (doodleItem.getShape() == DoodleShape.ARROW || doodleItem.getShape() == DoodleShape.FILL_CIRCLE || doodleItem.getShape() == DoodleShape.FILL_RECT) {
             paint.setStyle(Paint.Style.FILL);
         }
         DoodlePath doodlePath = (DoodlePath) doodleItem;

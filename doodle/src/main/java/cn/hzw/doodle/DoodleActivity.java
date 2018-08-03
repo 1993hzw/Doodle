@@ -257,8 +257,11 @@ public class DoodleActivity extends Activity {
                         }
                     }
                     mPaintSizeBar.setProgress((int) (selectableItem.getSize() + 0.5f));
+                    mSelectedTextEditContainer.setVisibility(View.VISIBLE);
                     if (doodle.getPen() == DoodlePen.TEXT || doodle.getPen() == DoodlePen.BITMAP) {
-                        mSelectedTextEditContainer.setVisibility(View.VISIBLE);
+                        findViewById(R.id.doodle_selectable_edit).setVisibility(View.VISIBLE);
+                    } else {
+                        findViewById(R.id.doodle_selectable_edit).setVisibility(View.GONE);
                     }
                 } else {
                     DoodleColor color = null;
