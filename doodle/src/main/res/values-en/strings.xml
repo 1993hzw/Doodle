@@ -6,8 +6,6 @@
     <string name="doodle_saving_picture">Save before exit?</string>
     <string name="doodle_enter">Enter</string>
     <string name="doodle_cancel">Cancel</string>
-    <string name="doodle_success">Success</string>
-    <string name="doodle_failed">Failed</string>
 
     <string name="doodle_edit">Edit</string>
     <string name="doodle_remove">Delete</string>

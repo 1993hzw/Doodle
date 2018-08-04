@@ -110,10 +110,7 @@ public class CopyLocation {
      * 判断是否点中
      */
     public boolean contains(float x, float y, float mPaintSize) {
-        if ((mX - x) * (mX - x) + (mY - y) * (mY - y) <= mPaintSize * mPaintSize) {
-            return true;
-        }
-        return false;
+        return (mX - x) * (mX - x) + (mY - y) * (mY - y) <= mPaintSize * mPaintSize;
     }
 
     public CopyLocation copy() {

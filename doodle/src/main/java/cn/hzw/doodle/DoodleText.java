@@ -21,10 +21,9 @@ public class DoodleText extends DoodleRotatableItemBase {
 
     public DoodleText(IDoodle doodle, String text, float size, IDoodleColor color, float x, float y) {
         super(doodle, -doodle.getDoodleRotation(), x, y);
-        this.mText = text;
+        mText = text;
         setSize(size);
         setColor(color);
-        resetBounds(getBounds());
     }
 
     public String getText() {
@@ -34,6 +33,18 @@ public class DoodleText extends DoodleRotatableItemBase {
     public void setText(String text) {
         mText = text;
         resetBounds(getBounds());
+        setPivotX(getLocation().x + getBounds().width() / 2);
+        setPivotY(getLocation().y - getBounds().height() / 2);
+    }
+
+    @Override
+    public void setSize(float size) {
+        float oldPivotX = getPivotX();
+        float oldPivotY = getPivotY();
+        super.setSize(size);
+        setPivotX(getLocation().x + getBounds().width() / 2);
+        setPivotY(getLocation().y - getBounds().height() / 2);
+        setLocation(getLocation().x - (getPivotX() - oldPivotX), getLocation().y - (getPivotY() - oldPivotY));
     }
 
     @Override

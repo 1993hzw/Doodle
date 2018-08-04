@@ -31,10 +31,10 @@ public abstract class DoodleRotatableItemBase extends DoodleSelectableItemBase {
     public void doDrawSelectedBackground(Canvas canvas) {
         mRectTemp.set(getBounds());
         float unit = getDoodle().getUnitSize();
-        mRectTemp.left -= 10 * unit;
-        mRectTemp.top -= 10 * unit;
-        mRectTemp.right += 10 * unit;
-        mRectTemp.bottom += 10 * unit;
+        mRectTemp.left -= ITEM_PADDING * unit;
+        mRectTemp.top -= ITEM_PADDING * unit;
+        mRectTemp.right += ITEM_PADDING * unit;
+        mRectTemp.bottom += ITEM_PADDING * unit;
         mPaint.setShader(null);
         mPaint.setColor(0x33888888);
         mPaint.setStyle(Paint.Style.FILL);
@@ -72,7 +72,21 @@ public abstract class DoodleRotatableItemBase extends DoodleSelectableItemBase {
         canvas.drawLine(mRectTemp.right, mRectTemp.top + mRectTemp.height() / 2,
                 mRectTemp.right + (DoodleSelectableItemBase.ITEM_CAN_ROTATE_BOUND - 16) * unit, mRectTemp.top + mRectTemp.height() / 2, mPaint);
         canvas.drawCircle(mRectTemp.right + (DoodleSelectableItemBase.ITEM_CAN_ROTATE_BOUND - 8) * unit, mRectTemp.top + mRectTemp.height() / 2, 8 * unit, mPaint);
+    }
 
+    @Override
+    public void doDrawSelectedForeground(Canvas canvas) {
+        float unit = getDoodle().getUnitSize();
+        // pivot
+        mPaint.setColor(0xffffffff);
+        mPaint.setStrokeWidth(1f * unit);
+        mPaint.setStyle(Paint.Style.STROKE);
+        // +
+        int length = 3;
+        canvas.drawLine(getPivotX() - getLocation().x - length * unit, getPivotY() - getLocation().y, getPivotX() - getLocation().x + length * unit, getPivotY() - getLocation().y, mPaint);
+        canvas.drawLine(getPivotX() - getLocation().x, getPivotY() - getLocation().y - length * unit, getPivotX() - getLocation().x, getPivotY() - getLocation().y + length * unit, mPaint);
+        mPaint.setStyle(Paint.Style.FILL);
+        canvas.drawCircle(getPivotX() - getLocation().x, getPivotY() - getLocation().y, unit, mPaint);
     }
 
     /**
@@ -85,7 +99,7 @@ public abstract class DoodleRotatableItemBase extends DoodleSelectableItemBase {
         x = x - location.x;
         y = y - location.y;
         // 把变换后矩形中的触摸点，还原回未变换前矩形中的点，然后判断是否矩形中
-        PointF xy = rotatePoint(mTemp, (int) -getItemRotate(), x, y, 0, 0);
+        PointF xy = rotatePoint(mTemp, (int) -getItemRotate(), x, y, getPivotX() - getLocation().x, getPivotY() - getLocation().y);
 
         mRectTemp.set(getBounds());
         float unit = doodle.getUnitSize();

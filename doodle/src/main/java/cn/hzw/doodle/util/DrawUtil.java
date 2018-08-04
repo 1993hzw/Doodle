@@ -145,7 +145,7 @@ public class DrawUtil {
     }
 
     // 顺时针旋转
-    public static PointF rotatePoint(PointF coords, int degree, float x, float y, float px, float py) {
+    public static PointF rotatePoint(PointF coords, float degree, float x, float y, float px, float py) {
         if (degree % 360 == 0) {
             coords.x = x;
             coords.y = y;

@@ -63,7 +63,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
     private float mMinScale = MIN_SCALE; // 最小缩放倍数
     private float mMaxScale = MAX_SCALE; // 最大缩放倍数
 
-    private Paint mPaint;
     private float mSize;
     private IDoodleColor mColor; // 画笔底色
 
@@ -127,11 +126,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
         mScale = 1f;
         mColor = new DoodleColor(Color.RED);
-        mPaint = new Paint();
-        mPaint.setStrokeWidth(mSize);
-        mPaint.setAntiAlias(true);
-        mPaint.setStrokeJoin(Paint.Join.ROUND);
-        mPaint.setStrokeCap(Paint.Cap.ROUND);// 圆滑
 
         mPen = DoodlePen.BRUSH;
         mShape = DoodleShape.HAND_WRITE;

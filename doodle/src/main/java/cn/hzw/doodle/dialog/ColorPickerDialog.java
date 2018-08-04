@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
 
 import cn.forward.androids.utils.Util;
@@ -68,7 +67,7 @@ public class ColorPickerDialog extends Dialog {
         private Paint mLinePaint;//分隔线画笔   
         private Paint mRectPaint;//渐变方块画笔   
 
-        private Shader rectShader;//渐变方块渐变图像   
+        private Shader rectShader;//渐变方块渐变图像
         private float rectLeft;//渐变方块左x坐标   
         private float rectTop;//渐变方块右x坐标   
         private float rectRight;//渐变方块上y坐标   
@@ -259,11 +258,7 @@ public class ColorPickerDialog extends Dialog {
             double outCircle = Math.PI * outRadius * outRadius;
             double inCircle = Math.PI * inRadius * inRadius;
             double fingerCircle = Math.PI * (x * x + y * y);
-            if (fingerCircle < outCircle && fingerCircle > inCircle) {
-                return true;
-            } else {
-                return false;
-            }
+            return fingerCircle < outCircle && fingerCircle > inCircle;
         }
 
         /**
@@ -277,11 +272,7 @@ public class ColorPickerDialog extends Dialog {
         private boolean inCenter(float x, float y, float centerRadius) {
             double centerCircle = Math.PI * centerRadius * centerRadius;
             double fingerCircle = Math.PI * (x * x + y * y);
-            if (fingerCircle < centerCircle) {
-                return true;
-            } else {
-                return false;
-            }
+            return fingerCircle < centerCircle;
         }
 
         /**
@@ -292,11 +283,7 @@ public class ColorPickerDialog extends Dialog {
          * @return
          */
         private boolean inRect(float x, float y) {
-            if (x <= rectRight && x >= rectLeft && y <= rectBottom && y >= rectTop) {
-                return true;
-            } else {
-                return false;
-            }
+            return x <= rectRight && x >= rectLeft && y <= rectBottom && y >= rectTop;
         }
 
         /**

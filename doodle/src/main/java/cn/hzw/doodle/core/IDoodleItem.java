@@ -3,8 +3,6 @@ package cn.hzw.doodle.core;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 
-import cn.hzw.doodle.DoodleColor;
-
 /**
  * Created on 27/06/2018.
  */

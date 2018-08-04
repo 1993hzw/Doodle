@@ -17,7 +17,8 @@ import static cn.hzw.doodle.util.DrawUtil.rotatePoint;
 
 public abstract class DoodleSelectableItemBase extends DoodleItemBase implements IDoodleSelectableItem {
 
-    public final static int ITEM_CAN_ROTATE_BOUND = 70;
+    public final static int ITEM_CAN_ROTATE_BOUND = 35;
+    public final static int ITEM_PADDING = 5; // 绘制item矩形区域时增加的padding
 
     private Rect mRect = new Rect();
     private Rect mRectTemp = new Rect();
@@ -61,13 +62,13 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
         x = x - location.x;
         y = y - location.y;
         // 把变换后相对于矩形的触摸点，还原回未变换前的点，然后判断是否矩形中
-        mTemp = rotatePoint(mTemp, (int) -getItemRotate(), x, y, 0, 0);
+        mTemp = rotatePoint(mTemp, (int) -getItemRotate(), x, y, getPivotX() - getLocation().x, getPivotY() - getLocation().y);
         mRectTemp.set(mRect);
         float unit = getDoodle().getUnitSize();
-        mRectTemp.left -= 10 * unit;
-        mRectTemp.top -= 10 * unit;
-        mRectTemp.right += 10 * unit;
-        mRectTemp.bottom += 10 * unit;
+        mRectTemp.left -= ITEM_PADDING * unit;
+        mRectTemp.top -= ITEM_PADDING * unit;
+        mRectTemp.right += ITEM_PADDING * unit;
+        mRectTemp.bottom += ITEM_PADDING * unit;
         return mRectTemp.contains((int) mTemp.x, (int) mTemp.y);
     }
 
@@ -75,6 +76,13 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
     protected void drawBefore(Canvas canvas) {
         if (isSelected()) {
             drawSelectedBackground(canvas);
+        }
+    }
+
+    @Override
+    protected void drawAfter(Canvas canvas) {
+        if (isSelected()) {
+            drawSelectedForeground(canvas);
         }
     }
 
@@ -87,10 +95,22 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
     public void drawSelectedBackground(Canvas canvas) {
         canvas.save();
         PointF location = getLocation(); // 获取旋转后的起始坐标
-        canvas.translate(location.x, location.y); // 把坐标系平移到文字矩形范围
-        canvas.rotate(getItemRotate(), 0, 0); // 旋转坐标系
+        canvas.translate(location.x, location.y); // 把坐标系平移到item矩形范围
+        canvas.rotate(getItemRotate(), getPivotX() - getLocation().x, getPivotY() - getLocation().y); // 旋转坐标系
 
         doDrawSelectedBackground(canvas);
+
+        canvas.restore();
+    }
+
+    @Override
+    public void drawSelectedForeground(Canvas canvas) {
+        canvas.save();
+        PointF location = getLocation(); // 获取旋转后的起始坐标
+        canvas.translate(location.x, location.y); // 把坐标系平移到item矩形范围
+        canvas.rotate(getItemRotate(), getPivotX() - getLocation().x, getPivotY() - getLocation().y); // 旋转坐标系
+
+        doDrawSelectedForeground(canvas);
 
         canvas.restore();
     }
@@ -98,10 +118,10 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
     public void doDrawSelectedBackground(Canvas canvas) {
         mRectTemp.set(getBounds());
         float unit = getDoodle().getUnitSize();
-        mRectTemp.left -= 10 * unit;
-        mRectTemp.top -= 10 * unit;
-        mRectTemp.right += 10 * unit;
-        mRectTemp.bottom += 10 * unit;
+        mRectTemp.left -= ITEM_PADDING * unit;
+        mRectTemp.top -= ITEM_PADDING * unit;
+        mRectTemp.right += ITEM_PADDING * unit;
+        mRectTemp.bottom += ITEM_PADDING * unit;
         mPaint.setShader(null);
         mPaint.setColor(0x33888888);
         mPaint.setStyle(Paint.Style.FILL);
@@ -117,6 +137,10 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
         mPaint.setColor(0x44888888);
         mPaint.setStrokeWidth(0.8f * unit);
         canvas.drawRect(mRectTemp, mPaint);
+    }
+
+    public void doDrawSelectedForeground(Canvas canvas) {
+
     }
 
     @Override

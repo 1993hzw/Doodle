@@ -2,8 +2,6 @@ package cn.hzw.doodle.dialog;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.DialogInterface;
-import android.graphics.Bitmap;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextUtils;
@@ -17,12 +15,8 @@ import android.widget.TextView;
 import java.util.List;
 
 import cn.forward.androids.base.InjectionLayoutInflater;
-import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.StatusBarUtil;
-import cn.hzw.doodle.DoodleBitmap;
-import cn.hzw.doodle.DoodleText;
 import cn.hzw.doodle.R;
-import cn.hzw.doodle.core.IDoodleSelectableItem;
 import cn.hzw.doodle.imagepicker.ImageSelectorView;
 import cn.hzw.doodle.util.DrawUtil;
 

@@ -36,7 +36,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
 
 
     private float mSelectedItemX, mSelectedItemY;
-    private float mRotateTextDiff; // 开始旋转图片时的差值（当前图片与触摸点的角度）
+    private float mRotateDiff; // 开始旋转item时的差值（当前item的中心点与触摸点的角度）
 
     private Path mCurrPath; // 当前手写的路径
     private DoodlePath mCurrDoodlePath;
@@ -111,8 +111,8 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                 if (mSelectedItem instanceof DoodleRotatableItemBase
                         && (((DoodleRotatableItemBase) mSelectedItem).canRotate(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY)))) {
                     ((DoodleRotatableItemBase) mSelectedItem).setIsRotating(true);
-                    mRotateTextDiff = mSelectedItem.getItemRotate() -
-                            computeAngle(xy.x, xy.y, mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
+                    mRotateDiff = mSelectedItem.getItemRotate() -
+                            computeAngle(mSelectedItem.getPivotX(), mSelectedItem.getPivotY(), mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
                 }
             }
         } else {
@@ -179,8 +179,8 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
             if (mSelectedItem != null) {
                 if ((mSelectedItem instanceof DoodleRotatableItemBase) && (((DoodleRotatableItemBase) mSelectedItem).isRotating())) { // 旋转item
                     PointF xy = mSelectedItem.getLocation();
-                    mSelectedItem.setItemRotate(mRotateTextDiff + computeAngle(
-                            xy.x, xy.y, mDoodle.toX(mTouchX), mDoodle.toY(mTouchY)
+                    mSelectedItem.setItemRotate(mRotateDiff + computeAngle(
+                            mSelectedItem.getPivotX(), mSelectedItem.getPivotY(), mDoodle.toX(mTouchX), mDoodle.toY(mTouchY)
                     ));
                 } else { // 移动item
                     mSelectedItem.setLocation(

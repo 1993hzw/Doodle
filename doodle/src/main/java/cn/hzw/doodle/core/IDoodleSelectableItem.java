@@ -33,10 +33,17 @@ public interface IDoodleSelectableItem extends IDoodleItem {
     public boolean contains(float x, float y);
 
     /**
-     * 绘制选择时的背景
+     * 绘制选中时的背景
      *
      * @param canvas
      */
     public void drawSelectedBackground(Canvas canvas);
+
+    /**
+     * 绘制选中时的前景
+     *
+     * @param canvas
+     */
+    public void drawSelectedForeground(Canvas canvas);
 
 }

@@ -6,8 +6,6 @@
     <string name="doodle_saving_picture">保存图片</string>
     <string name="doodle_enter">确定</string>
     <string name="doodle_cancel">取消</string>
-    <string name="doodle_success">成功</string>
-    <string name="doodle_failed">失败</string>
 
     <string name="doodle_edit">编辑</string>
     <string name="doodle_remove">移除</string>

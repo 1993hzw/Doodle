@@ -8,7 +8,6 @@ import cn.hzw.doodle.core.IDoodleColor;
 import cn.hzw.doodle.core.IDoodleItem;
 import cn.hzw.doodle.core.IDoodlePen;
 import cn.hzw.doodle.core.IDoodleShape;
-import cn.hzw.doodle.util.DrawUtil;
 
 /**
  * Created on 29/06/2018.
@@ -50,7 +49,6 @@ public abstract class DoodleItemBase implements IDoodleItem {
         }
         mDoodle = doodle;
         if (doodle == null) {
-            return;
         }
     }
 
@@ -79,8 +77,6 @@ public abstract class DoodleItemBase implements IDoodleItem {
         return mPivotY;
     }
 
-    private PointF mPointF = new PointF();
-
     @Override
     public void setItemRotate(float textRotate) {
         mItemRotate = textRotate;
@@ -92,10 +88,31 @@ public abstract class DoodleItemBase implements IDoodleItem {
         return mItemRotate;
     }
 
+    /**
+     * 默认改变相应的中心点位置
+     *
+     * @param x
+     * @param y
+     */
     @Override
     public void setLocation(float x, float y) {
+        setLocation(x, y, true);
+    }
+    /**
+     * @param x
+     * @param y
+     * @param changePivot 是否随着移动相应改变中心点的位置
+     */
+    public void setLocation(float x, float y, boolean changePivot) {
+        float diffX = x - mLocation.x, diffY = y - mLocation.y;
         mLocation.x = x;
         mLocation.y = y;
+
+        if (changePivot) {
+            mPivotX = mPivotX + diffX;
+            mPivotY = mPivotY + diffY;
+        }
+
         refresh();
     }
 
@@ -152,9 +169,9 @@ public abstract class DoodleItemBase implements IDoodleItem {
     public void draw(Canvas canvas) {
         canvas.save();
         mLocation = getLocation(); // 获取旋转后的起始坐标
-        canvas.translate(mLocation.x, mLocation.y); // 把坐标系平移到文字矩形范围
-        canvas.rotate(mItemRotate, 0, 0); // 旋转坐标系
-
+        canvas.translate(mLocation.x, mLocation.y); // 偏移，把坐标系平移到item矩形范围
+        float px = mPivotX - mLocation.x, py = mPivotY - mLocation.y; // 需要减去偏移
+        canvas.rotate(mItemRotate, px, py); // 旋转坐标系
         doDraw(canvas);
 
         canvas.restore();

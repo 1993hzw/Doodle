@@ -4,8 +4,6 @@ import android.graphics.Bitmap;
 
 import java.util.List;
 
-import cn.hzw.doodle.DoodleColor;
-
 /**
  * Created on 27/06/2018.
  */

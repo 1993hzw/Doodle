@@ -15,7 +15,7 @@ import cn.hzw.doodle.util.DrawUtil;
  * Created by huangziwei on 2017/3/16.
  */
 
-public class DoodlePath extends DoodleSelectableItemBase {
+public class DoodlePath extends DoodleRotatableItemBase {
     private Path mPath; // 画笔的路径
 
     private PointF mSxy = new PointF(); // 映射后的起始坐标，（手指点击）
@@ -50,6 +50,7 @@ public class DoodlePath extends DoodleSelectableItemBase {
         } else if (DoodleShape.FILL_RECT.equals(getShape()) || DoodleShape.HOLLOW_RECT.equals(getShape())) {
             updateRectPath(mPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
         }
+        // 改变中心点位置
         mPath.computeBounds(mBound, false);
         setPivotX(mBound.left);
         setPivotY(mBound.top);
@@ -58,9 +59,10 @@ public class DoodlePath extends DoodleSelectableItemBase {
     public void updatePath(Path path) {
         this.mPath = path;
         if (mPath != null) {
+            // 改变中心点位置
             mPath.computeBounds(mBound, false);
-            setPivotX(mBound.left);
-            setPivotY(mBound.top);
+            setPivotX(mBound.left + mBound.width() / 2);
+            setPivotY(mBound.top + mBound.height() / 2);
         }
     }
 
