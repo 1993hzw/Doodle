@@ -18,7 +18,7 @@ import static cn.hzw.doodle.util.DrawUtil.rotatePoint;
 public abstract class DoodleSelectableItemBase extends DoodleItemBase implements IDoodleSelectableItem {
 
     public final static int ITEM_CAN_ROTATE_BOUND = 35;
-    public final static int ITEM_PADDING = 5; // 绘制item矩形区域时增加的padding
+    public final static int ITEM_PADDING = 3; // 绘制item矩形区域时增加的padding
 
     private Rect mRect = new Rect();
     private Rect mRectTemp = new Rect();

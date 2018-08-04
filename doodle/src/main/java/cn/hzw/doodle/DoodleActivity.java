@@ -527,6 +527,9 @@ public class DoodleActivity extends Activity {
             } else if (v.getId() == R.id.btn_pen_copy) {
                 if (mDoodle.getPen() != DoodlePen.COPY) {
                     mBtnBrushEdit.setVisibility(View.GONE);
+                    if (mBtnBrushEdit.isSelected()) {
+                        mBtnBrushEdit.performClick();
+                    }
                     mBtnColorContainer.setVisibility(View.GONE);
                     mShapeModeContainer.setVisibility(View.VISIBLE);
                     mColorContainer.setVisibility(View.VISIBLE);
@@ -539,6 +542,9 @@ public class DoodleActivity extends Activity {
             } else if (v.getId() == R.id.btn_pen_eraser) {
                 if (mDoodle.getPen() != DoodlePen.ERASER) {
                     mBtnBrushEdit.setVisibility(View.GONE);
+                    if (mBtnBrushEdit.isSelected()) {
+                        mBtnBrushEdit.performClick();
+                    }
                     mBtnColorContainer.setVisibility(View.GONE);
                     mShapeModeContainer.setVisibility(View.VISIBLE);
                     mColorContainer.setVisibility(View.VISIBLE);
@@ -551,6 +557,9 @@ public class DoodleActivity extends Activity {
             } else if (v.getId() == R.id.btn_pen_text) {
                 if (mDoodle.getPen() != DoodlePen.TEXT) {
                     mBtnBrushEdit.setVisibility(View.GONE);
+                    if (mBtnBrushEdit.isSelected()) {
+                        mBtnBrushEdit.performClick();
+                    }
                     mBtnColorContainer.setVisibility(View.VISIBLE);
                     mShapeModeContainer.setVisibility(View.GONE);
                     mColorContainer.setVisibility(View.VISIBLE);
@@ -568,6 +577,9 @@ public class DoodleActivity extends Activity {
             } else if (v.getId() == R.id.btn_pen_bitmap) {
                 if (mDoodle.getPen() != DoodlePen.BITMAP) {
                     mBtnBrushEdit.setVisibility(View.GONE);
+                    if (mBtnBrushEdit.isSelected()) {
+                        mBtnBrushEdit.performClick();
+                    }
                     mBtnColorContainer.setVisibility(View.GONE);
                     mShapeModeContainer.setVisibility(View.GONE);
                     mColorContainer.setVisibility(View.VISIBLE);

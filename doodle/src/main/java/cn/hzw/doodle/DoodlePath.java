@@ -52,8 +52,8 @@ public class DoodlePath extends DoodleRotatableItemBase {
         }
         // 改变中心点位置
         mPath.computeBounds(mBound, false);
-        setPivotX(mBound.left);
-        setPivotY(mBound.top);
+        setPivotX(mBound.left + mBound.width() / 2);
+        setPivotY(mBound.top + mBound.height() / 2);
     }
 
     public void updatePath(Path path) {
