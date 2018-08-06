@@ -248,4 +248,8 @@ public abstract class DoodleItemBase implements IDoodleItem {
 
     }
 
+    protected void drawAtTheTop(Canvas canvas) {
+
+    }
+
 }

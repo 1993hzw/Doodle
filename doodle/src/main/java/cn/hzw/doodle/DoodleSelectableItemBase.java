@@ -74,73 +74,50 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
 
     @Override
     protected void drawBefore(Canvas canvas) {
-        if (isSelected()) {
-            drawSelectedBackground(canvas);
-        }
+
     }
 
     @Override
     protected void drawAfter(Canvas canvas) {
-        if (isSelected()) {
-            drawSelectedForeground(canvas);
+
+    }
+
+    @Override
+    public void drawAtTheTop(Canvas canvas) {
+        canvas.save();
+        PointF location = getLocation(); // 获取旋转后的起始坐标
+        canvas.translate(location.x, location.y); // 把坐标系平移到item矩形范围
+        canvas.rotate(getItemRotate(), getPivotX() - getLocation().x, getPivotY() - getLocation().y); // 旋转坐标系
+
+        doDrawAtTheTop(canvas);
+
+        canvas.restore();
+    }
+
+    public void doDrawAtTheTop(Canvas canvas) {
+        if (isSelected()) { // 选中时的效果，在最上面，避免被其他内容遮住
+            mRectTemp.set(getBounds());
+            float unit = getDoodle().getUnitSize();
+            mRectTemp.left -= ITEM_PADDING * unit;
+            mRectTemp.top -= ITEM_PADDING * unit;
+            mRectTemp.right += ITEM_PADDING * unit;
+            mRectTemp.bottom += ITEM_PADDING * unit;
+            mPaint.setShader(null);
+            mPaint.setColor(0x00888888);
+            mPaint.setStyle(Paint.Style.FILL);
+            mPaint.setStrokeWidth(1);
+            canvas.drawRect(mRectTemp, mPaint);
+
+            // border
+            mPaint.setColor(0x88ffffff);
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeWidth(2 * unit);
+            canvas.drawRect(mRectTemp, mPaint);
+            // border line
+            mPaint.setColor(0x44888888);
+            mPaint.setStrokeWidth(0.8f * unit);
+            canvas.drawRect(mRectTemp, mPaint);
         }
-    }
-
-    /**
-     * 绘制选别时的背景
-     *
-     * @param canvas
-     */
-    @Override
-    public void drawSelectedBackground(Canvas canvas) {
-        canvas.save();
-        PointF location = getLocation(); // 获取旋转后的起始坐标
-        canvas.translate(location.x, location.y); // 把坐标系平移到item矩形范围
-        canvas.rotate(getItemRotate(), getPivotX() - getLocation().x, getPivotY() - getLocation().y); // 旋转坐标系
-
-        doDrawSelectedBackground(canvas);
-
-        canvas.restore();
-    }
-
-    @Override
-    public void drawSelectedForeground(Canvas canvas) {
-        canvas.save();
-        PointF location = getLocation(); // 获取旋转后的起始坐标
-        canvas.translate(location.x, location.y); // 把坐标系平移到item矩形范围
-        canvas.rotate(getItemRotate(), getPivotX() - getLocation().x, getPivotY() - getLocation().y); // 旋转坐标系
-
-        doDrawSelectedForeground(canvas);
-
-        canvas.restore();
-    }
-
-    public void doDrawSelectedBackground(Canvas canvas) {
-        mRectTemp.set(getBounds());
-        float unit = getDoodle().getUnitSize();
-        mRectTemp.left -= ITEM_PADDING * unit;
-        mRectTemp.top -= ITEM_PADDING * unit;
-        mRectTemp.right += ITEM_PADDING * unit;
-        mRectTemp.bottom += ITEM_PADDING * unit;
-        mPaint.setShader(null);
-        mPaint.setColor(0x33888888);
-        mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setStrokeWidth(1);
-        canvas.drawRect(mRectTemp, mPaint);
-
-        // border
-        mPaint.setColor(0x88ffffff);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(2 * unit);
-        canvas.drawRect(mRectTemp, mPaint);
-        // border line
-        mPaint.setColor(0x44888888);
-        mPaint.setStrokeWidth(0.8f * unit);
-        canvas.drawRect(mRectTemp, mPaint);
-    }
-
-    public void doDrawSelectedForeground(Canvas canvas) {
-
     }
 
     @Override

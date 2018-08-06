@@ -63,6 +63,9 @@ public enum DoodlePen implements IDoodlePen {
 
     @Override
     public void setSelectable(boolean selectable) {
+        if (this == DoodlePen.ERASER) {
+            throw new UnsupportedOperationException("DoodlePen.ERASER is unselectable");
+        }
         mIsSelectable = selectable;
     }
 

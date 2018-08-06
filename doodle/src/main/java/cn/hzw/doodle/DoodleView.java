@@ -386,6 +386,31 @@ public class DoodleView extends FrameLayout implements IDoodle {
                 item.draw(canvas);
             }
         }
+
+        // draw at the top
+        for (IDoodleItem item : mItemStack) {
+            if (!(item instanceof DoodleItemBase)) {
+                continue;
+            }
+            if (((DoodleItemBase) item).isDrawOptimize()) { // 优化绘制
+
+            } else { //画在view的画布上
+                if (!item.isNeedClipOutside()) { // 1.不需要裁剪
+                    if (canvasClipped) {
+                        canvas.restore();
+                    }
+                    ((DoodleItemBase) item).drawAtTheTop(canvas);
+
+                    if (canvasClipped) { // 2.恢复裁剪
+                        canvas.save();
+                        canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
+                    }
+                } else {
+                    ((DoodleItemBase) item).drawAtTheTop(canvas);
+                }
+            }
+        }
+
         canvas.restore();
 
         mPen.drawHelpers(canvas, this);

@@ -510,6 +510,7 @@ public class DoodleActivity extends Activity {
             if (v.getId() == R.id.btn_pen_hand) {
                 if (mDoodle.getPen() != DoodlePen.BRUSH) {
                     mBtnBrushEdit.setVisibility(View.VISIBLE);
+                    mBtnBrushEdit.setSelected(mDoodle.getPen().isSelectable());
                     mBtnColorContainer.setVisibility(View.VISIBLE);
                     mShapeModeContainer.setVisibility(View.VISIBLE);
                     mColorContainer.setVisibility(View.VISIBLE);

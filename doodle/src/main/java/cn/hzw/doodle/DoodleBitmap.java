@@ -19,6 +19,7 @@ public class DoodleBitmap extends DoodleRotatableItemBase {
 
     public DoodleBitmap(IDoodle doodle, Bitmap bitmap, float size, float x, float y) {
         super(doodle, -doodle.getDoodleRotation(), x, y); // 设置item旋转角度，使其在当前状态下显示为“无旋转”效果
+        setPen(DoodlePen.BITMAP);
         setPivotX(x);
         setPivotY(y);
         this.mBitmap = bitmap;
