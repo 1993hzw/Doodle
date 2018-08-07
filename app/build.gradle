@@ -20,9 +20,9 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(':doodle')
-    compile ('cn.hzw.imageselector:library:1.0'){
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation project(':doodle')
+    implementation ('cn.hzw.imageselector:library:1.0'){
         transitive = false
     }
 }
