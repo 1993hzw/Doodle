@@ -27,9 +27,9 @@ Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Als
 
   * Zoom, move, and rotate ***放缩、移动及旋转***
 
-    In the process of doodle, you can freely zoom and move the picture with gestures. Support for rotating pictures.
+    In the process of doodle, you can freely zoom, move and rotate the picture with gestures. Also, you can move and rotate the doodle.
     
-    ***在涂鸦的过程中，可以自由地通过手势缩放和移动图片。支持旋转图片。***
+    ***在涂鸦的过程中，可以自由地通过手势缩放、移动、旋转图片。可对涂鸦移动、旋转。***
 
   * Zoomer ***放大器***
 
@@ -50,7 +50,7 @@ allprojects {
 }
  
 dependencies {
-    compile 'com.github.1993hzw:Doodle:5.0.2'
+    compile 'com.github.1993hzw:Doodle:5.1'
 }
 ```
 
