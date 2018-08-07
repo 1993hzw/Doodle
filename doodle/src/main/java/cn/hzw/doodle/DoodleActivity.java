@@ -604,6 +604,8 @@ public class DoodleActivity extends Activity {
                 v.setSelected(mDoodle.getPen().isSelectable());
                 if (v.isSelected()) {
                     Toast.makeText(DoodleActivity.this, R.string.doodle_edit_mode, Toast.LENGTH_SHORT).show();
+                } else {
+                    mTouchGestureListener.setSelectedItem(null);
                 }
                 mDone = true;
             }
