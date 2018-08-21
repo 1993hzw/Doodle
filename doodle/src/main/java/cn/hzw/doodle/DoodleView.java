@@ -477,7 +477,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         if (mDoodleBitmap != null) {
             mDoodleBitmap.recycle();
         }
-        mDoodleBitmap = mBitmap.copy(Bitmap.Config.RGB_565, true);
+        mDoodleBitmap = mBitmap.copy(mBitmap.getConfig(), true);
         mBitmapCanvas = new Canvas(mDoodleBitmap);
     }
 
