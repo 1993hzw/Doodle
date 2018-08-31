@@ -509,13 +509,13 @@ public class DoodleActivity extends Activity {
             mDone = false;
             if (v.getId() == R.id.btn_pen_hand) {
                 if (mDoodle.getPen() != DoodlePen.BRUSH) {
+                    mDoodle.setPen(DoodlePen.BRUSH);
                     mBtnBrushEdit.setVisibility(View.VISIBLE);
                     mBtnBrushEdit.setSelected(mDoodle.getPen().isSelectable());
                     mBtnColorContainer.setVisibility(View.VISIBLE);
                     mShapeModeContainer.setVisibility(View.VISIBLE);
                     mColorContainer.setVisibility(View.VISIBLE);
                     mTouchGestureListener.setSelectedItem(null);
-                    mDoodle.setPen(DoodlePen.BRUSH);
                     Drawable colorBg = mBtnColor.getBackground();
                     if (colorBg instanceof ColorDrawable) {
                         mDoodle.setColor(new DoodleColor(((ColorDrawable) colorBg).getColor()));
