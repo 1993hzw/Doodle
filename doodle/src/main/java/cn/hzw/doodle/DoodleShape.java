@@ -3,6 +3,7 @@ package cn.hzw.doodle;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
+import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleItem;
 import cn.hzw.doodle.core.IDoodleShape;
 
@@ -20,16 +21,21 @@ public enum DoodleShape implements IDoodleShape {
 
 
     @Override
-    public void draw(Canvas canvas, IDoodleItem doodleItem, Paint paint) {
+    public void config(IDoodleItem doodleItem, Paint paint) {
         if (doodleItem.getShape() == DoodleShape.ARROW || doodleItem.getShape() == DoodleShape.FILL_CIRCLE || doodleItem.getShape() == DoodleShape.FILL_RECT) {
             paint.setStyle(Paint.Style.FILL);
+        } else {
+            paint.setStyle(Paint.Style.STROKE);
         }
-        DoodlePath doodlePath = (DoodlePath) doodleItem;
-        canvas.drawPath(doodlePath.getPath(), paint);
     }
 
     @Override
     public IDoodleShape copy() {
         return this;
+    }
+
+    @Override
+    public void drawHelpers(Canvas canvas, IDoodle doodle) {
+
     }
 }

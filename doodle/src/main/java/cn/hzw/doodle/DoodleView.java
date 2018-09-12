@@ -9,11 +9,9 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.os.Build;
 import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.FrameLayout;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +34,7 @@ import static cn.hzw.doodle.util.DrawUtil.rotatePoint;
  * 涂鸦框架
  * Created by huangziwei on 2016/9/3.
  */
-public class DoodleView extends FrameLayout implements IDoodle {
+public class DoodleView extends View implements IDoodle {
 
     public final static float MAX_SCALE = 4f; // 最大缩放倍数
     public final static float MIN_SCALE = 0.25f; // 最小缩放倍数
@@ -85,6 +83,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     private float mZoomerScale = 0; // 放大镜的倍数
     private Paint mZooomerPaint;
     private int mZoomerHorizonX; // 放大器的位置的x坐标，使其水平居中
+    private boolean mIsScrollingDoodle = false; // 是否正在滑动，只要用于标志触摸时才显示放大镜
 
     private float mDoodleSizeUnit = 1; // 长度单位，不同大小的图片的长度单位不一样。该单位的意义同dp的作用类似，独立于图片之外的单位长度
     private int mDoodleRotateDegree = 0; // 相对于初始图片旋转的角度
@@ -96,6 +95,8 @@ public class DoodleView extends FrameLayout implements IDoodle {
     private DoodleViewInner mInner;
     private RectF mDoodleBound = new RectF();
     private PointF mTempPoint = new PointF();
+
+    private boolean mIsEditMode = false; //是否是编辑模式，可移动缩放涂鸦
 
     public DoodleView(Context context, Bitmap bitmap, IDoodleListener listener) {
         this(context, bitmap, listener, null);
@@ -110,10 +111,8 @@ public class DoodleView extends FrameLayout implements IDoodle {
     public DoodleView(Context context, Bitmap bitmap, IDoodleListener listener, IDoodleTouchDetector defaultDetector) {
         super(context);
 
-        // 关闭硬件加速，因为bitmap的Canvas不支持硬件加速
-        if (Build.VERSION.SDK_INT >= 11) {
-            setLayerType(LAYER_TYPE_SOFTWARE, null);
-        }
+        // 关闭硬件加速，某些绘图操作不支持硬件加速
+        setLayerType(LAYER_TYPE_SOFTWARE, null);
 
         mBitmap = bitmap;
         mDoodleListener = listener;
@@ -140,8 +139,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
         mDefaultTouchDetector = defaultDetector;
 
-        mInner = new DoodleViewInner(context);
-        addView(mInner);
+        mInner = new DoodleViewInner();
     }
 
     @Override
@@ -174,9 +172,9 @@ public class DoodleView extends FrameLayout implements IDoodle {
 //        final float offsetY = mInner.getScrollY() - mInner.getTop();
 //        transformedEvent.offsetLocation(offsetX, offsetY);
         mTouchEventMatrix.reset();
-        mTouchEventMatrix.setRotate(-mDoodleRotateDegree, mInner.getWidth() / 2, mInner.getHeight() / 2);
+        mTouchEventMatrix.setRotate(-mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
         transformedEvent.transform(mTouchEventMatrix);
-        boolean handled = mInner.dispatchTouchEvent(transformedEvent);
+        boolean handled = mInner.onTouchEvent(transformedEvent);
         transformedEvent.recycle();
 
         return handled;
@@ -251,7 +249,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
                 width = height;
                 height = t;
             }
-            rotatePoint(mTempPoint, mDoodleRotateDegree, mTempPoint.x, mTempPoint.y, mInner.getWidth() / 2, mInner.getHeight() / 2);
+            rotatePoint(mTempPoint, mDoodleRotateDegree, mTempPoint.x, mTempPoint.y, getWidth() / 2, getHeight() / 2);
             mDoodleBound.set(mTempPoint.x, mTempPoint.y, mTempPoint.x + width, mTempPoint.y + height);
         } else {
             // 转换成屏幕坐标
@@ -269,16 +267,16 @@ public class DoodleView extends FrameLayout implements IDoodle {
             float rtY = toTouchY(0);
 
             //转换到View坐标系
-            rotatePoint(mTempPoint, mDoodleRotateDegree, ltX, ltY, mInner.getWidth() / 2, mInner.getHeight() / 2);
+            rotatePoint(mTempPoint, mDoodleRotateDegree, ltX, ltY, getWidth() / 2, getHeight() / 2);
             ltX = mTempPoint.x;
             ltY = mTempPoint.y;
-            rotatePoint(mTempPoint, mDoodleRotateDegree, rbX, rbY, mInner.getWidth() / 2, mInner.getHeight() / 2);
+            rotatePoint(mTempPoint, mDoodleRotateDegree, rbX, rbY, getWidth() / 2, getHeight() / 2);
             rbX = mTempPoint.x;
             rbY = mTempPoint.y;
-            rotatePoint(mTempPoint, mDoodleRotateDegree, lbX, lbY, mInner.getWidth() / 2, mInner.getHeight() / 2);
+            rotatePoint(mTempPoint, mDoodleRotateDegree, lbX, lbY, getWidth() / 2, getHeight() / 2);
             lbX = mTempPoint.x;
             lbY = mTempPoint.y;
-            rotatePoint(mTempPoint, mDoodleRotateDegree, rtX, rtY, mInner.getWidth() / 2, mInner.getHeight() / 2);
+            rotatePoint(mTempPoint, mDoodleRotateDegree, rtX, rtY, getWidth() / 2, getHeight() / 2);
             rtX = mTempPoint.x;
             rtY = mTempPoint.y;
 
@@ -298,8 +296,8 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
         // draw inner
         canvas.save();
-        canvas.rotate(mDoodleRotateDegree, mInner.getWidth() / 2, mInner.getHeight() / 2);
-        mInner.draw(canvas);
+        canvas.rotate(mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
+        mInner.onDraw(canvas);
         canvas.restore();
 
         /*// test
@@ -308,7 +306,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mPaint.setStrokeWidth(20);
         canvas.drawRect(getDoodleBound(), mPaint);*/
 
-        if (mEnableZoomer && mZoomerScale > 0) { //启用放大镜
+        if (mIsScrollingDoodle && mEnableZoomer && mZoomerScale > 0) { //启用放大镜
             canvas.save();
 
             if (mTouchY <= mZoomerRadius * 2) { // 在放大镜的范围内， 把放大镜仿制底部
@@ -325,8 +323,8 @@ public class DoodleView extends FrameLayout implements IDoodle {
             canvas.scale(scale, scale);
             canvas.translate(-mTouchX + mZoomerRadius / scale, -mTouchY + mZoomerRadius / scale);
             // draw inner
-            canvas.rotate(mDoodleRotateDegree, mInner.getWidth() / 2, mInner.getHeight() / 2);
-            mInner.draw(canvas);
+            canvas.rotate(mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
+            mInner.onDraw(canvas);
             canvas.restore();
 
             // 画放大器的边框
@@ -360,27 +358,23 @@ public class DoodleView extends FrameLayout implements IDoodle {
         }
         for (IDoodleItem item : mItemStack) {
             if (item instanceof DoodleItemBase) {
-                if (((DoodleItemBase) item).isDrawOptimize()) { // 优化绘制
-
-                } else { //画在view的画布上
-                    if (!item.isNeedClipOutside()) { // 1.不需要裁剪
-                        if (canvasClipped) {
-                            canvas.restore();
-                        }
-
-                        ((DoodleItemBase) item).drawBefore(canvas);
-                        item.draw(canvas);
-                        ((DoodleItemBase) item).drawAfter(canvas);
-
-                        if (canvasClipped) { // 2.恢复裁剪
-                            canvas.save();
-                            canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
-                        }
-                    } else {
-                        ((DoodleItemBase) item).drawBefore(canvas);
-                        item.draw(canvas);
-                        ((DoodleItemBase) item).drawAfter(canvas);
+                if (!item.isNeedClipOutside()) { // 1.不需要裁剪
+                    if (canvasClipped) {
+                        canvas.restore();
                     }
+
+                    ((DoodleItemBase) item).drawBefore(canvas);
+                    item.draw(canvas);
+                    ((DoodleItemBase) item).drawAfter(canvas);
+
+                    if (canvasClipped) { // 2.恢复裁剪
+                        canvas.save();
+                        canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
+                    }
+                } else {
+                    ((DoodleItemBase) item).drawBefore(canvas);
+                    item.draw(canvas);
+                    ((DoodleItemBase) item).drawAfter(canvas);
                 }
             } else {
                 item.draw(canvas);
@@ -392,28 +386,29 @@ public class DoodleView extends FrameLayout implements IDoodle {
             if (!(item instanceof DoodleItemBase)) {
                 continue;
             }
-            if (((DoodleItemBase) item).isDrawOptimize()) { // 优化绘制
-
-            } else { //画在view的画布上
-                if (!item.isNeedClipOutside()) { // 1.不需要裁剪
-                    if (canvasClipped) {
-                        canvas.restore();
-                    }
-                    ((DoodleItemBase) item).drawAtTheTop(canvas);
-
-                    if (canvasClipped) { // 2.恢复裁剪
-                        canvas.save();
-                        canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
-                    }
-                } else {
-                    ((DoodleItemBase) item).drawAtTheTop(canvas);
+            if (!item.isNeedClipOutside()) { // 1.不需要裁剪
+                if (canvasClipped) {
+                    canvas.restore();
                 }
+                ((DoodleItemBase) item).drawAtTheTop(canvas);
+
+                if (canvasClipped) { // 2.恢复裁剪
+                    canvas.save();
+                    canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
+                }
+            } else {
+                ((DoodleItemBase) item).drawAtTheTop(canvas);
             }
         }
 
         canvas.restore();
 
-        mPen.drawHelpers(canvas, this);
+        if (mPen != null) {
+            mPen.drawHelpers(canvas, this);
+        }
+        if (mShape != null) {
+            mShape.drawHelpers(canvas, this);
+        }
     }
 
     public float getAllScale() {
@@ -535,41 +530,13 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
     // ========================= api ================================
 
-    /**
-     * 强制刷新，包括重新刷新涂鸦图片
-     */
-    public void refreshForce() {
-        initCanvas();
-        // 重新绘制到图片上
-        for (IDoodleItem item : mItemStack) {
-            if (item instanceof DoodleItemBase) {
-                if (((DoodleItemBase) item).isDrawOptimize()) { // 优化绘制
-                    item.draw(mBitmapCanvas);
-                } else { //画在view的画布上
-
-                }
-            } else {
-                item.draw(mBitmapCanvas);
-            }
-        }
-        refresh();
-    }
-
-    public void refresh(IDoodleItem item) {
-        if (!mItemStack.contains(item)) {
-            throw new RuntimeException("doodle doesn't include the item");
-        }
-        if (((DoodleItemBase) item).isDrawOptimize()) { // 优化绘制,保存到图片上
-            item.draw(mBitmapCanvas);
-        } else {
-
-        }
-        refresh();
-    }
-
     @Override
     public void refresh() {
-        invalidate();
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            invalidate();
+        } else {
+            postInvalidate();
+        }
     }
 
     @Override
@@ -587,9 +554,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
     public void setDoodleRotation(int degree) {
         mDoodleRotateDegree = degree;
         mDoodleRotateDegree = mDoodleRotateDegree % 360;
-        mInner.setPivotX(mInner.getWidth() / 2);
-        mInner.setPivotY(mInner.getHeight() / 2);
-        mInner.setRotation(mDoodleRotateDegree);
 
         // 居中
         RectF rectF = getDoodleBound();
@@ -633,11 +597,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     public void save() {
         for (IDoodleItem item : mItemStack) {
             if (item instanceof DoodleItemBase) {
-                if (((DoodleItemBase) item).isDrawOptimize()) { // 优化绘制，addItem时已经保存在图片上
-
-                } else { // 最终保存到图片上
-                    item.draw(mBitmapCanvas);
-                }
+                item.draw(mBitmapCanvas);
             }
         }
         mDoodleBitmap = ImageUtils.rotate(mDoodleBitmap, mDoodleRotateDegree, true);
@@ -645,17 +605,9 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mDoodleListener.onSaved(this, mDoodleBitmap, new Runnable() {
             @Override
             public void run() {
-                // 还原涂鸦图片，确保在ui线程刷新
-                if (Looper.myLooper() == Looper.getMainLooper()) {
-                    refreshForce();
-                } else {
-                    post(new Runnable() {
-                        @Override
-                        public void run() {
-                            refreshForce();
-                        }
-                    });
-                }
+                // 还原涂鸦图片
+                initCanvas();
+                refresh();
             }
         });
     }
@@ -665,14 +617,16 @@ public class DoodleView extends FrameLayout implements IDoodle {
      */
     @Override
     public void clear() {
-        int size = mItemStack.size();
+        for (int i = 0; i < mItemStack.size(); i++) {
+            IDoodleItem item = mItemStack.remove(i);
+            item.onRemove();
+        }
         mItemStack.clear();
-        refreshForce();
+        refresh();
     }
 
     @Override
     public boolean undo(int step) {
-
         if (mItemStack.size() > 0) {
             step = Math.min(mItemStack.size(), step);
             IDoodleItem item = mItemStack.get(mItemStack.size() - step);
@@ -889,6 +843,19 @@ public class DoodleView extends FrameLayout implements IDoodle {
         return mEnableZoomer;
     }
 
+    /**
+     * 是否正在滚动涂鸦，只要用于标志触摸时才显示放大镜
+     * @return
+     */
+    public boolean isScrollingDoodle() {
+        return mIsScrollingDoodle;
+    }
+
+    public void setScrollingDoodle(boolean scrollingDoodle) {
+        mIsScrollingDoodle = scrollingDoodle;
+        refresh();
+    }
+
     @Override
     public void topItem(IDoodleItem item) {
         mItemStack.remove(item);
@@ -941,9 +908,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mItemStack.add(doodleItem);
         doodleItem.onAdd();
 
-        if (((DoodleItemBase) doodleItem).isDrawOptimize()) { // // 优化绘制
-            doodleItem.draw(mBitmapCanvas); // 提前保存到图片中
-        }
         refresh();
     }
 
@@ -954,10 +918,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
         }
         doodleItem.onRemove();
 
-        if (doodleItem instanceof DoodleItemBase &&
-                ((DoodleItemBase) doodleItem).isDrawOptimize()) { // 由于优化绘制，需要重新绘制抹掉图片上的痕迹
-            refreshForce();
-        }
         refresh();
     }
 
@@ -1008,17 +968,20 @@ public class DoodleView extends FrameLayout implements IDoodle {
         return mRotateTranY;
     }
 
-    private class DoodleViewInner extends View {
+    /**
+     * 是否为编辑模式
+     * @return
+     */
+    public boolean isEditMode() {
+        return mIsEditMode;
+    }
 
-        public DoodleViewInner(Context context) {
-            super(context);
-            // 关闭硬件加速，因为bitmap的Canvas不支持硬件加速
-            if (Build.VERSION.SDK_INT >= 11) {
-                setLayerType(LAYER_TYPE_SOFTWARE, null);
-            }
-        }
+    public void setEditMode(boolean editMode) {
+        mIsEditMode = editMode;
+        refresh();
+    }
 
-        @Override
+    private class DoodleViewInner {
         public boolean onTouchEvent(MotionEvent event) {
             // 綁定的识别器
             IDoodleTouchDetector detector = mTouchDetectorMap.get(mPen);
@@ -1029,10 +992,9 @@ public class DoodleView extends FrameLayout implements IDoodle {
             if (mDefaultTouchDetector != null) {
                 return mDefaultTouchDetector.onTouchEvent(event);
             }
-            return super.onTouchEvent(event);
+            return false;
         }
 
-        @Override
         protected void onDraw(Canvas canvas) {
             canvas.save();
             doDraw(canvas);

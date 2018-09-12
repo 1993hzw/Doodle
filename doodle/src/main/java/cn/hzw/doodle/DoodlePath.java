@@ -122,6 +122,19 @@ public class DoodlePath extends DoodleRotatableItemBase {
     }
 
     @Override
+    public void setSize(float size) {
+        super.setSize(size);
+        if (DoodleShape.ARROW.equals(getShape())) {
+            if (mPath == null) {
+                mPath = new Path();
+            }
+            mPath.reset();
+            updateArrowPath(mPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+        }
+        refresh();
+    }
+
+    @Override
     protected void doDraw(Canvas canvas) {
         mPaint.reset();
         mPaint.setStrokeWidth(getSize());
@@ -131,7 +144,9 @@ public class DoodlePath extends DoodleRotatableItemBase {
 
         getPen().config(this, mPaint);
         getColor().config(this, mPaint);
-        getShape().draw(canvas, this, mPaint);
+        getShape().config(this, mPaint);
+
+        canvas.drawPath(getPath(), mPaint);
     }
 
     private RectF mBound = new RectF();
@@ -148,6 +163,13 @@ public class DoodlePath extends DoodleRotatableItemBase {
         }
     }
 
+    @Override
+    public boolean isDoodleEditable() {
+        if (getPen() == DoodlePen.ERASER) {
+            return false;
+        }
+        return super.isDoodleEditable();
+    }
 
     //---------计算Path
     private Path mArrowTrianglePath;

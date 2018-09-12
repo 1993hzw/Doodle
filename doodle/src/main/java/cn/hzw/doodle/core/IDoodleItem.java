@@ -155,4 +155,10 @@ public interface IDoodleItem {
      * 刷新
      */
     public void refresh();
+
+    /**
+     * item是否可以编辑。用于编辑模式下对item的操作
+     * @return
+     */
+    public boolean isDoodleEditable();
 }
