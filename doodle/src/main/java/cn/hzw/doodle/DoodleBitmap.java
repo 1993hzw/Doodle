@@ -2,6 +2,7 @@ package cn.hzw.doodle;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
 
 import cn.hzw.doodle.core.IDoodle;

@@ -2,7 +2,7 @@
     <string name="doodle_app_name">Doodle</string>
 
     <string name="doodle_clear_screen">Clear</string>
-    <string name="doodle_cant_undo_after_clearing">Are you sure to clear alla?</string>
+    <string name="doodle_cant_undo_after_clearing">Are you sure to clear all?</string>
     <string name="doodle_saving_picture">Save before exit?</string>
     <string name="doodle_enter">Enter</string>
     <string name="doodle_cancel">Cancel</string>

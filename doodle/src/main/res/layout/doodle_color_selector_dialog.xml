@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:background="#88444444">
-
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#cc000000">
 
     <LinearLayout
         android:id="@+id/doodle_color_selector_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:orientation="vertical"
-        >
+        android:clickable="true"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
 
         <LinearLayout
             android:id="@+id/doodle_shader_container"
@@ -25,7 +26,7 @@
                 android:background="#ffffff"
                 android:padding="1dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/doodle_shader1"/>
+                android:src="@drawable/doodle_shader1" />
 
             <ImageView
                 android:layout_width="30dp"
@@ -34,7 +35,7 @@
                 android:background="#ffffff"
                 android:padding="1dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/doodle_shader2"/>
+                android:src="@drawable/doodle_shader2" />
 
             <ImageView
                 android:layout_width="30dp"
@@ -43,7 +44,7 @@
                 android:background="#ffffff"
                 android:padding="1dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/doodle_shader3"/>
+                android:src="@drawable/doodle_shader3" />
 
             <ImageView
                 android:layout_width="30dp"
@@ -52,7 +53,7 @@
                 android:background="#ffffff"
                 android:padding="1dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/doodle_shader4"/>
+                android:src="@drawable/doodle_shader4" />
 
             <ImageView
                 android:layout_width="30dp"
@@ -61,7 +62,63 @@
                 android:background="#ffffff"
                 android:padding="1dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/doodle_shader5"/>
+                android:src="@drawable/doodle_shader5" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/doodle_txtview_size"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="999"
+            android:textColor="#fff"
+            android:textSize="16dp" />
+
+        <SeekBar
+            android:id="@+id/doodle_seekbar_size"
+            android:layout_width="260dp"
+            android:layout_height="33dp"
+            android:max="100"
+            android:maxHeight="33dp"
+            android:minHeight="33dp"
+            android:progressDrawable="@drawable/doodle_seekbar_bg"
+            android:thumb="@drawable/doodle_thumb_seekbarr"
+            android:thumbOffset="0dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal">
+
+        <cn.forward.androids.views.STextView
+            android:id="@+id/dialog_enter_btn_01"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
+            android:background="#00000000"
+            android:gravity="center"
+            android:text="@string/doodle_cancel"
+            android:textColor="#bebebe"
+            android:textSize="20dp"
+            app:injectListener="true"
+            app:stv_text_color_pressed="#88bebebe" />
+
+        <cn.forward.androids.views.STextView
+            android:id="@+id/dialog_enter_btn_02"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
+            android:background="#00000000"
+            android:gravity="center"
+            android:text="@string/doodle_enter"
+            android:textColor="#11cfff"
+            android:textSize="20dp"
+            app:injectListener="true"
+            app:stv_text_color_pressed="#8811cfff" />
     </LinearLayout>
 </FrameLayout>

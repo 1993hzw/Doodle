@@ -16,20 +16,11 @@ public enum DoodlePen implements IDoodlePen {
     BRUSH, // 画笔
     COPY, // 仿制
     ERASER, // 橡皮擦
-    TEXT(true), // 文本
-    BITMAP(true); // 贴图
+    TEXT, // 文本
+    BITMAP; // 贴图
 
-    private boolean mIsSelectable = false; // 画笔绘制的item是否可选
     private CopyLocation mCopyLocation;
     private Matrix mMatrix;
-
-    DoodlePen() {
-        this(false);
-    }
-
-    DoodlePen(boolean isSelectable) {
-        mIsSelectable = isSelectable;
-    }
 
     @Override
     public void config(IDoodleItem item, Paint paint) {
@@ -52,23 +43,6 @@ public enum DoodlePen implements IDoodlePen {
         }
     }
 
-    /**
-     * 画笔制作的item是否可选，用于旋转、移动等特定操作
-     *
-     * @return
-     */
-    public boolean isSelectable() {
-        return mIsSelectable;
-    }
-
-    @Override
-    public void setSelectable(boolean selectable) {
-        if (this == DoodlePen.ERASER) {
-            throw new UnsupportedOperationException("DoodlePen.ERASER is unselectable");
-        }
-        mIsSelectable = selectable;
-    }
-
     public CopyLocation getCopyLocation() {
         if (this != COPY) {
             return null;
@@ -85,14 +59,16 @@ public enum DoodlePen implements IDoodlePen {
     }
 
     @Override
-    public void drawHelpers(Canvas canvas, IDoodle doodle) {
-        if (this == COPY) {
-            mCopyLocation.drawItSelf(canvas, doodle.getSize());
-        }
+    public IDoodlePen copy() {
+        return this;
     }
 
     @Override
-    public IDoodlePen copy() {
-        return this;
+    public void drawHelpers(Canvas canvas, IDoodle doodle) {
+        if (this == COPY) {
+            if (doodle instanceof DoodleView && !((DoodleView) doodle).isEditMode()) {
+                mCopyLocation.drawItSelf(canvas, doodle.getSize());
+            }
+        }
     }
 }

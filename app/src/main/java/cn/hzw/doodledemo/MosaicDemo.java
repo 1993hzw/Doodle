@@ -89,16 +89,6 @@ public class MosaicDemo extends Activity {
         }
 
         @Override
-        public boolean isSelectable() {
-            return false;
-        }
-
-        @Override
-        public void setSelectable(boolean isSelectable) {
-
-        }
-
-        @Override
         public void drawHelpers(Canvas canvas, IDoodle doodle) {
         }
 

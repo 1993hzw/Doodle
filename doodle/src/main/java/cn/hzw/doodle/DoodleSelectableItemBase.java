@@ -134,4 +134,8 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
 
     protected abstract void resetBounds(Rect rect);
 
+    @Override
+    public boolean isDoodleEditable() {
+        return true;
+    }
 }

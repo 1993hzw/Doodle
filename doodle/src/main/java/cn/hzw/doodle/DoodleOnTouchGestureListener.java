@@ -12,6 +12,7 @@ import cn.forward.androids.ScaleGestureDetectorApi27;
 import cn.forward.androids.TouchGestureDetector;
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleItem;
+import cn.hzw.doodle.core.IDoodlePen;
 import cn.hzw.doodle.core.IDoodleSelectableItem;
 
 import static cn.hzw.doodle.util.DrawUtil.computeAngle;
@@ -88,7 +89,6 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
     public boolean onDown(MotionEvent e) {
         mTouchX = mTouchDownX = e.getX();
         mTouchY = mTouchDownY = e.getY();
-        mDoodle.enableZoomer(false); // 关闭放大镜
         return true;
     }
 
@@ -101,9 +101,9 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
     public void onScrollBegin(MotionEvent event) {
         mLastTouchX = mTouchX = event.getX();
         mLastTouchY = mTouchY = event.getY();
+        mDoodle.setScrollingDoodle(true);
 
-        if (mDoodle.getPen().isSelectable()) {
-            // 判断是否点中选择区域
+        if (mDoodle.isEditMode() || isPenEditable(mDoodle.getPen())) {
             if (mSelectedItem != null) {
                 PointF xy = mSelectedItem.getLocation();
                 mSelectedItemX = xy.x;
@@ -116,7 +116,6 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                 }
             }
         } else {
-            mDoodle.enableZoomer(true); // 涂鸦时开启放大镜
             // 点击copy
             if (mDoodle.getPen() == DoodlePen.COPY && mCopyLocation.contains(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY), mDoodle.getSize())) {
                 mCopyLocation.setRelocating(true);
@@ -139,7 +138,6 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                     mCurrDoodlePath = DoodlePath.toShape(mDoodle,
                             mDoodle.toX(mTouchDownX), mDoodle.toY(mTouchDownY), mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
                 }
-//                mCurrDoodlePath.setDrawOptimize(false);
                 mDoodle.addItem(mCurrDoodlePath);
             }
         }
@@ -152,19 +150,17 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         mLastTouchY = mTouchY;
         mTouchX = e.getX();
         mTouchY = e.getY();
+        mDoodle.setScrollingDoodle(false);
 
-        if (mDoodle.getPen().isSelectable()) {
+        if (mDoodle.isEditMode() || isPenEditable(mDoodle.getPen())) {
             if (mSelectedItem instanceof DoodleRotatableItemBase) {
                 ((DoodleRotatableItemBase) mSelectedItem).setIsRotating(false);
             }
         } else {
             if (mCurrDoodlePath != null) {
-                /*mCurrDoodlePath.setDrawOptimize(true);
-                mDoodle.refresh(mCurrDoodlePath);*/
                 mCurrDoodlePath = null;
             }
         }
-        mDoodle.enableZoomer(false); // 关闭放大镜
         mDoodle.refresh();
     }
 
@@ -175,7 +171,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         mTouchX = e2.getX();
         mTouchY = e2.getY();
 
-        if (mDoodle.getPen().isSelectable()) { //画笔是否是可选择的
+        if (mDoodle.isEditMode() || isPenEditable(mDoodle.getPen())) { //画笔是否是可选择的
             if (mSelectedItem != null) {
                 if ((mSelectedItem instanceof DoodleRotatableItemBase) && (((DoodleRotatableItemBase) mSelectedItem).isRotating())) { // 旋转item
                     PointF xy = mSelectedItem.getLocation();
@@ -213,6 +209,11 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         return true;
     }
 
+    // 判断当前画笔是否可编辑，前提必须跟当前涂鸦框架选中的画笔相同，以此在非编辑模式下只有当前画笔类型的可编辑
+    private boolean isPenEditable(IDoodlePen pen) {
+        return (mDoodle.getPen() == DoodlePen.TEXT && pen == DoodlePen.TEXT)
+                || (mDoodle.getPen() == DoodlePen.BITMAP && pen == DoodlePen.BITMAP);
+    }
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
@@ -221,24 +222,29 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         mTouchX = e.getX();
         mTouchY = e.getY();
 
-        if (mDoodle.getPen().isSelectable()) {
+        boolean penEditable = isPenEditable(mDoodle.getPen());
+
+        if (mDoodle.isEditMode() || penEditable) {
             boolean found = false;
             IDoodleSelectableItem item;
             List<IDoodleItem> items = mDoodle.getAllItem();
             for (int i = items.size() - 1; i >= 0; i--) {
                 IDoodleItem elem = items.get(i);
-                if (!(elem instanceof IDoodleSelectableItem)|| !elem.getPen().isSelectable()) {
+                if (!(elem instanceof IDoodleSelectableItem) || !elem.isDoodleEditable()) {
                     continue;
                 }
                 item = (IDoodleSelectableItem) elem;
 
-                if (item.contains(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY))) {
-                    found = true;
-                    setSelectedItem(item);
-                    PointF xy = item.getLocation();
-                    mSelectedItemX = xy.x;
-                    mSelectedItemY = xy.y;
-                    break;
+                if (mDoodle.isEditMode()
+                        || penEditable && isPenEditable(item.getPen())) { // 非编辑模式下必须保证画笔是可编辑的类型
+                    if (item.contains(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY))) {
+                        found = true;
+                        setSelectedItem(item);
+                        PointF xy = item.getLocation();
+                        mSelectedItemX = xy.x;
+                        mSelectedItemY = xy.y;
+                        break;
+                    }
                 }
             }
             if (!found) {
@@ -249,7 +255,8 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                         mSelectionListener.onSelectedItem(mDoodle, old, false);
                     }
                 } else {
-                    if (mSelectionListener != null) {
+                    if (!mDoodle.isEditMode() // 编辑模式下不能添加item
+                            && mSelectionListener != null) {
                         mSelectionListener.onCreateSelectableItem(mDoodle, mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
                     }
                 }
@@ -269,7 +276,6 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
     public boolean onScaleBegin(ScaleGestureDetectorApi27 detector) {
         mLastFocusX = null;
         mLastFocusY = null;
-        mDoodle.enableZoomer(false);
         return true;
     }
 

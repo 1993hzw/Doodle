@@ -13,18 +13,10 @@ public interface IDoodlePen {
     public void config(IDoodleItem doodleItem, Paint paint);
 
     /**
-     * 画笔制作的item是否可选，用于旋转、移动等特定操作
-     *
+     * 深度拷贝
      * @return
      */
-    public boolean isSelectable();
-
-    /**
-     * 设置是否可选，用于旋转、移动等特定操作
-     * @param isSelectable
-     * @return
-     */
-    public void setSelectable(boolean isSelectable);
+    public IDoodlePen copy();
 
     /**
      * 绘制画笔辅助工具，由IDoodle绘制，不属于IDoodleItem的内容
@@ -34,11 +26,5 @@ public interface IDoodlePen {
      * @param doodle
      */
     public void drawHelpers(Canvas canvas, IDoodle doodle);
-
-    /**
-     * 深度拷贝
-     * @return
-     */
-    public IDoodlePen copy();
 
 }

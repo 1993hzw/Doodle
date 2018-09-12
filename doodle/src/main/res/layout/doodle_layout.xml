@@ -48,6 +48,7 @@
                         android:layout_height="@dimen/doodle_btn_pen_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_round"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_pen"
                         android:visibility="visible" />
@@ -58,6 +59,7 @@
                         android:layout_height="@dimen/doodle_btn_pen_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_round"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_copy"
                         android:visibility="visible" />
@@ -68,6 +70,7 @@
                         android:layout_height="@dimen/doodle_btn_pen_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_round"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_eraser"
                         android:visibility="visible" />
@@ -78,6 +81,7 @@
                         android:layout_height="@dimen/doodle_btn_pen_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_round"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_text"
                         android:visibility="visible" />
@@ -88,6 +92,7 @@
                         android:layout_height="@dimen/doodle_btn_pen_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_round"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_texture"
                         android:visibility="visible" />
@@ -104,6 +109,7 @@
                         android:layout_height="@dimen/doodle_btn_pen_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_round"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_clear"
                         android:visibility="gone" />
@@ -114,6 +120,7 @@
                         android:layout_height="@dimen/doodle_btn_pen_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_round"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_undo" />
 
@@ -122,6 +129,7 @@
                         android:layout_width="@dimen/doodle_btn_pen_size"
                         android:layout_height="@dimen/doodle_btn_pen_size"
                         android:background="@drawable/doodle_btn_effect_round"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_zoomer" />
 
@@ -142,6 +150,7 @@
                         android:layout_height="@dimen/doodle_btn_shape_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_handwrite" />
 
@@ -151,6 +160,7 @@
                         android:layout_height="@dimen/doodle_btn_shape_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_arrow" />
 
@@ -160,6 +170,7 @@
                         android:layout_height="@dimen/doodle_btn_shape_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_line" />
 
@@ -169,6 +180,7 @@
                         android:layout_height="@dimen/doodle_btn_shape_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_hollow_circle" />
 
@@ -178,6 +190,7 @@
                         android:layout_height="@dimen/doodle_btn_shape_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_fill_circle" />
 
@@ -187,6 +200,7 @@
                         android:layout_height="@dimen/doodle_btn_shape_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_hollow_rect" />
 
@@ -196,18 +210,21 @@
                         android:layout_height="@dimen/doodle_btn_shape_size"
                         android:layout_marginRight="5dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
+                        android:onClick="onClick"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_fill_rect" />
 
                     <Space
-                        android:layout_weight="1"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
                     <ImageView
                         android:id="@+id/doodle_btn_brush_edit"
                         android:layout_width="@dimen/doodle_btn_pen_size"
                         android:layout_height="@dimen/doodle_btn_pen_size"
                         android:background="@drawable/doodle_btn_effect_round"
+                        android:onClick="onClick"
                         android:padding="5dp"
                         android:scaleType="centerInside"
                         android:src="@drawable/doodle_ic_move"
@@ -227,16 +244,18 @@
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:background="@drawable/doodle_btn_effect_rect_line"
+                        android:onClick="onClick"
                         android:padding="2dp">
 
                         <ImageView
                             android:id="@+id/btn_set_color"
                             android:layout_width="fill_parent"
-                            android:layout_height="fill_parent" />
+                            android:layout_height="fill_parent"
+                            android:background="#f00" />
                     </FrameLayout>
 
                     <SeekBar
-                        android:id="@+id/paint_size"
+                        android:id="@+id/doodle_seekbar_size"
                         android:layout_width="260dp"
                         android:layout_height="33dp"
                         android:max="100"
@@ -278,6 +297,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/doodle_btn_effect_rect_pressed_black"
                     android:gravity="center"
+                    android:onClick="onClick"
                     android:text="@string/doodle_edit"
                     android:textColor="#ffffff"
                     android:textSize="16dp" />
@@ -289,6 +309,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/doodle_btn_effect_rect_pressed_black"
                     android:gravity="center"
+                    android:onClick="onClick"
                     android:text="@string/doodle_bottom"
                     android:textColor="#ffffff"
                     android:textSize="16dp" />
@@ -300,6 +321,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/doodle_btn_effect_rect_pressed_black"
                     android:gravity="center"
+                    android:onClick="onClick"
                     android:text="@string/doodle_top"
                     android:textColor="#ffffff"
                     android:textSize="16dp" />
@@ -311,6 +333,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/doodle_btn_effect_rect_pressed_black"
                     android:gravity="center"
+                    android:onClick="onClick"
                     android:text="@string/doodle_remove"
                     android:textColor="#ffffff"
                     android:textSize="16dp" />
