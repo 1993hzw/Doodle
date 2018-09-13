@@ -17,6 +17,7 @@
         </activity>
         <activity android:name=".MosaicDemo" />
         <activity android:name=".ScaleGestureItemDemo" />
+        <activity android:name=".guide.DoodleGuideActivity"/>
     </application>
 
 </manifest>
