@@ -2,9 +2,9 @@
 
 [![](https://jitpack.io/v/1993hzw/Doodle.svg)](https://jitpack.io/#1993hzw/Doodle)
 
-Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Also, a powerful, customizable and extensible doodle framework.
+Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Also, a powerful, customizable and extensible doodle framework & multi-function drawing board.
 
-***Android图片涂鸦，具有撤消、缩放、移动、添加文字，贴图等功能。还是一个功能强大，可自定义和可扩展的涂鸦框架。***
+***Android图片涂鸦，具有撤消、缩放、移动、添加文字，贴图等功能。还是一个功能强大，可自定义和可扩展的涂鸦框架、多功能画板。***
 ![01.gif](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/01.gif)
 
 ![01](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/01.png)
@@ -212,6 +212,8 @@ hzw19933@gmail.com
 Q&A <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=d225a990b29a135d4a601be7a198f04572f1dbd96ccd5be944ff2ef87dda5c11"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="Doodle-涂鸦交流群" title="Doodle-涂鸦交流群"></a>  6762102
 
 ***欢迎大家访问[我的博客](https://blog.csdn.net/u012964944)，以便获取更多关于Doodle的文章哦.***
+
+[《Android涂鸦画板原理详解——从初级到高级（一）》](https://blog.csdn.net/u012964944/article/details/82703684)
 
 # License
 
