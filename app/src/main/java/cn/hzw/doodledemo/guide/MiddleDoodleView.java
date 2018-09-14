@@ -125,7 +125,7 @@ public class MiddleDoodleView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         for (PathItem path : mPathList) { // 绘制涂鸦轨迹
-            canvas.save();
+            canvas.save(); // 1.保存画布状态，下面要变换画布
             canvas.translate(path.mX, path.mY); // 根据涂鸦轨迹偏移值，偏移画布使其画在对应位置上
             if (mSelectedPathItem == path) {
                 mPaint.setColor(Color.YELLOW); // 点中的为黄色
@@ -133,7 +133,7 @@ public class MiddleDoodleView extends View {
                 mPaint.setColor(Color.RED); // 其他为红色
             }
             canvas.drawPath(path.mPath, mPaint);
-            canvas.restore();
+            canvas.restore(); // 2.恢复画布状态，绘制完一个涂鸦轨迹后取消上面的画布变换，不影响下一个
         }
     }
 

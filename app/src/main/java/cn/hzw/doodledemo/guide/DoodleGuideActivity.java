@@ -14,7 +14,7 @@ public class DoodleGuideActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guide);
 
-        // 简单涂鸦
+        // 初级涂鸦
         ViewGroup simpleContainer = findViewById(R.id.container_simple_doodle);
         SimpleDoodleView simpleDoodleView = new SimpleDoodleView(this);
         simpleContainer.addView(simpleDoodleView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
