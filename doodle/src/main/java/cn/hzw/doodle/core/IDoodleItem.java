@@ -77,6 +77,12 @@ public interface IDoodleItem {
     public void draw(Canvas canvas);
 
     /**
+     * 画在所有item的上面
+     * @param canvas
+     */
+    void drawAtTheTop(Canvas canvas);
+
+    /**
      * 设置在当前涂鸦中的左上角位置
      *
      * @param x
