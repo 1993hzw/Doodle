@@ -215,6 +215,8 @@ Q&A <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=d225a990b29a135d4a6
 
 [《Android涂鸦画板原理详解——从初级到高级（一）》](https://blog.csdn.net/u012964944/article/details/82703684)
 
+[《Android涂鸦画板原理详解——从初级到高级（二）》](https://blog.csdn.net/u012964944/article/details/83420038)
+
 # License
 
   ```
