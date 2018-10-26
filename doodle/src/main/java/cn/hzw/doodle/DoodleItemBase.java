@@ -98,6 +98,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     public void setLocation(float x, float y) {
         setLocation(x, y, true);
     }
+
     /**
      * @param x
      * @param y
@@ -167,14 +168,17 @@ public abstract class DoodleItemBase implements IDoodleItem {
 
     @Override
     public void draw(Canvas canvas) {
+        drawBefore(canvas);
+
         canvas.save();
         mLocation = getLocation(); // 获取旋转后的起始坐标
         canvas.translate(mLocation.x, mLocation.y); // 偏移，把坐标系平移到item矩形范围
         float px = mPivotX - mLocation.x, py = mPivotY - mLocation.y; // 需要减去偏移
         canvas.rotate(mItemRotate, px, py); // 旋转坐标系
         doDraw(canvas);
-
         canvas.restore();
+
+        drawAfter(canvas);
     }
 
     /**
@@ -222,7 +226,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     }
 
     /**
-     * 仅画在View上，在绘制涂鸦图片之前调用(相当于背景图，但是保存图片时不包含该部分)
+     * 仅画在View上，在绘制涂鸦之前调用(相当于背景图，但是保存图片时不包含该部分)
      *
      * @param canvas 为View的Canvas
      */
@@ -238,7 +242,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     protected abstract void doDraw(Canvas canvas);
 
     /**
-     * 仅画在View上，在绘制涂鸦图片之后调用(相当于前景图，但是保存图片时不包含该部分)
+     * 仅画在View上，在绘制涂鸦之后调用(相当于前景图，但是保存图片时不包含该部分)
      *
      * @param canvas 为View的Canvas
      */
@@ -248,9 +252,11 @@ public abstract class DoodleItemBase implements IDoodleItem {
 
     /**
      * 画在所有item的上面
+     *
      * @param canvas
      */
-    protected void drawAtTheTop(Canvas canvas) {
+    @Override
+    public void drawAtTheTop(Canvas canvas) {
 
     }
 

@@ -1,6 +1,7 @@
 package cn.hzw.doodledemo.guide;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.ViewGroup;
@@ -24,9 +25,10 @@ public class DoodleGuideActivity extends Activity {
         MiddleDoodleView middleDoodleView = new MiddleDoodleView(this);
         middleContainer.addView(middleDoodleView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        // 中级涂鸦
+        // 高级级涂鸦
         ViewGroup advancedContainer = findViewById(R.id.container_advanced_doodle);
-        AdvancedDoodleView advancedDoodleView = new AdvancedDoodleView(this, BitmapFactory.decodeResource(getResources(), R.drawable.thelittleprince2));
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.thelittleprince2);
+        AdvancedDoodleView advancedDoodleView = new AdvancedDoodleView(this, bitmap);
         advancedContainer.addView(advancedDoodleView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
     }

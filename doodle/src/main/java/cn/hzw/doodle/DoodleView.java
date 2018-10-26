@@ -357,24 +357,16 @@ public class DoodleView extends View implements IDoodle {
             canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
         }
         for (IDoodleItem item : mItemStack) {
-            if (item instanceof DoodleItemBase) {
-                if (!item.isNeedClipOutside()) { // 1.不需要裁剪
-                    if (canvasClipped) {
-                        canvas.restore();
-                    }
+            if (!item.isNeedClipOutside()) { // 1.不需要裁剪
+                if (canvasClipped) {
+                    canvas.restore();
+                }
 
-                    ((DoodleItemBase) item).drawBefore(canvas);
-                    item.draw(canvas);
-                    ((DoodleItemBase) item).drawAfter(canvas);
+                item.draw(canvas);
 
-                    if (canvasClipped) { // 2.恢复裁剪
-                        canvas.save();
-                        canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
-                    }
-                } else {
-                    ((DoodleItemBase) item).drawBefore(canvas);
-                    item.draw(canvas);
-                    ((DoodleItemBase) item).drawAfter(canvas);
+                if (canvasClipped) { // 2.恢复裁剪
+                    canvas.save();
+                    canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
                 }
             } else {
                 item.draw(canvas);
@@ -383,21 +375,18 @@ public class DoodleView extends View implements IDoodle {
 
         // draw at the top
         for (IDoodleItem item : mItemStack) {
-            if (!(item instanceof DoodleItemBase)) {
-                continue;
-            }
             if (!item.isNeedClipOutside()) { // 1.不需要裁剪
                 if (canvasClipped) {
                     canvas.restore();
                 }
-                ((DoodleItemBase) item).drawAtTheTop(canvas);
+                item.drawAtTheTop(canvas);
 
                 if (canvasClipped) { // 2.恢复裁剪
                     canvas.save();
                     canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
                 }
             } else {
-                ((DoodleItemBase) item).drawAtTheTop(canvas);
+                item.drawAtTheTop(canvas);
             }
         }
 
@@ -845,6 +834,7 @@ public class DoodleView extends View implements IDoodle {
 
     /**
      * 是否正在滚动涂鸦，只要用于标志触摸时才显示放大镜
+     *
      * @return
      */
     public boolean isScrollingDoodle() {
@@ -970,6 +960,7 @@ public class DoodleView extends View implements IDoodle {
 
     /**
      * 是否为编辑模式
+     *
      * @return
      */
     public boolean isEditMode() {

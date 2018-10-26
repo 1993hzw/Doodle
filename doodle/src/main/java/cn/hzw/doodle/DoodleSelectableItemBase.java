@@ -73,12 +73,12 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
     }
 
     @Override
-    protected void drawBefore(Canvas canvas) {
+    public void drawBefore(Canvas canvas) {
 
     }
 
     @Override
-    protected void drawAfter(Canvas canvas) {
+    public void drawAfter(Canvas canvas) {
 
     }
 
