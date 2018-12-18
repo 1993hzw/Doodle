@@ -5,6 +5,7 @@
 Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Also, a powerful, customizable and extensible doodle framework & multi-function drawing board.
 
 ***Android图片涂鸦，具有撤消、缩放、移动、添加文字，贴图等功能。还是一个功能强大，可自定义和可扩展的涂鸦框架、多功能画板。***
+
 ![01.gif](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/01.gif)
 
 ![01](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/01.png)
@@ -136,7 +137,7 @@ mDoodleView.setColor(new DoodleColor(Color.RED));
 ```
 Then, add the DoodleView to your layout. Now you can start doodling freely.
 
-*** 把DoodleView添加到布局中，然后开始涂鸦。***
+ ***把DoodleView添加到布局中，然后开始涂鸦。***
 
 # Demo 实例
 
@@ -202,6 +203,8 @@ You can create a customized color like DoodleColor which implements [IDoodleColo
 You can create a customized touch gesture detector like [DoodleTouchDetector](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleTouchDetector.java)([GestureListener](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleOnTouchGestureListener.java)) which implements [IDoodleTouchDetector](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/core/IDoodleTouchDetector.java). 
 
 ***实现[IDoodleTouchDetector](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/core/IDoodleTouchDetector.java)接口用于创建自定义手势识别器，比如DoodleTouchDetector***
+
+*** [Others](https://github.com/1993hzw/Doodle/blob/master/extend.md)
 
 # The developer 开发者
 

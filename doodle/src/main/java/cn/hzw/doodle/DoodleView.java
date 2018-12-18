@@ -222,7 +222,7 @@ public class DoodleView extends View implements IDoodle {
     }
 
     /**
-     * 获取当前图片在View坐标系中的巨型区域
+     * 获取当前图片在View坐标系中的矩型区域
      *
      * @return
      */

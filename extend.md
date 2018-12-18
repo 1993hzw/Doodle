@@ -1,8 +1,9 @@
-拓展代码
+Extended code 拓展代码
 ================
 
 ```
 /**
+ * Make the picture fill the display
  * 使图片填充屏幕
  */
 public void centerCrop() {
@@ -16,6 +17,7 @@ public void centerCrop() {
 
 ```
 /**
+ * Text item that does not follow the zoom
  * 不跟随缩放变化的文字item
  */
 public class FixedSizeDoodleText extends DoodleText {
@@ -28,7 +30,7 @@ public class FixedSizeDoodleText extends DoodleText {
     @Override
     public void setSize(float size) {
         super.setSize(size);
-        if (getDoodle() != null) { // 记录缩放前的倍数
+        if (getDoodle() != null) { // Record multiples before scaling. 记录缩放前的倍数
             mScaleBefore = getDoodle().getDoodleScale();
         }
     }
@@ -36,7 +38,7 @@ public class FixedSizeDoodleText extends DoodleText {
     @Override
     public void doDraw(Canvas canvas) {
         float scaleAfter = getDoodle().getDoodleScale();
-        setSize(mScaleBefore / scaleAfter * getSize()); // 缩放后重新设置大小
+        setSize(mScaleBefore / scaleAfter * getSize()); // Resize after scaling. 缩放后重新设置大小
         super.doDraw(canvas);
     }
 }
