@@ -209,7 +209,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         return true;
     }
 
-    // 判断当前画笔是否可编辑，前提必须跟当前涂鸦框架选中的画笔相同，以此在非编辑模式下只有当前画笔类型的可编辑
+    // 判断当前画笔是否可编辑
     private boolean isPenEditable(IDoodlePen pen) {
         return (mDoodle.getPen() == DoodlePen.TEXT && pen == DoodlePen.TEXT)
                 || (mDoodle.getPen() == DoodlePen.BITMAP && pen == DoodlePen.BITMAP);
@@ -222,44 +222,43 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         mTouchX = e.getX();
         mTouchY = e.getY();
 
-        boolean penEditable = isPenEditable(mDoodle.getPen());
-
-        if (mDoodle.isEditMode() || penEditable) {
+        if (mDoodle.isEditMode()) {
             boolean found = false;
             IDoodleSelectableItem item;
             List<IDoodleItem> items = mDoodle.getAllItem();
             for (int i = items.size() - 1; i >= 0; i--) {
                 IDoodleItem elem = items.get(i);
-                if (!(elem instanceof IDoodleSelectableItem) || !elem.isDoodleEditable()) {
+                if (!elem.isDoodleEditable()) {
                     continue;
                 }
+
+                if (!(elem instanceof IDoodleSelectableItem)) {
+                    continue;
+                }
+
                 item = (IDoodleSelectableItem) elem;
 
-                if (mDoodle.isEditMode()
-                        || penEditable && isPenEditable(item.getPen())) { // 非编辑模式下必须保证画笔是可编辑的类型
-                    if (item.contains(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY))) {
-                        found = true;
-                        setSelectedItem(item);
-                        PointF xy = item.getLocation();
-                        mSelectedItemX = xy.x;
-                        mSelectedItemY = xy.y;
-                        break;
-                    }
+                if (item.contains(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY))) {
+                    found = true;
+                    setSelectedItem(item);
+                    PointF xy = item.getLocation();
+                    mSelectedItemX = xy.x;
+                    mSelectedItemY = xy.y;
+                    break;
                 }
             }
-            if (!found) {
+            if (!found) { // not found
                 if (mSelectedItem != null) { // 取消选定
                     IDoodleSelectableItem old = mSelectedItem;
                     setSelectedItem(null);
                     if (mSelectionListener != null) {
                         mSelectionListener.onSelectedItem(mDoodle, old, false);
                     }
-                } else {
-                    if (!mDoodle.isEditMode() // 编辑模式下不能添加item
-                            && mSelectionListener != null) {
-                        mSelectionListener.onCreateSelectableItem(mDoodle, mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
-                    }
                 }
+            }
+        } else if (isPenEditable(mDoodle.getPen())) {
+            if (mSelectionListener != null) {
+                mSelectionListener.onCreateSelectableItem(mDoodle, mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
             }
         } else {
             // 模拟一次滑动

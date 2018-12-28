@@ -165,9 +165,10 @@ public class DoodlePath extends DoodleRotatableItemBase {
 
     @Override
     public boolean isDoodleEditable() {
-        if (getPen() == DoodlePen.ERASER) {
+        if (getPen() == DoodlePen.ERASER) { // eraser is not editable
             return false;
         }
+
         return super.isDoodleEditable();
     }
 

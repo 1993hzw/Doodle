@@ -3,4 +3,5 @@
     <dimen name="doodle_title_bar_height">50dp</dimen>
     <dimen name="doodle_btn_pen_size">32dp</dimen>
     <dimen name="doodle_btn_shape_size">30dp</dimen>
+    <dimen name="doodle_margin">5dp</dimen>
 </resources>

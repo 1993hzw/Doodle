@@ -13,6 +13,8 @@ import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 
+import junit.framework.Assert;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -536,13 +538,16 @@ public class DoodleView extends View implements IDoodle {
     /**
      * 相对于初始图片旋转的角度
      *
-     * @param degree
+     * @param degree positive degree means rotate right, negative degree means rotate left
      */
 
     @Override
     public void setDoodleRotation(int degree) {
         mDoodleRotateDegree = degree;
         mDoodleRotateDegree = mDoodleRotateDegree % 360;
+        if (mDoodleRotateDegree < 0) {
+            mDoodleRotateDegree = 360 + mDoodleRotateDegree;
+        }
 
         // 居中
         RectF rectF = getDoodleBound();
@@ -848,6 +853,10 @@ public class DoodleView extends View implements IDoodle {
 
     @Override
     public void topItem(IDoodleItem item) {
+        if (item == null) {
+            throw new RuntimeException("item is null");
+        }
+
         mItemStack.remove(item);
         mItemStack.add(item);
         refresh();
@@ -855,6 +864,10 @@ public class DoodleView extends View implements IDoodle {
 
     @Override
     public void bottomItem(IDoodleItem item) {
+        if (item == null) {
+            throw new RuntimeException("item is null");
+        }
+
         mItemStack.remove(item);
         mItemStack.add(0, item);
         refresh();
@@ -888,15 +901,19 @@ public class DoodleView extends View implements IDoodle {
     }
 
     @Override
-    public void addItem(IDoodleItem doodleItem) {
-        if (this != doodleItem.getDoodle()) {
+    public void addItem(IDoodleItem item) {
+        if (item == null) {
+            throw new RuntimeException("item is null");
+        }
+
+        if (this != item.getDoodle()) {
             throw new RuntimeException("the object Doodle is illegal");
         }
-        if (mItemStack.contains(doodleItem)) {
+        if (mItemStack.contains(item)) {
             throw new RuntimeException("the item has been added");
         }
-        mItemStack.add(doodleItem);
-        doodleItem.onAdd();
+        mItemStack.add(item);
+        item.onAdd();
 
         refresh();
     }
