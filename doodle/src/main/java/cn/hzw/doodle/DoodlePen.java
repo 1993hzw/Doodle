@@ -17,7 +17,8 @@ public enum DoodlePen implements IDoodlePen {
     COPY, // 仿制
     ERASER, // 橡皮擦
     TEXT, // 文本
-    BITMAP; // 贴图
+    BITMAP, // 贴图
+    MOSAIC; // 马赛克
 
     private CopyLocation mCopyLocation;
     private Matrix mMatrix;

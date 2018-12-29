@@ -69,10 +69,6 @@ public class MosaicDemo extends Activity {
         return new DoodleColor(mosaicBitmap, matrix);
     }
 
-    /*
-     Though setting a new pen here is not necessary, the design-based specification should do this.
-     虽然这里设置新的画笔不是必要的，但是基于设计的规范应该这样做。马赛克画笔在概念上不同于其他画笔，
-     */
     public void setMosaicLevel(View view) {
         if (view.getId() == R.id.btn_mosaic_x1) {
             doodleView.setColor(getMosaicColor(0.3f));
@@ -83,6 +79,10 @@ public class MosaicDemo extends Activity {
         }
     }
 
+    /*
+     Though setting a new pen here is not necessary, the design-based specification should do this.
+     虽然这里设置新的画笔不是必要的，但是基于设计的规范应该这样做。马赛克画笔在概念上不同于其他画笔，
+     */
     private static class MosaicPen implements IDoodlePen {
         @Override
         public void config(IDoodleItem doodleItem, Paint paint) {

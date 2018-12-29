@@ -24,6 +24,8 @@ public class DoodleColor implements IDoodleColor {
     private Type mType;
     private Matrix mMatrix;
 
+    private int mLevel = 1;
+
     // bitmap相关
     private Shader.TileMode mTileX = Shader.TileMode.MIRROR;
     private Shader.TileMode mTileY = Shader.TileMode.MIRROR;  // 镜像
@@ -116,7 +118,16 @@ public class DoodleColor implements IDoodleColor {
         color.mTileX = mTileX;
         color.mTileY = mTileY;
         color.mMatrix = new Matrix(mMatrix);
+        color.mLevel = mLevel;
         return color;
+    }
+
+    public void setLevel(int level) {
+        mLevel = level;
+    }
+
+    public int getLevel() {
+        return mLevel;
     }
 }
 

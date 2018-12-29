@@ -1,11 +1,14 @@
 package cn.hzw.doodle;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Shader;
 
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.util.DrawUtil;
@@ -238,6 +241,33 @@ public class DoodlePath extends DoodleRotatableItemBase {
             } else {
                 path.addRect(dx, dy, sx, sy, Path.Direction.CCW);
             }
+        }
+    }
+
+    public static DoodleColor getMosaicColor(IDoodle doodle, int level) {
+        Matrix matrix = new Matrix();
+        matrix.setScale(1f / level, 1f / level);
+        Bitmap mosaicBitmap = Bitmap.createBitmap(doodle.getBitmap(),
+                0, 0, doodle.getBitmap().getWidth(), doodle.getBitmap().getHeight(), matrix, true);
+        matrix.reset();
+        matrix.setScale(level, level);
+        DoodleColor doodleColor = new DoodleColor(mosaicBitmap, matrix, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        doodleColor.setLevel(level);
+        return doodleColor;
+    }
+
+    @Override
+    public void setLocation(float x, float y, boolean changePivot) {
+        super.setLocation(x, y, changePivot);
+
+        if (getPen() == DoodlePen.MOSAIC
+                && getColor() instanceof DoodleColor) {
+            DoodleColor doodleColor = ((DoodleColor) getColor());
+            Matrix matrix = doodleColor.getMatrix();
+            matrix.reset();
+            matrix.setScale(doodleColor.getLevel(), doodleColor.getLevel());
+            matrix.postTranslate(-getLocation().x, -getLocation().y);
+            doodleColor.setMatrix(matrix);
         }
     }
 }

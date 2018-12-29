@@ -118,6 +118,7 @@ public class DoodleActivity extends Activity {
     private SeekBar mEditSizeSeekBar;
     private View mShapeContainer, mPenContainer, mSizeContainer;
     private View mBtnUndo;
+    private View mMosaicMenu;
 
     private AlphaAnimation mViewShowAnimation, mViewHideAnimation; // view隐藏和显示时用到的渐变动画
 
@@ -130,6 +131,8 @@ public class DoodleActivity extends Activity {
 
     private DoodleOnTouchGestureListener mTouchGestureListener;
     private Map<IDoodlePen, Float> mPenSizeMap = new HashMap<>(); //保存每个画笔对应的最新大小
+
+    private int mMosaicLevel = 1;
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -251,9 +254,18 @@ public class DoodleActivity extends Activity {
         }, null);
 
         mTouchGestureListener = new DoodleOnTouchGestureListener(mDoodleView, new DoodleOnTouchGestureListener.ISelectionListener() {
+            IDoodleColor color = null;
+            Float size = null;
+
             @Override
             public void onSelectedItem(IDoodle doodle, IDoodleSelectableItem selectableItem, boolean selected) {
                 if (selected) {
+                    if (color == null) {
+                        color = mDoodle.getColor();
+                    }
+                    if (size == null) {
+                        size = mDoodle.getSize();
+                    }
                     mDoodleView.setEditMode(true);
 //                    mDoodle.setPen(selectableItem.getPen()); // don't set!!!!! it will make selectedItem null
                     mDoodle.setColor(selectableItem.getColor());
@@ -269,6 +281,14 @@ public class DoodleActivity extends Activity {
                         mColorContainer.setVisibility(View.VISIBLE);
                     }
                 } else {
+                    if (color != null) {
+                        mDoodle.setColor(color);
+                        color = null;
+                    }
+                    if (size != -1) {
+                        mDoodle.setSize(size);
+                        size = null;
+                    }
                     mSelectedEditContainer.setVisibility(View.GONE);
                 }
             }
@@ -369,6 +389,7 @@ public class DoodleActivity extends Activity {
             }
         });
         mSelectedEditContainer = findViewById(R.id.doodle_selectable_edit_container);
+        mSelectedEditContainer.setVisibility(View.GONE);
 
         mSettingsPanel = findViewById(R.id.doodle_panel);
 
@@ -378,6 +399,8 @@ public class DoodleActivity extends Activity {
         mShapeContainer = findViewById(R.id.shape_container);
         mPenContainer = findViewById(R.id.pen_container);
         mSizeContainer = findViewById(R.id.size_container);
+        mMosaicMenu = findViewById(R.id.mosaic_menu);
+        mMosaicMenu.findViewById(R.id.btn_mosaic_level2).performClick();
 
         mBtnColor = DoodleActivity.this.findViewById(R.id.btn_set_color);
         mColorContainer = DoodleActivity.this.findViewById(R.id.btn_set_color_container);
@@ -476,6 +499,8 @@ public class DoodleActivity extends Activity {
     public void onClick(final View v) {
         if (v.getId() == R.id.btn_pen_hand) {
             mDoodle.setPen(DoodlePen.BRUSH);
+        } else if (v.getId() == R.id.btn_pen_mosaic) {
+            mDoodle.setPen(DoodlePen.MOSAIC);
         } else if (v.getId() == R.id.btn_pen_copy) {
             mDoodle.setPen(DoodlePen.COPY);
         } else if (v.getId() == R.id.btn_pen_eraser) {
@@ -613,6 +638,24 @@ public class DoodleActivity extends Activity {
             mDoodle.setShape(DoodleShape.HOLLOW_RECT);
         } else if (v.getId() == R.id.btn_fill_rect) {
             mDoodle.setShape(DoodleShape.FILL_RECT);
+        } else if (v.getId() == R.id.btn_mosaic_level1) {
+            mMosaicLevel = 5;
+            mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
+            v.setSelected(true);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level2).setSelected(false);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level3).setSelected(false);
+        } else if (v.getId() == R.id.btn_mosaic_level2) {
+            mMosaicLevel = 20;
+            mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
+            v.setSelected(true);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level1).setSelected(false);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level3).setSelected(false);
+        } else if (v.getId() == R.id.btn_mosaic_level3) {
+            mMosaicLevel = 50;
+            mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
+            v.setSelected(true);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level1).setSelected(false);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level2).setSelected(false);
         }
     }
 
@@ -668,6 +711,7 @@ public class DoodleActivity extends Activity {
 
         {
             mBtnPenIds.put(DoodlePen.BRUSH, R.id.btn_pen_hand);
+            mBtnPenIds.put(DoodlePen.MOSAIC, R.id.btn_pen_mosaic);
             mBtnPenIds.put(DoodlePen.COPY, R.id.btn_pen_copy);
             mBtnPenIds.put(DoodlePen.ERASER, R.id.btn_pen_eraser);
             mBtnPenIds.put(DoodlePen.TEXT, R.id.btn_pen_text);
@@ -691,6 +735,8 @@ public class DoodleActivity extends Activity {
                 } else {
                     mDoodle.setColor(new DoodleColor(((BitmapDrawable) colorBg).getBitmap()));
                 }
+            } else if (pen == DoodlePen.MOSAIC) {
+                mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
             } else if (pen == DoodlePen.COPY) {
                 mDoodle.setColor(null);
             } else if (pen == DoodlePen.ERASER) {
@@ -711,8 +757,13 @@ public class DoodleActivity extends Activity {
                 }
             }
 
+            mMosaicMenu.setVisibility(GONE);
             if (pen == DoodlePen.BITMAP || pen == DoodlePen.TEXT) {
                 mShapeContainer.setVisibility(GONE);
+                mColorContainer.setVisibility(GONE);
+            } else if (pen == DoodlePen.MOSAIC) {
+                mMosaicMenu.setVisibility(VISIBLE);
+                mShapeContainer.setVisibility(VISIBLE);
                 mColorContainer.setVisibility(GONE);
             } else {
                 mShapeContainer.setVisibility(VISIBLE);
