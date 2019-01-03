@@ -848,19 +848,31 @@ public class DoodleActivity extends Activity {
         }
 
         View mBtnEditMode = DoodleActivity.this.findViewById(R.id.doodle_btn_brush_edit);
+        Boolean mLastIsDrawableOutside = null;
 
         @Override
         public void setEditMode(boolean editMode) {
+            if (editMode == isEditMode()) {
+                return;
+            }
+
             super.setEditMode(editMode);
             mBtnEditMode.setSelected(editMode);
             if (editMode) {
                 Toast.makeText(DoodleActivity.this, R.string.doodle_edit_mode, Toast.LENGTH_SHORT).show();
+                mLastIsDrawableOutside = mDoodle.isDrawableOutside(); // save
+                mDoodle.setIsDrawableOutside(true);
                 mPenContainer.setVisibility(GONE);
                 mShapeContainer.setVisibility(GONE);
                 mSizeContainer.setVisibility(GONE);
                 mColorContainer.setVisibility(GONE);
                 mBtnUndo.setVisibility(GONE);
             } else {
+                if (mLastIsDrawableOutside != null) { // restore
+                    mDoodle.setIsDrawableOutside(mLastIsDrawableOutside);
+                }
+                mTouchGestureListener.center(); // center picture
+
                 mTouchGestureListener.setSelectedItem(null);
                 mPenContainer.setVisibility(VISIBLE);
                 mSizeContainer.setVisibility(VISIBLE);

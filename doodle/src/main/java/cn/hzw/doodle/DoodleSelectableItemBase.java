@@ -7,6 +7,7 @@ import android.graphics.Rect;
 
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleSelectableItem;
+import cn.hzw.doodle.util.DrawUtil;
 
 import static cn.hzw.doodle.util.DrawUtil.rotatePoint;
 
@@ -37,6 +38,13 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
         setItemRotate(itemRotate);
 
         resetBounds(mRect);
+    }
+
+    @Override
+    public void setScale(float scale) {
+        super.setScale(scale);
+        resetBounds(mRect);
+        refresh();
     }
 
     @Override
@@ -96,7 +104,13 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
 
     public void doDrawAtTheTop(Canvas canvas) {
         if (isSelected()) { // 选中时的效果，在最上面，避免被其他内容遮住
+
+            // 反向缩放画布，使视觉上选中边框不随图片缩放而变化
+            canvas.save();
+            canvas.scale(1/getDoodle().getDoodleScale(), 1/getDoodle().getDoodleScale(),getPivotX() - getLocation().x, getPivotY() - getLocation().y);
             mRectTemp.set(getBounds());
+            DrawUtil.scaleRect(mRectTemp, getDoodle().getDoodleScale(), getPivotX() - getLocation().x, getPivotY() - getLocation().y);
+
             float unit = getDoodle().getUnitSize();
             mRectTemp.left -= ITEM_PADDING * unit;
             mRectTemp.top -= ITEM_PADDING * unit;
@@ -117,6 +131,8 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
             mPaint.setColor(0x44888888);
             mPaint.setStrokeWidth(0.8f * unit);
             canvas.drawRect(mRectTemp, mPaint);
+
+            canvas.restore();
         }
     }
 

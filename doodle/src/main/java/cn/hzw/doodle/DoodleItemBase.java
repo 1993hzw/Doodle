@@ -15,6 +15,9 @@ import cn.hzw.doodle.core.IDoodleShape;
 
 public abstract class DoodleItemBase implements IDoodleItem {
 
+    public static final float MIN_SCALE = 0.01f;
+    public static final float MAX_SCALE = 100f;
+
     private float mItemRotate; // item的旋转角度
     private IDoodle mDoodle;
     private PointF mLocation = new PointF();
@@ -25,6 +28,9 @@ public abstract class DoodleItemBase implements IDoodleItem {
     private boolean mIsDrawOptimize = false; //优化绘制
     private boolean mIsNeedClipOutside = true; // 是否需要裁剪图片区域外的部分
     private float mPivotX, mPivotY;
+    private float mMinScale = MIN_SCALE;
+    private float mMaxScale = MAX_SCALE;
+    private float mScale = 1;
 
     private boolean mHasAdded = false;
 
@@ -175,6 +181,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
         canvas.translate(mLocation.x, mLocation.y); // 偏移，把坐标系平移到item矩形范围
         float px = mPivotX - mLocation.x, py = mPivotY - mLocation.y; // 需要减去偏移
         canvas.rotate(mItemRotate, px, py); // 旋转坐标系
+        canvas.scale(mScale, mScale, px, py); // 缩放
         doDraw(canvas);
         canvas.restore();
 
@@ -223,6 +230,50 @@ public abstract class DoodleItemBase implements IDoodleItem {
     @Override
     public boolean isDoodleEditable() {
         return false;
+    }
+
+    @Override
+    public void setScale(float scale) {
+        if (scale <= mMinScale) {
+            scale = mMinScale;
+        } else if (scale > mMaxScale) {
+            scale = mMaxScale;
+        }
+        mScale = scale;
+        refresh();
+    }
+
+    @Override
+    public float getScale() {
+        return mScale;
+    }
+
+    public void setMinScale(float minScale) {
+        if (mMinScale <= 0) {
+            minScale = MIN_SCALE;
+        } else if (minScale > mMaxScale) {
+            minScale = mMaxScale;
+        }
+        mMinScale = minScale;
+        setScale(getScale());
+    }
+
+    public float getMinScale() {
+        return mMinScale;
+    }
+
+    public void setMaxScale(float maxScale) {
+        if (maxScale <= 0) {
+            maxScale = MIN_SCALE;
+        } else if (maxScale < mMinScale) {
+            maxScale = mMinScale;
+        }
+        mMaxScale = maxScale;
+        setScale(getScale());
+    }
+
+    public float getMaxScale() {
+        return mMaxScale;
     }
 
     /**

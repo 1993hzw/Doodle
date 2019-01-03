@@ -167,4 +167,11 @@ public interface IDoodleItem {
      * @return
      */
     public boolean isDoodleEditable();
+
+    /**
+     * 缩放倍数，围绕(PivotX,PivotY)旋转
+     */
+    public void setScale(float scale);
+
+    public float getScale();
 }

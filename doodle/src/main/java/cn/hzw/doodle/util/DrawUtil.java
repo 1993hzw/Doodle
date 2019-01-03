@@ -212,4 +212,11 @@ public class DrawUtil {
             return r.bottom;
         }
     }
+
+    public static void scaleRect(Rect rect, float scale, float px, float py) {
+        rect.left = (int) (px - scale * (px - rect.left) + 0.5f);
+        rect.right = (int) (px - scale * (px - rect.right) + 0.5f);
+        rect.top = (int) (py - scale * (py - rect.top) + 0.5f);
+        rect.bottom = (int) (py - scale * (py - rect.bottom) + 0.5f);
+    }
 }

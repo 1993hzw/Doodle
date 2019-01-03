@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 
 import cn.hzw.doodle.core.IDoodle;
+import cn.hzw.doodle.util.DrawUtil;
 
 /**
  * 图片item
@@ -59,6 +60,9 @@ public class DoodleBitmap extends DoodleRotatableItemBase {
         mSrcRect.set(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
         mDstRect.set(0, 0, (int) size, (int) (size * mBitmap.getHeight()) / mBitmap.getWidth());
 
+        float px = getPivotX() - getLocation().x;
+        float py = getPivotY() - getLocation().y;
+        DrawUtil.scaleRect(rect, getScale(), px, py);
     }
 
     @Override

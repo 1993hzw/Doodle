@@ -157,12 +157,16 @@ public class DoodlePath extends DoodleRotatableItemBase {
     @Override
     protected void resetBounds(Rect rect) {
         if (mPath != null) {
-            int diff = (int) (getSize() / 2);
+            int diff = (int) (getSize() / 2 + 0.5f);
             mPath.computeBounds(mBound, false);
             if (getShape() == DoodleShape.ARROW || getShape() == DoodleShape.FILL_CIRCLE || getShape() == DoodleShape.FILL_RECT) {
                 diff = (int) getDoodle().getUnitSize();
             }
             rect.set((int) (mBound.left - diff), (int) (mBound.top - diff), (int) (mBound.right + diff), (int) (mBound.bottom + diff));
+
+            float px = getPivotX() - getLocation().x;
+            float py = getPivotY() - getLocation().y;
+            DrawUtil.scaleRect(rect, getScale(), px, py);
         }
     }
 

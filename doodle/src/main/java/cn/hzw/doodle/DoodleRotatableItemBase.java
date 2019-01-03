@@ -6,6 +6,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 
 import cn.hzw.doodle.core.IDoodle;
+import cn.hzw.doodle.util.DrawUtil;
 
 import static cn.hzw.doodle.util.DrawUtil.rotatePoint;
 
@@ -29,8 +30,14 @@ public abstract class DoodleRotatableItemBase extends DoodleSelectableItemBase {
 
     @Override
     public void doDrawAtTheTop(Canvas canvas) {
-        if(isSelected()) {
+        if (isSelected()) {
+
+            // 反向缩放画布，使视觉上选中边框不随图片缩放而变化
+            canvas.save();
+            canvas.scale(1 / getDoodle().getDoodleScale(), 1 / getDoodle().getDoodleScale(), getPivotX() - getLocation().x, getPivotY() - getLocation().y);
             mRectTemp.set(getBounds());
+            DrawUtil.scaleRect(mRectTemp, getDoodle().getDoodleScale(), getPivotX() - getLocation().x, getPivotY() - getLocation().y);
+
             float unit = getDoodle().getUnitSize();
             mRectTemp.left -= ITEM_PADDING * unit;
             mRectTemp.top -= ITEM_PADDING * unit;
@@ -91,6 +98,8 @@ public abstract class DoodleRotatableItemBase extends DoodleSelectableItemBase {
             mPaint.setStyle(Paint.Style.FILL);
             mPaint.setColor(0xffffffff);
             canvas.drawCircle(getPivotX() - getLocation().x, getPivotY() - getLocation().y, unit, mPaint);
+
+            canvas.restore();
         }
     }
 
@@ -107,14 +116,16 @@ public abstract class DoodleRotatableItemBase extends DoodleSelectableItemBase {
         // 把变换后矩形中的触摸点，还原回未变换前矩形中的点，然后判断是否矩形中
         PointF xy = rotatePoint(mTemp, (int) -getItemRotate(), x, y, getPivotX() - getLocation().x, getPivotY() - getLocation().y);
 
+        // 计算旋转把柄的位置，由于绘制时反向缩放了画布，所以这里也应算上相应的getDoodle().getDoodleScale()
         mRectTemp.set(getBounds());
-        float unit = doodle.getUnitSize();
-        mRectTemp.left -= 13 * unit;
-        mRectTemp.top -= 13 * unit;
-        mRectTemp.right += 13 * unit;
-        mRectTemp.bottom += 13 * unit;
-        return xy.x >= mRectTemp.right && xy.x <= mRectTemp.right + ITEM_CAN_ROTATE_BOUND * doodle.getUnitSize()
-                && xy.y >= mRectTemp.top && xy.y <= mRectTemp.bottom;
+        float padding = 13 * getDoodle().getUnitSize() / getDoodle().getDoodleScale();
+        mRectTemp.top -= padding;
+        mRectTemp.right += padding;
+        mRectTemp.bottom += padding;
+        return xy.x >= mRectTemp.right
+                && xy.x <= mRectTemp.right + ITEM_CAN_ROTATE_BOUND * doodle.getUnitSize() / getDoodle().getDoodleScale()
+                && xy.y >= mRectTemp.top
+                && xy.y <= mRectTemp.bottom;
     }
 
     public boolean isRotating() {

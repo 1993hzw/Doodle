@@ -22,7 +22,7 @@ public interface IDoodleSelectableItem extends IDoodleItem {
     public boolean isSelected();
 
     /**
-     * item的矩形范围
+     * item的矩形(缩放scale之后)范围
      * @return
      */
     public Rect getBounds();

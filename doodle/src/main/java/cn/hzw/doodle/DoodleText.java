@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleColor;
+import cn.hzw.doodle.util.DrawUtil;
 
 /**
  * 文字item
@@ -56,6 +57,10 @@ public class DoodleText extends DoodleRotatableItemBase {
         mPaint.setTextSize(getSize());
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.getTextBounds(mText, 0, mText.length(), rect);
+
+        float px = getPivotX() - getLocation().x;
+        float py = getPivotY() - getLocation().y;
+        DrawUtil.scaleRect(rect, getScale(), px, py);
     }
 
     @Override

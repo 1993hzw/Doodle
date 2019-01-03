@@ -291,8 +291,12 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
             final float dy = mTouchCentreY - mLastFocusY;
             // 移动图片
             if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-                mDoodle.setDoodleTranslationX(mDoodle.getDoodleTranslationX() + dx + pendingX);
-                mDoodle.setDoodleTranslationY(mDoodle.getDoodleTranslationY() + dy + pendingY);
+                if (mSelectedItem == null) {
+                    mDoodle.setDoodleTranslationX(mDoodle.getDoodleTranslationX() + dx + pendingX);
+                    mDoodle.setDoodleTranslationY(mDoodle.getDoodleTranslationY() + dy + pendingY);
+                } else {
+                    // nothing
+                }
                 pendingX = pendingY = 0;
             } else {
                 pendingX += dx;
@@ -301,9 +305,13 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         }
 
         if (Math.abs(1 - detector.getScaleFactor()) > 0.005f) {
-            // 缩放图片
-            float scale = mDoodle.getDoodleScale() * detector.getScaleFactor() * pendingScale;
-            mDoodle.setDoodleScale(scale, mDoodle.toX(mTouchCentreX), mDoodle.toY(mTouchCentreY));
+            if (mSelectedItem == null) {
+                // 缩放图片
+                float scale = mDoodle.getDoodleScale() * detector.getScaleFactor() * pendingScale;
+                mDoodle.setDoodleScale(scale, mDoodle.toX(mTouchCentreX), mDoodle.toY(mTouchCentreY));
+            } else {
+                mSelectedItem.setScale(mSelectedItem.getScale() * detector.getScaleFactor() * pendingScale);
+            }
             pendingScale = 1;
         } else {
             pendingScale *= detector.getScaleFactor();
@@ -317,6 +325,14 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
 
     @Override
     public void onScaleEnd(ScaleGestureDetectorApi27 detector) {
+        if (mDoodle.isEditMode()) {
+            return;
+        }
+
+        center();
+    }
+
+    public void center() {
         if (mDoodle.getDoodleScale() < 1) { //
             if (mScaleAnimator == null) {
                 mScaleAnimator = new ValueAnimator();
