@@ -10,7 +10,12 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 
+import java.util.HashMap;
+import java.util.WeakHashMap;
+
 import cn.hzw.doodle.core.IDoodle;
+import cn.hzw.doodle.core.IDoodleColor;
+import cn.hzw.doodle.core.IDoodleItem;
 import cn.hzw.doodle.util.DrawUtil;
 
 /**
@@ -19,7 +24,13 @@ import cn.hzw.doodle.util.DrawUtil;
  */
 
 public class DoodlePath extends DoodleRotatableItemBase {
-    private Path mPath; // 画笔的路径
+
+    public static final int MOSAIC_LEVEL_1 = 5;
+    public static final int MOSAIC_LEVEL_2 = 20;
+    public static final int MOSAIC_LEVEL_3 = 50;
+
+    private final Path mPath = new Path(); // 画笔的路径
+    private final Path mOriginPath = new Path();
 
     private PointF mSxy = new PointF(); // 映射后的起始坐标，（手指点击）
     private PointF mDxy = new PointF(); // 映射后的终止坐标，（手指抬起）
@@ -27,6 +38,10 @@ public class DoodlePath extends DoodleRotatableItemBase {
     private Paint mPaint = new Paint();
 
     private CopyLocation mCopyLocation;
+
+    private final Matrix mTransform = new Matrix();
+    private Rect mRect = new Rect();
+    private Matrix mBitmapColorMatrix = new Matrix();
 
     public DoodlePath(IDoodle doodle) {
         super(doodle, 0, 0, 0);// 这里默认item旋转角度为0
@@ -39,41 +54,25 @@ public class DoodlePath extends DoodleRotatableItemBase {
     public void updateXY(float sx, float sy, float dx, float dy) {
         mSxy.set(sx, sy);
         mDxy.set(dx, dy);
-        if (mPath == null) {
-            mPath = new Path();
-        }
-        mPath.reset();
+        mOriginPath.reset();
 
         if (DoodleShape.ARROW.equals(getShape())) {
-            updateArrowPath(mPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+            updateArrowPath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
         } else if (DoodleShape.LINE.equals(getShape())) {
-            updateLinePath(mPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+            updateLinePath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
         } else if (DoodleShape.FILL_CIRCLE.equals(getShape()) || DoodleShape.HOLLOW_CIRCLE.equals(getShape())) {
-            updateCirclePath(mPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+            updateCirclePath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
         } else if (DoodleShape.FILL_RECT.equals(getShape()) || DoodleShape.HOLLOW_RECT.equals(getShape())) {
-            updateRectPath(mPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+            updateRectPath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
         }
-        // 改变中心点位置
-        mPath.computeBounds(mBound, false);
-        setPivotX(mBound.left + mBound.width() / 2);
-        setPivotY(mBound.top + mBound.height() / 2);
+
+        adjustPath(true);
     }
 
     public void updatePath(Path path) {
-        this.mPath = path;
-        if (mPath != null) {
-            // 改变中心点位置
-            mPath.computeBounds(mBound, false);
-            setPivotX(mBound.left + mBound.width() / 2);
-            setPivotY(mBound.top + mBound.height() / 2);
-        }
-    }
-
-    public void updateCopy(float touchStartX, float touchStartY, float copyStartX, float copyStartY) {
-        if (mCopyLocation == null) {
-            return;
-        }
-        mCopyLocation.setStartPosition(touchStartX, touchStartY, copyStartX, copyStartY);
+        mOriginPath.reset();
+        this.mOriginPath.addPath(path);
+        adjustPath(true);
     }
 
     public CopyLocation getCopyLocation() {
@@ -125,19 +124,6 @@ public class DoodlePath extends DoodleRotatableItemBase {
     }
 
     @Override
-    public void setSize(float size) {
-        super.setSize(size);
-        if (DoodleShape.ARROW.equals(getShape())) {
-            if (mPath == null) {
-                mPath = new Path();
-            }
-            mPath.reset();
-            updateArrowPath(mPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
-        }
-        refresh();
-    }
-
-    @Override
     protected void doDraw(Canvas canvas) {
         mPaint.reset();
         mPaint.setStrokeWidth(getSize());
@@ -154,20 +140,23 @@ public class DoodlePath extends DoodleRotatableItemBase {
 
     private RectF mBound = new RectF();
 
+    private void resetLocationBounds(Rect rect) {
+        if (mOriginPath == null) {
+            return;
+        }
+
+        int diff = (int) (getSize() / 2 + 0.5f);
+        mOriginPath.computeBounds(mBound, false);
+        if (getShape() == DoodleShape.ARROW || getShape() == DoodleShape.FILL_CIRCLE || getShape() == DoodleShape.FILL_RECT) {
+            diff = (int) getDoodle().getUnitSize();
+        }
+        rect.set((int) (mBound.left - diff), (int) (mBound.top - diff), (int) (mBound.right + diff), (int) (mBound.bottom + diff));
+    }
+
     @Override
     protected void resetBounds(Rect rect) {
-        if (mPath != null) {
-            int diff = (int) (getSize() / 2 + 0.5f);
-            mPath.computeBounds(mBound, false);
-            if (getShape() == DoodleShape.ARROW || getShape() == DoodleShape.FILL_CIRCLE || getShape() == DoodleShape.FILL_RECT) {
-                diff = (int) getDoodle().getUnitSize();
-            }
-            rect.set((int) (mBound.left - diff), (int) (mBound.top - diff), (int) (mBound.right + diff), (int) (mBound.bottom + diff));
-
-            float px = getPivotX() - getLocation().x;
-            float py = getPivotY() - getLocation().y;
-            DrawUtil.scaleRect(rect, getScale(), px, py);
-        }
+        resetLocationBounds(rect);
+        rect.set(0, 0, rect.width(), rect.height());
     }
 
     @Override
@@ -248,11 +237,22 @@ public class DoodlePath extends DoodleRotatableItemBase {
         }
     }
 
+    private static WeakHashMap<IDoodle, HashMap<Integer, Bitmap>> sMosaicBitmapMap = new WeakHashMap<>();
+
     public static DoodleColor getMosaicColor(IDoodle doodle, int level) {
+        HashMap<Integer, Bitmap> map = sMosaicBitmapMap.get(doodle);
+        if (map == null) {
+            map = new HashMap<>();
+            sMosaicBitmapMap.put(doodle, map);
+        }
         Matrix matrix = new Matrix();
         matrix.setScale(1f / level, 1f / level);
-        Bitmap mosaicBitmap = Bitmap.createBitmap(doodle.getBitmap(),
-                0, 0, doodle.getBitmap().getWidth(), doodle.getBitmap().getHeight(), matrix, true);
+        Bitmap mosaicBitmap = map.get(level);
+        if (mosaicBitmap == null) {
+            mosaicBitmap = Bitmap.createBitmap(doodle.getBitmap(),
+                    0, 0, doodle.getBitmap().getWidth(), doodle.getBitmap().getHeight(), matrix, true);
+            map.put(level, mosaicBitmap);
+        }
         matrix.reset();
         matrix.setScale(level, level);
         DoodleColor doodleColor = new DoodleColor(mosaicBitmap, matrix, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
@@ -263,7 +263,6 @@ public class DoodlePath extends DoodleRotatableItemBase {
     @Override
     public void setLocation(float x, float y, boolean changePivot) {
         super.setLocation(x, y, changePivot);
-
         if (getPen() == DoodlePen.MOSAIC
                 && getColor() instanceof DoodleColor) {
             DoodleColor doodleColor = ((DoodleColor) getColor());
@@ -272,7 +271,76 @@ public class DoodlePath extends DoodleRotatableItemBase {
             matrix.setScale(doodleColor.getLevel(), doodleColor.getLevel());
             matrix.postTranslate(-getLocation().x, -getLocation().y);
             doodleColor.setMatrix(matrix);
+            refresh();
         }
+    }
+
+    @Override
+    public void setColor(IDoodleColor color) {
+        super.setColor(color);
+        if (getPen() == DoodlePen.MOSAIC) {
+            setLocation(getLocation().x, getLocation().y, false);
+        }
+    }
+
+    @Override
+    public void setSize(float size) {
+        super.setSize(size);
+
+
+        if (mTransform == null) {
+            return;
+        }
+
+        if (DoodleShape.ARROW.equals(getShape())) {
+            mOriginPath.reset();
+            updateArrowPath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+        }
+
+        adjustPath(false);
+    }
+
+    private void adjustPath(boolean changePivot) {
+        resetLocationBounds(mRect);
+        mPath.reset();
+        this.mPath.addPath(mOriginPath);
+        mTransform.reset();
+        mTransform.setTranslate(-mRect.left, -mRect.top);
+        mPath.transform(mTransform);
+        if (changePivot) {
+            setPivotX(mRect.left + mRect.width() / 2);
+            setPivotY(mRect.top + mRect.height() / 2);
+            setLocation(mRect.left, mRect.top, false);
+        }
+
+        if ((getColor() instanceof DoodleColor)) {
+            DoodleColor color = (DoodleColor) getColor();
+            if (color.getType() == DoodleColor.Type.BITMAP && color.getBitmap() != null) {
+                mBitmapColorMatrix.reset();
+
+                if (getPen() == DoodlePen.COPY) {
+                    // 根据旋转值获取正确的旋转底图
+                    float transXSpan = 0, transYSpan = 0;
+                    CopyLocation copyLocation = getCopyLocation();
+                    // 仿制时需要偏移图片
+                    if (copyLocation != null) {
+                        transXSpan = copyLocation.getTouchStartX() - copyLocation.getCopyStartX();
+                        transYSpan = copyLocation.getTouchStartY() - copyLocation.getCopyStartY();
+                    }
+                    resetLocationBounds(mRect);
+                    mBitmapColorMatrix.setTranslate(transXSpan - mRect.left, transYSpan - mRect.top);
+                } else {
+                    mBitmapColorMatrix.setTranslate(-mRect.left, -mRect.top);
+                }
+
+                int level = color.getLevel();
+                mBitmapColorMatrix.preScale(level, level);
+
+                color.setMatrix(mBitmapColorMatrix);
+            }
+        }
+
+        refresh();
     }
 }
 

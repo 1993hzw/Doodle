@@ -7,7 +7,6 @@ import android.text.TextUtils;
 
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleColor;
-import cn.hzw.doodle.util.DrawUtil;
 
 /**
  * 文字item
@@ -16,7 +15,7 @@ import cn.hzw.doodle.util.DrawUtil;
 
 public class DoodleText extends DoodleRotatableItemBase {
 
-
+    private Rect mRect = new Rect();
     private final Paint mPaint = new Paint();
     private String mText;
 
@@ -34,19 +33,12 @@ public class DoodleText extends DoodleRotatableItemBase {
 
     public void setText(String text) {
         mText = text;
-        resetBounds(getBounds());
-        setPivotX(getLocation().x + getBounds().width() / 2);
-        setPivotY(getLocation().y - getBounds().height() / 2);
-    }
+        resetBounds(mRect);
+        setPivotX(getLocation().x + mRect.width() / 2);
+        setPivotY(getLocation().y + mRect.height() / 2);
+        resetBoundsScaled(getBounds());
 
-    @Override
-    public void setSize(float size) {
-        float oldPivotX = getPivotX();
-        float oldPivotY = getPivotY();
-        super.setSize(size);
-        setPivotX(getLocation().x + getBounds().width() / 2);
-        setPivotY(getLocation().y - getBounds().height() / 2);
-        setLocation(getLocation().x - (getPivotX() - oldPivotX), getLocation().y - (getPivotY() - oldPivotY));
+        refresh();
     }
 
     @Override
@@ -57,10 +49,7 @@ public class DoodleText extends DoodleRotatableItemBase {
         mPaint.setTextSize(getSize());
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.getTextBounds(mText, 0, mText.length(), rect);
-
-        float px = getPivotX() - getLocation().x;
-        float py = getPivotY() - getLocation().y;
-        DrawUtil.scaleRect(rect, getScale(), px, py);
+        rect.offset(0, rect.height());
     }
 
     @Override
@@ -68,7 +57,10 @@ public class DoodleText extends DoodleRotatableItemBase {
         getColor().config(this, mPaint);
         mPaint.setTextSize(getSize());
         mPaint.setStyle(Paint.Style.FILL);
+        canvas.save();
+        canvas.translate(0, getBounds().height() / getScale());
         canvas.drawText(mText, 0, 0, mPaint);
+        canvas.restore();
     }
 
 }

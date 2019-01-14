@@ -3,6 +3,7 @@ package cn.hzw.doodle;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Rect;
 
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleItem;
@@ -21,27 +22,9 @@ public enum DoodlePen implements IDoodlePen {
     MOSAIC; // 马赛克
 
     private CopyLocation mCopyLocation;
-    private Matrix mMatrix;
 
     @Override
     public void config(IDoodleItem item, Paint paint) {
-        DoodleItemBase doodleItem = (DoodleItemBase) item;
-        if (doodleItem.getPen() == DoodlePen.COPY) { // 仿制需要偏移图片
-            // 根据旋转值获取正确的旋转底图
-            float transX = 0, transY = 0;
-            float transXSpan = 0, transYSpan = 0;
-            CopyLocation copyLocation = ((DoodlePath) item).getCopyLocation();
-            // 仿制时需要偏移图片
-            if (copyLocation != null) {
-                transXSpan = copyLocation.getTouchStartX() - copyLocation.getCopyStartX();
-                transYSpan = copyLocation.getTouchStartY() - copyLocation.getCopyStartY();
-            }
-            mMatrix.reset();
-            mMatrix.postTranslate(-transX + transXSpan, -transY + transYSpan);
-            if (item.getColor() instanceof DoodleColor) {
-                ((DoodleColor) item.getColor()).setMatrix(mMatrix);
-            }
-        }
     }
 
     public CopyLocation getCopyLocation() {
@@ -52,7 +35,6 @@ public enum DoodlePen implements IDoodlePen {
             synchronized (this) {
                 if (mCopyLocation == null) {
                     mCopyLocation = new CopyLocation();
-                    mMatrix = new Matrix();
                 }
             }
         }

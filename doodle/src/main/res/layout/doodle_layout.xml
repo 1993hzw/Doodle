@@ -41,6 +41,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/doodle_margin"
+                        android:clickable="true"
                         android:orientation="horizontal">
 
                         <ImageView
@@ -115,6 +116,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/doodle_margin"
+                        android:clickable="true"
                         android:orientation="horizontal">
 
                         <ImageView
@@ -234,6 +236,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/doodle_btn_pen_size"
                         android:layout_marginBottom="@dimen/doodle_margin"
+                        android:clickable="true"
                         android:orientation="horizontal">
 
                         <ImageView
@@ -272,6 +275,7 @@
                         android:id="@+id/btn_set_color_container"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
+                        android:layout_marginTop="@dimen/doodle_margin"
                         android:background="@drawable/doodle_btn_effect_rect_line"
                         android:onClick="onClick"
                         android:padding="2dp">
@@ -352,6 +356,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
+                android:clickable="true"
                 android:orientation="vertical">
 
                 <Button

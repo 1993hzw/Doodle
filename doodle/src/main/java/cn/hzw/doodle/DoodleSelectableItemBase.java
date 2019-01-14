@@ -37,13 +37,13 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
         setLocation(x, y);
         setItemRotate(itemRotate);
 
-        resetBounds(mRect);
+        resetBoundsScaled(mRect);
     }
 
     @Override
     public void setScale(float scale) {
         super.setScale(scale);
-        resetBounds(mRect);
+        resetBoundsScaled(mRect);
         refresh();
     }
 
@@ -56,7 +56,10 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
     @Override
     public void setSize(float size) {
         super.setSize(size);
-        resetBounds(mRect);
+        resetBounds(getBounds());
+        setLocation(getPivotX() - getBounds().width() / 2, getPivotY() - getBounds().height() / 2,
+                false);
+        resetBoundsScaled(getBounds());
     }
 
     /**
@@ -64,7 +67,7 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
      */
     @Override
     public boolean contains(float x, float y) {
-        resetBounds(mRect);
+        resetBoundsScaled(mRect);
         PointF location = getLocation();
         // 把触摸点转换成在文字坐标系（即以文字起始点作为坐标原点）内的点
         x = x - location.x;
@@ -107,7 +110,7 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
 
             // 反向缩放画布，使视觉上选中边框不随图片缩放而变化
             canvas.save();
-            canvas.scale(1/getDoodle().getDoodleScale(), 1/getDoodle().getDoodleScale(),getPivotX() - getLocation().x, getPivotY() - getLocation().y);
+            canvas.scale(1 / getDoodle().getDoodleScale(), 1 / getDoodle().getDoodleScale(), getPivotX() - getLocation().x, getPivotY() - getLocation().y);
             mRectTemp.set(getBounds());
             DrawUtil.scaleRect(mRectTemp, getDoodle().getDoodleScale(), getPivotX() - getLocation().x, getPivotY() - getLocation().y);
 
@@ -148,6 +151,16 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
         refresh();
     }
 
+    protected void resetBoundsScaled(Rect rect) {
+        resetBounds(rect);
+        float px = getPivotX() - getLocation().x;
+        float py = getPivotY() - getLocation().y;
+        DrawUtil.scaleRect(rect, getScale(), px, py);
+    }
+
+    /**
+     * @param rect bounds for the item, start with (0,0)
+     */
     protected abstract void resetBounds(Rect rect);
 
     @Override

@@ -119,6 +119,7 @@ public class DoodleActivity extends Activity {
     private View mShapeContainer, mPenContainer, mSizeContainer;
     private View mBtnUndo;
     private View mMosaicMenu;
+    private View mEditBtn;
 
     private AlphaAnimation mViewShowAnimation, mViewHideAnimation; // view隐藏和显示时用到的渐变动画
 
@@ -132,7 +133,7 @@ public class DoodleActivity extends Activity {
     private DoodleOnTouchGestureListener mTouchGestureListener;
     private Map<IDoodlePen, Float> mPenSizeMap = new HashMap<>(); //保存每个画笔对应的最新大小
 
-    private int mMosaicLevel = 1;
+    private int mMosaicLevel = -1;
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -254,40 +255,42 @@ public class DoodleActivity extends Activity {
         }, null);
 
         mTouchGestureListener = new DoodleOnTouchGestureListener(mDoodleView, new DoodleOnTouchGestureListener.ISelectionListener() {
-            IDoodleColor color = null;
-            Float size = null;
+            // save states before being selected
+            IDoodlePen mLastPen = null;
+            IDoodleColor mLastColor = null;
+            Float mSize = null;
 
             @Override
             public void onSelectedItem(IDoodle doodle, IDoodleSelectableItem selectableItem, boolean selected) {
                 if (selected) {
-                    if (color == null) {
-                        color = mDoodle.getColor();
+                    if (mLastPen == null) {
+                        mLastPen = mDoodle.getPen();
                     }
-                    if (size == null) {
-                        size = mDoodle.getSize();
+                    if (mLastColor == null) {
+                        mLastColor = mDoodle.getColor();
+                    }
+                    if (mSize == null) {
+                        mSize = mDoodle.getSize();
                     }
                     mDoodleView.setEditMode(true);
-//                    mDoodle.setPen(selectableItem.getPen()); // don't set!!!!! it will make selectedItem null
+                    mDoodle.setPen(selectableItem.getPen());
                     mDoodle.setColor(selectableItem.getColor());
                     mDoodle.setSize(selectableItem.getSize());
                     mEditSizeSeekBar.setProgress((int) selectableItem.getSize());
                     mSelectedEditContainer.setVisibility(View.VISIBLE);
                     mSizeContainer.setVisibility(View.VISIBLE);
-                    if (selectableItem.getPen() == DoodlePen.TEXT || selectableItem.getPen() == DoodlePen.BITMAP) {
-                        findViewById(R.id.doodle_selectable_edit).setVisibility(View.VISIBLE); // edit btn
-                        mColorContainer.setVisibility(View.GONE);
-                    } else {
-                        findViewById(R.id.doodle_selectable_edit).setVisibility(View.GONE);
-                        mColorContainer.setVisibility(View.VISIBLE);
+                } else if (mTouchGestureListener.getSelectedItem() == null) { // nothing is selected. 当前没有选中任何一个item
+                    if (mLastPen != null) {
+                        mDoodle.setPen(mLastPen);
+                        mLastPen = null;
                     }
-                } else {
-                    if (color != null) {
-                        mDoodle.setColor(color);
-                        color = null;
+                    if (mLastColor != null) {
+                        mDoodle.setColor(mLastColor);
+                        mLastColor = null;
                     }
-                    if (size != -1) {
-                        mDoodle.setSize(size);
-                        size = null;
+                    if (mSize != -1) {
+                        mDoodle.setSize(mSize);
+                        mSize = null;
                     }
                     mSelectedEditContainer.setVisibility(View.GONE);
                 }
@@ -312,6 +315,13 @@ public class DoodleActivity extends Activity {
         mDoodle.setDoodleMaxScale(mDoodleParams.mMaxScale);
 
         initView();
+    }
+
+    private boolean canChangeColor(IDoodlePen pen) {
+        return pen != DoodlePen.ERASER
+                && pen != DoodlePen.BITMAP
+                && pen != DoodlePen.COPY
+                && pen != DoodlePen.MOSAIC;
     }
 
     // 添加文字
@@ -400,7 +410,7 @@ public class DoodleActivity extends Activity {
         mPenContainer = findViewById(R.id.pen_container);
         mSizeContainer = findViewById(R.id.size_container);
         mMosaicMenu = findViewById(R.id.mosaic_menu);
-        mMosaicMenu.findViewById(R.id.btn_mosaic_level2).performClick();
+        mEditBtn = findViewById(R.id.doodle_selectable_edit);
 
         mBtnColor = DoodleActivity.this.findViewById(R.id.btn_set_color);
         mColorContainer = DoodleActivity.this.findViewById(R.id.btn_set_color_container);
@@ -537,14 +547,6 @@ public class DoodleActivity extends Activity {
                             public void colorChanged(int color, int size) {
                                 mDoodle.setColor(new DoodleColor(color));
                                 mDoodle.setSize(size);
-                                if (mTouchGestureListener.getSelectedItem() != null) {
-                                    IDoodleColor c = mTouchGestureListener.getSelectedItem().getColor();
-                                    if (c instanceof DoodleColor) {
-                                        ((DoodleColor) c).setColor(color);
-                                    }
-                                    mTouchGestureListener.getSelectedItem().setSize(size);
-                                }
-                                mPaintSizeView.setText("" + size);
                             }
 
                             @Override
@@ -552,14 +554,6 @@ public class DoodleActivity extends Activity {
                                 Bitmap bitmap = ImageUtils.getBitmapFromDrawable(color);
                                 mDoodle.setColor(new DoodleColor(bitmap));
                                 mDoodle.setSize(size);
-                                if (mTouchGestureListener.getSelectedItem() != null) {
-                                    IDoodleColor c = mTouchGestureListener.getSelectedItem().getColor();
-                                    if (c instanceof DoodleColor) {
-                                        ((DoodleColor) c).setColor(bitmap);
-                                    }
-                                    mTouchGestureListener.getSelectedItem().setSize(size);
-                                }
-                                mPaintSizeView.setText("" + size);
                             }
                         }, themeId).show(mDoodleView, mBtnColor.getBackground(), Math.min(mDoodleView.getWidth(), mDoodleView.getHeight()));
             }
@@ -639,23 +633,44 @@ public class DoodleActivity extends Activity {
         } else if (v.getId() == R.id.btn_fill_rect) {
             mDoodle.setShape(DoodleShape.FILL_RECT);
         } else if (v.getId() == R.id.btn_mosaic_level1) {
-            mMosaicLevel = 5;
+            if (v.isSelected()) {
+                return;
+            }
+
+            mMosaicLevel = DoodlePath.MOSAIC_LEVEL_1;
             mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
             v.setSelected(true);
             mMosaicMenu.findViewById(R.id.btn_mosaic_level2).setSelected(false);
             mMosaicMenu.findViewById(R.id.btn_mosaic_level3).setSelected(false);
+            if (mTouchGestureListener.getSelectedItem() != null) {
+                mTouchGestureListener.getSelectedItem().setColor(mDoodle.getColor().copy());
+            }
         } else if (v.getId() == R.id.btn_mosaic_level2) {
-            mMosaicLevel = 20;
+            if (v.isSelected()) {
+                return;
+            }
+
+            mMosaicLevel = DoodlePath.MOSAIC_LEVEL_2;
             mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
             v.setSelected(true);
             mMosaicMenu.findViewById(R.id.btn_mosaic_level1).setSelected(false);
             mMosaicMenu.findViewById(R.id.btn_mosaic_level3).setSelected(false);
+            if (mTouchGestureListener.getSelectedItem() != null) {
+                mTouchGestureListener.getSelectedItem().setColor(mDoodle.getColor().copy());
+            }
         } else if (v.getId() == R.id.btn_mosaic_level3) {
-            mMosaicLevel = 50;
+            if (v.isSelected()) {
+                return;
+            }
+
+            mMosaicLevel = DoodlePath.MOSAIC_LEVEL_3;
             mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
             v.setSelected(true);
             mMosaicMenu.findViewById(R.id.btn_mosaic_level1).setSelected(false);
             mMosaicMenu.findViewById(R.id.btn_mosaic_level2).setSelected(false);
+            if (mTouchGestureListener.getSelectedItem() != null) {
+                mTouchGestureListener.getSelectedItem().setColor(mDoodle.getColor().copy());
+            }
         }
     }
 
@@ -720,14 +735,49 @@ public class DoodleActivity extends Activity {
 
         @Override
         public void setPen(IDoodlePen pen) {
-            mPenSizeMap.put(getPen(), getSize()); // save
+            IDoodlePen oldPen = getPen();
             super.setPen(pen);
-            Float size = mPenSizeMap.get(pen); // restore
-            if (size != null) {
-                mDoodle.setSize(size);
+
+            mMosaicMenu.setVisibility(GONE);
+            mEditBtn.setVisibility(View.GONE); // edit btn
+            if (pen == DoodlePen.BITMAP || pen == DoodlePen.TEXT) {
+                mEditBtn.setVisibility(View.VISIBLE); // edit btn
+                mShapeContainer.setVisibility(GONE);
+                if (pen == DoodlePen.BITMAP) {
+                    mColorContainer.setVisibility(GONE);
+                } else {
+                    mColorContainer.setVisibility(VISIBLE);
+                }
+            } else if (pen == DoodlePen.MOSAIC) {
+                mMosaicMenu.setVisibility(VISIBLE);
+                mShapeContainer.setVisibility(VISIBLE);
+                mColorContainer.setVisibility(GONE);
+            } else {
+                mShapeContainer.setVisibility(VISIBLE);
+                if (pen == DoodlePen.COPY || pen == DoodlePen.ERASER) {
+                    mColorContainer.setVisibility(GONE);
+                } else {
+                    mColorContainer.setVisibility(VISIBLE);
+                }
             }
-            mTouchGestureListener.setSelectedItem(null);
             setSingleSelected(mBtnPenIds.values(), mBtnPenIds.get(pen));
+
+            if (mTouchGestureListener.getSelectedItem() == null) {
+                mPenSizeMap.put(oldPen, getSize()); // save
+                Float size = mPenSizeMap.get(pen); // restore
+                if (size != null) {
+                    mDoodle.setSize(size);
+                }
+                if (isEditMode()) {
+                    mShapeContainer.setVisibility(GONE);
+                    mColorContainer.setVisibility(GONE);
+                    mMosaicMenu.setVisibility(GONE);
+                }
+            } else {
+                mShapeContainer.setVisibility(GONE);
+                return;
+            }
+
             if (pen == DoodlePen.BRUSH) {
                 Drawable colorBg = mBtnColor.getBackground();
                 if (colorBg instanceof ColorDrawable) {
@@ -736,7 +786,11 @@ public class DoodleActivity extends Activity {
                     mDoodle.setColor(new DoodleColor(((BitmapDrawable) colorBg).getBitmap()));
                 }
             } else if (pen == DoodlePen.MOSAIC) {
-                mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
+                if (mMosaicLevel <= 0) {
+                    mMosaicMenu.findViewById(R.id.btn_mosaic_level2).performClick();
+                } else {
+                    mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
+                }
             } else if (pen == DoodlePen.COPY) {
                 mDoodle.setColor(null);
             } else if (pen == DoodlePen.ERASER) {
@@ -755,19 +809,6 @@ public class DoodleActivity extends Activity {
                 } else {
                     mDoodle.setColor(new DoodleColor(((BitmapDrawable) colorBg).getBitmap()));
                 }
-            }
-
-            mMosaicMenu.setVisibility(GONE);
-            if (pen == DoodlePen.BITMAP || pen == DoodlePen.TEXT) {
-                mShapeContainer.setVisibility(GONE);
-                mColorContainer.setVisibility(GONE);
-            } else if (pen == DoodlePen.MOSAIC) {
-                mMosaicMenu.setVisibility(VISIBLE);
-                mShapeContainer.setVisibility(VISIBLE);
-                mColorContainer.setVisibility(GONE);
-            } else {
-                mShapeContainer.setVisibility(VISIBLE);
-                mColorContainer.setVisibility(VISIBLE);
             }
         }
 
@@ -797,11 +838,17 @@ public class DoodleActivity extends Activity {
             super.setSize(paintSize);
             mEditSizeSeekBar.setProgress((int) paintSize);
             mPaintSizeView.setText("" + (int) paintSize);
+
+            if (mTouchGestureListener.getSelectedItem() != null) {
+                mTouchGestureListener.getSelectedItem().setSize(getSize());
+            }
         }
 
         @Override
         public void setColor(IDoodleColor color) {
-            if (getPen() == DoodlePen.COPY || getPen() == DoodlePen.ERASER) {
+            IDoodlePen pen = getPen();
+
+            if (pen == DoodlePen.COPY || pen == DoodlePen.ERASER) {
                 if ((getColor() instanceof DoodleColor) && ((DoodleColor) getColor()).getBitmap() == mDoodle.getBitmap()) {
                     // nothing
                 } else {
@@ -816,12 +863,30 @@ public class DoodleActivity extends Activity {
                 doodleColor = (DoodleColor) color;
             }
             if (doodleColor != null
-                    && mTouchGestureListener.getSelectedItem() != null
-                    && mTouchGestureListener.getSelectedItem().getPen() != DoodlePen.BITMAP) {
+                    && canChangeColor(pen)) {
                 if (doodleColor.getType() == DoodleColor.Type.COLOR) {
                     mBtnColor.setBackgroundColor(doodleColor.getColor());
                 } else if (doodleColor.getType() == DoodleColor.Type.BITMAP) {
                     mBtnColor.setBackgroundDrawable(new BitmapDrawable(doodleColor.getBitmap()));
+                }
+
+                if (mTouchGestureListener.getSelectedItem() != null) {
+                    mTouchGestureListener.getSelectedItem().setColor(getColor().copy());
+                }
+            }
+
+            if (doodleColor != null && pen == DoodlePen.MOSAIC
+                    && doodleColor.getLevel() != mMosaicLevel) {
+                switch (doodleColor.getLevel()) {
+                    case DoodlePath.MOSAIC_LEVEL_1:
+                        DoodleActivity.this.findViewById(R.id.btn_mosaic_level1).performClick();
+                        break;
+                    case DoodlePath.MOSAIC_LEVEL_2:
+                        DoodleActivity.this.findViewById(R.id.btn_mosaic_level2).performClick();
+                        break;
+                    case DoodlePath.MOSAIC_LEVEL_3:
+                        DoodleActivity.this.findViewById(R.id.btn_mosaic_level3).performClick();
+                        break;
                 }
             }
         }
@@ -867,22 +932,18 @@ public class DoodleActivity extends Activity {
                 mSizeContainer.setVisibility(GONE);
                 mColorContainer.setVisibility(GONE);
                 mBtnUndo.setVisibility(GONE);
+                mMosaicMenu.setVisibility(GONE);
             } else {
                 if (mLastIsDrawableOutside != null) { // restore
                     mDoodle.setIsDrawableOutside(mLastIsDrawableOutside);
                 }
                 mTouchGestureListener.center(); // center picture
-
+                if (mTouchGestureListener.getSelectedItem() == null) { // restore
+                    setPen(getPen());
+                }
                 mTouchGestureListener.setSelectedItem(null);
                 mPenContainer.setVisibility(VISIBLE);
                 mSizeContainer.setVisibility(VISIBLE);
-                if (getPen() == DoodlePen.BITMAP || getPen() == DoodlePen.TEXT) {
-                    mShapeContainer.setVisibility(GONE);
-                    mColorContainer.setVisibility(GONE);
-                } else {
-                    mShapeContainer.setVisibility(VISIBLE);
-                    mColorContainer.setVisibility(VISIBLE);
-                }
                 mBtnUndo.setVisibility(VISIBLE);
             }
         }

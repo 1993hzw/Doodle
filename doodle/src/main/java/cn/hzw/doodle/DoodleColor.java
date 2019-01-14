@@ -56,6 +56,7 @@ public class DoodleColor implements IDoodleColor {
         DoodleItemBase doodleItem = (DoodleItemBase) item;
         if (mType == Type.COLOR) {
             paint.setColor(mColor);
+            paint.setShader(null);
         } else if (mType == Type.BITMAP) {
             BitmapShader shader = new BitmapShader(mBitmap, mTileX, mTileY);
             shader.setLocalMatrix(mMatrix);
