@@ -15,7 +15,6 @@ import java.util.WeakHashMap;
 
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleColor;
-import cn.hzw.doodle.core.IDoodleItem;
 import cn.hzw.doodle.util.DrawUtil;
 
 /**
@@ -263,16 +262,7 @@ public class DoodlePath extends DoodleRotatableItemBase {
     @Override
     public void setLocation(float x, float y, boolean changePivot) {
         super.setLocation(x, y, changePivot);
-        if (getPen() == DoodlePen.MOSAIC
-                && getColor() instanceof DoodleColor) {
-            DoodleColor doodleColor = ((DoodleColor) getColor());
-            Matrix matrix = doodleColor.getMatrix();
-            matrix.reset();
-            matrix.setScale(doodleColor.getLevel(), doodleColor.getLevel());
-            matrix.postTranslate(-getLocation().x, -getLocation().y);
-            doodleColor.setMatrix(matrix);
-            refresh();
-        }
+        adjustMosaic();
     }
 
     @Override
@@ -300,6 +290,33 @@ public class DoodlePath extends DoodleRotatableItemBase {
         adjustPath(false);
     }
 
+    @Override
+    public void setScale(float scale) {
+        super.setScale(scale);
+        adjustMosaic();
+    }
+
+    private void adjustMosaic() {
+        if (getPen() == DoodlePen.MOSAIC
+                && getColor() instanceof DoodleColor) {
+            DoodleColor doodleColor = ((DoodleColor) getColor());
+            Matrix matrix = doodleColor.getMatrix();
+            matrix.reset();
+            matrix.preScale(1 / getScale(), 1 / getScale(), getPivotX(), getPivotY()); // restore scale
+            matrix.preTranslate(-getLocation().x * getScale(), -getLocation().y * getScale());
+            matrix.preRotate(-getItemRotate(), getPivotX(), getPivotY());
+            matrix.preScale(doodleColor.getLevel(), doodleColor.getLevel());
+            doodleColor.setMatrix(matrix);
+            refresh();
+        }
+    }
+
+    @Override
+    public void setItemRotate(float textRotate) {
+        super.setItemRotate(textRotate);
+        adjustMosaic();
+    }
+
     private void adjustPath(boolean changePivot) {
         resetLocationBounds(mRect);
         mPath.reset();
@@ -318,25 +335,29 @@ public class DoodlePath extends DoodleRotatableItemBase {
             if (color.getType() == DoodleColor.Type.BITMAP && color.getBitmap() != null) {
                 mBitmapColorMatrix.reset();
 
-                if (getPen() == DoodlePen.COPY) {
-                    // 根据旋转值获取正确的旋转底图
-                    float transXSpan = 0, transYSpan = 0;
-                    CopyLocation copyLocation = getCopyLocation();
-                    // 仿制时需要偏移图片
-                    if (copyLocation != null) {
-                        transXSpan = copyLocation.getTouchStartX() - copyLocation.getCopyStartX();
-                        transYSpan = copyLocation.getTouchStartY() - copyLocation.getCopyStartY();
-                    }
-                    resetLocationBounds(mRect);
-                    mBitmapColorMatrix.setTranslate(transXSpan - mRect.left, transYSpan - mRect.top);
+                if (getPen() == DoodlePen.MOSAIC) {
+                    adjustMosaic();
                 } else {
-                    mBitmapColorMatrix.setTranslate(-mRect.left, -mRect.top);
+                    if (getPen() == DoodlePen.COPY) {
+                        // 根据旋转值获取正确的旋转底图
+                        float transXSpan = 0, transYSpan = 0;
+                        CopyLocation copyLocation = getCopyLocation();
+                        // 仿制时需要偏移图片
+                        if (copyLocation != null) {
+                            transXSpan = copyLocation.getTouchStartX() - copyLocation.getCopyStartX();
+                            transYSpan = copyLocation.getTouchStartY() - copyLocation.getCopyStartY();
+                        }
+                        resetLocationBounds(mRect);
+                        mBitmapColorMatrix.setTranslate(transXSpan - mRect.left, transYSpan - mRect.top);
+                    } else {
+                        mBitmapColorMatrix.setTranslate(-mRect.left, -mRect.top);
+                    }
+
+                    int level = color.getLevel();
+                    mBitmapColorMatrix.preScale(level, level);
+                    color.setMatrix(mBitmapColorMatrix);
+                    refresh();
                 }
-
-                int level = color.getLevel();
-                mBitmapColorMatrix.preScale(level, level);
-
-                color.setMatrix(mBitmapColorMatrix);
             }
         }
 
