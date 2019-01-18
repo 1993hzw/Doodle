@@ -63,7 +63,7 @@
                             android:background="@drawable/doodle_btn_effect_round"
                             android:onClick="onClick"
                             android:scaleType="centerInside"
-                            android:src="@drawable/doodle_ic_texture"
+                            android:src="@drawable/doodle_ic_mosaic"
                             android:visibility="visible" />
 
                         <ImageView
