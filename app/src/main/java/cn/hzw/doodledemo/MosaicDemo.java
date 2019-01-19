@@ -26,6 +26,7 @@ import cn.hzw.doodle.core.IDoodlePen;
  */
 public class MosaicDemo extends Activity {
     private DoodleView doodleView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +39,7 @@ public class MosaicDemo extends Activity {
             public void onSaved(IDoodle doodle, Bitmap doodleBitmap, Runnable callback) {
                 Toast.makeText(MosaicDemo.this, "onSaved", Toast.LENGTH_SHORT).show();
             }
+
             @Override
             public void onReady(IDoodle doodle) {
                 doodle.setSize(30 * doodle.getUnitSize());
@@ -59,23 +61,25 @@ public class MosaicDemo extends Activity {
         container.addView(doodleView);
     }
 
-    private DoodleColor getMosaicColor(float scale) {
+    private DoodleColor getMosaicColor(int level) {
         Matrix matrix = new Matrix();
-        matrix.setScale(scale, scale);
+        matrix.setScale(1f / level, 1f / level);
         Bitmap mosaicBitmap = Bitmap.createBitmap(doodleView.getBitmap(),
                 0, 0, doodleView.getBitmap().getWidth(), doodleView.getBitmap().getHeight(), matrix, true);
         matrix.reset();
-        matrix.setScale(1 / scale, 1 / scale);
-        return new DoodleColor(mosaicBitmap, matrix);
+        matrix.setScale(level, level);
+        DoodleColor doodleColor = new DoodleColor(mosaicBitmap, matrix);
+        doodleColor.setLevel(level);
+        return doodleColor;
     }
 
     public void setMosaicLevel(View view) {
         if (view.getId() == R.id.btn_mosaic_x1) {
-            doodleView.setColor(getMosaicColor(0.3f));
+            doodleView.setColor(getMosaicColor(5));
         } else if (view.getId() == R.id.btn_mosaic_x2) {
-            doodleView.setColor(getMosaicColor(0.1f));
+            doodleView.setColor(getMosaicColor(20));
         } else if (view.getId() == R.id.btn_mosaic_x3) {
-            doodleView.setColor(getMosaicColor(0.03f));
+            doodleView.setColor(getMosaicColor(50));
         }
     }
 
