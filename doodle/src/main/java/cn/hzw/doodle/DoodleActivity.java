@@ -243,6 +243,7 @@ public class DoodleActivity extends Activity {
                 // 选择画笔
                 mDoodle.setPen(DoodlePen.BRUSH);
                 mDoodle.setShape(DoodleShape.HAND_WRITE);
+                mDoodle.setColor(new DoodleColor(mDoodleParams.mPaintColor));
                 if (mDoodleParams.mZoomerScale <= 0) {
                     findViewById(R.id.btn_zoomer).setVisibility(View.GONE);
                 }

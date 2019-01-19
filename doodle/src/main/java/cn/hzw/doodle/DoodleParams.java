@@ -2,6 +2,7 @@ package cn.hzw.doodle;
 
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -67,6 +68,11 @@ public class DoodleParams implements Parcelable {
     public float mMinScale = DoodleView.MIN_SCALE;
     public float mMaxScale = DoodleView.MAX_SCALE;
 
+    /**
+     * 初始的画笔颜色
+     */
+    public int mPaintColor = Color.RED;
+
     public static final Creator<DoodleParams> CREATOR = new Creator<DoodleParams>() {
         @Override
         public DoodleParams createFromParcel(Parcel in) {
@@ -82,6 +88,7 @@ public class DoodleParams implements Parcelable {
             params.mPaintUnitSize = in.readFloat();
             params.mMinScale = in.readFloat();
             params.mMaxScale = in.readFloat();
+            params.mPaintColor = in.readInt();
 
             return params;
         }
@@ -105,6 +112,8 @@ public class DoodleParams implements Parcelable {
         dest.writeFloat(mPaintUnitSize);
         dest.writeFloat(mMinScale);
         dest.writeFloat(mMaxScale);
+        dest.writeInt(mPaintColor);
+
     }
 
     @Override
