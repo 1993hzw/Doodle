@@ -37,6 +37,7 @@ import cn.forward.androids.utils.StatusBarUtil;
 import cn.forward.androids.utils.Util;
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleColor;
+import cn.hzw.doodle.core.IDoodleItemListener;
 import cn.hzw.doodle.core.IDoodlePen;
 import cn.hzw.doodle.core.IDoodleSelectableItem;
 import cn.hzw.doodle.core.IDoodleShape;
@@ -53,8 +54,9 @@ import cn.hzw.doodle.imagepicker.ImageSelectorView;
 public class DoodleActivity extends Activity {
 
     public static final String TAG = "Doodle";
+    public final static int DEFAULT_MOSAIC_SIZE = 20; // 默认马赛克大小
     public final static int DEFAULT_COPY_SIZE = 20; // 默认仿制大小
-    public final static int DEFAULT_TEXT_SIZE = 17; // 默认文字大小
+    public final static int DEFAULT_TEXT_SIZE = 18; // 默认文字大小
     public final static int DEFAULT_BITMAP_SIZE = 80; // 默认贴图大小
 
     public static final int RESULT_ERROR = -111; // 出现错误
@@ -114,6 +116,7 @@ public class DoodleActivity extends Activity {
 
     private View mBtnHidePanel, mSettingsPanel;
     private View mSelectedEditContainer;
+    private TextView mItemScaleTextView;
     private View mBtnColor, mColorContainer;
     private SeekBar mEditSizeSeekBar;
     private View mShapeContainer, mPenContainer, mSizeContainer;
@@ -247,6 +250,7 @@ public class DoodleActivity extends Activity {
 
                 // 每个画笔的初始值
                 mPenSizeMap.put(DoodlePen.BRUSH, mDoodle.getSize());
+                mPenSizeMap.put(DoodlePen.MOSAIC, DEFAULT_MOSAIC_SIZE * mDoodle.getUnitSize());
                 mPenSizeMap.put(DoodlePen.COPY, DEFAULT_COPY_SIZE * mDoodle.getUnitSize());
                 mPenSizeMap.put(DoodlePen.ERASER, mDoodle.getSize());
                 mPenSizeMap.put(DoodlePen.TEXT, DEFAULT_TEXT_SIZE * mDoodle.getUnitSize());
@@ -259,6 +263,19 @@ public class DoodleActivity extends Activity {
             IDoodlePen mLastPen = null;
             IDoodleColor mLastColor = null;
             Float mSize = null;
+
+            IDoodleItemListener mIDoodleItemListener = new IDoodleItemListener() {
+                @Override
+                public void onPropertyChanged(int property) {
+                    if (mTouchGestureListener.getSelectedItem() == null) {
+                        return;
+                    }
+                    if (property == IDoodleItemListener.PROPERTY_SCALE) {
+                        mItemScaleTextView.setText(
+                                (int) (mTouchGestureListener.getSelectedItem().getScale() * 100 + 0.5f) + "%");
+                    }
+                }
+            };
 
             @Override
             public void onSelectedItem(IDoodle doodle, IDoodleSelectableItem selectableItem, boolean selected) {
@@ -279,20 +296,26 @@ public class DoodleActivity extends Activity {
                     mEditSizeSeekBar.setProgress((int) selectableItem.getSize());
                     mSelectedEditContainer.setVisibility(View.VISIBLE);
                     mSizeContainer.setVisibility(View.VISIBLE);
-                } else if (mTouchGestureListener.getSelectedItem() == null) { // nothing is selected. 当前没有选中任何一个item
-                    if (mLastPen != null) {
-                        mDoodle.setPen(mLastPen);
-                        mLastPen = null;
+                    mItemScaleTextView.setText((int) (selectableItem.getScale() * 100 + 0.5f) + "%");
+                    selectableItem.addItemListener(mIDoodleItemListener);
+                } else {
+                    selectableItem.removeItemListener(mIDoodleItemListener);
+
+                    if (mTouchGestureListener.getSelectedItem() == null) { // nothing is selected. 当前没有选中任何一个item
+                        if (mLastPen != null) {
+                            mDoodle.setPen(mLastPen);
+                            mLastPen = null;
+                        }
+                        if (mLastColor != null) {
+                            mDoodle.setColor(mLastColor);
+                            mLastColor = null;
+                        }
+                        if (mSize != -1) {
+                            mDoodle.setSize(mSize);
+                            mSize = null;
+                        }
+                        mSelectedEditContainer.setVisibility(View.GONE);
                     }
-                    if (mLastColor != null) {
-                        mDoodle.setColor(mLastColor);
-                        mLastColor = null;
-                    }
-                    if (mSize != -1) {
-                        mDoodle.setSize(mSize);
-                        mSize = null;
-                    }
-                    mSelectedEditContainer.setVisibility(View.GONE);
                 }
             }
 
@@ -400,6 +423,7 @@ public class DoodleActivity extends Activity {
         });
         mSelectedEditContainer = findViewById(R.id.doodle_selectable_edit_container);
         mSelectedEditContainer.setVisibility(View.GONE);
+        mItemScaleTextView = findViewById(R.id.item_scale);
 
         mSettingsPanel = findViewById(R.id.doodle_panel);
 

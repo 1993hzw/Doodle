@@ -174,4 +174,12 @@ public interface IDoodleItem {
     public void setScale(float scale);
 
     public float getScale();
+
+    /**
+     * 监听器
+     * @param listener
+     */
+    public void addItemListener(IDoodleItemListener listener);
+
+    public void removeItemListener(IDoodleItemListener listener);
 }

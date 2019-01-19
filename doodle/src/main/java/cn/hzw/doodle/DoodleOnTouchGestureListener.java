@@ -36,7 +36,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
     private float mTouchCentreX, mTouchCentreY;
 
 
-    private float mSelectedItemX, mSelectedItemY;
+    private float mStartX, mStartY;
     private float mRotateDiff; // 开始旋转item时的差值（当前item的中心点与触摸点的角度）
 
     private Path mCurrPath; // 当前手写的路径
@@ -106,13 +106,18 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         if (mDoodle.isEditMode() || isPenEditable(mDoodle.getPen())) {
             if (mSelectedItem != null) {
                 PointF xy = mSelectedItem.getLocation();
-                mSelectedItemX = xy.x;
-                mSelectedItemY = xy.y;
+                mStartX = xy.x;
+                mStartY = xy.y;
                 if (mSelectedItem instanceof DoodleRotatableItemBase
                         && (((DoodleRotatableItemBase) mSelectedItem).canRotate(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY)))) {
                     ((DoodleRotatableItemBase) mSelectedItem).setIsRotating(true);
                     mRotateDiff = mSelectedItem.getItemRotate() -
                             computeAngle(mSelectedItem.getPivotX(), mSelectedItem.getPivotY(), mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
+                }
+            } else {
+                if (mDoodle.isEditMode()) {
+                    mStartX = mDoodle.getDoodleTranslationX();
+                    mStartY = mDoodle.getDoodleTranslationY();
                 }
             }
         } else {
@@ -156,6 +161,9 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
             if (mSelectedItem instanceof DoodleRotatableItemBase) {
                 ((DoodleRotatableItemBase) mSelectedItem).setIsRotating(false);
             }
+            if (mDoodle.isEditMode()) {
+                limitBound(true);
+            }
         } else {
             if (mCurrDoodlePath != null) {
                 mCurrDoodlePath = null;
@@ -174,14 +182,18 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         if (mDoodle.isEditMode() || isPenEditable(mDoodle.getPen())) { //画笔是否是可选择的
             if (mSelectedItem != null) {
                 if ((mSelectedItem instanceof DoodleRotatableItemBase) && (((DoodleRotatableItemBase) mSelectedItem).isRotating())) { // 旋转item
-                    PointF xy = mSelectedItem.getLocation();
                     mSelectedItem.setItemRotate(mRotateDiff + computeAngle(
                             mSelectedItem.getPivotX(), mSelectedItem.getPivotY(), mDoodle.toX(mTouchX), mDoodle.toY(mTouchY)
                     ));
                 } else { // 移动item
                     mSelectedItem.setLocation(
-                            mSelectedItemX + mDoodle.toX(mTouchX) - mDoodle.toX(mTouchDownX),
-                            mSelectedItemY + mDoodle.toY(mTouchY) - mDoodle.toY(mTouchDownY));
+                            mStartX + mDoodle.toX(mTouchX) - mDoodle.toX(mTouchDownX),
+                            mStartY + mDoodle.toY(mTouchY) - mDoodle.toY(mTouchDownY));
+                }
+            } else {
+                if (mDoodle.isEditMode()) {
+                    mDoodle.setDoodleTranslation(mStartX + mTouchX - mTouchDownX,
+                            mStartY + mTouchY - mTouchDownY);
                 }
             }
         } else {
@@ -242,8 +254,8 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                     found = true;
                     setSelectedItem(item);
                     PointF xy = item.getLocation();
-                    mSelectedItemX = xy.x;
-                    mSelectedItemY = xy.y;
+                    mStartX = xy.x;
+                    mStartY = xy.y;
                     break;
                 }
             }
@@ -326,6 +338,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
     @Override
     public void onScaleEnd(ScaleGestureDetectorApi27 detector) {
         if (mDoodle.isEditMode()) {
+            limitBound(true);
             return;
         }
 

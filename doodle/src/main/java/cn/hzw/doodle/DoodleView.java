@@ -37,7 +37,7 @@ import static cn.hzw.doodle.util.DrawUtil.rotatePoint;
  */
 public class DoodleView extends View implements IDoodle {
 
-    public final static float MAX_SCALE = 4f; // 最大缩放倍数
+    public final static float MAX_SCALE = 5f; // 最大缩放倍数
     public final static float MIN_SCALE = 0.25f; // 最小缩放倍数
     public final static int DEFAULT_SIZE = 6; // 默认画笔大小
 
@@ -315,10 +315,9 @@ public class DoodleView extends View implements IDoodle {
         canvas.drawRect(getDoodleBound(), mPaint);*/
 
         if (mIsScrollingDoodle && mEnableZoomer && mZoomerScale > 0) { //启用放大镜
-            canvas.save();
+            canvas.save(); // ***
 
             float unitSize = getUnitSize();
-
             if (mTouchY <= mZoomerRadius * 2) { // 在放大镜的范围内， 把放大镜放在底部
                 mLastZoomerY = getHeight() - mZoomerRadius * 2;
             } else if (mTouchY >= getHeight() - mZoomerRadius * 2) {
@@ -335,7 +334,6 @@ public class DoodleView extends View implements IDoodle {
             // draw inner
             canvas.rotate(mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
             mInner.onDraw(canvas);
-
             // 触摸点
             float left = getAllTranX();
             float top = getAllTranY();
@@ -343,17 +341,24 @@ public class DoodleView extends View implements IDoodle {
             canvas.translate(left, top); // 偏移画布
             scale = getAllScale();
             canvas.scale(scale, scale); // 缩放画布
-            mZoomerTouchPaint.setStrokeWidth(getUnitSize());
+            mZoomerTouchPaint.setStrokeWidth(unitSize / 2);
+            float radius = mSize / 2 - unitSize / 2;
+            float radius2 = radius - unitSize / 2;
+            if (radius <= 1) {
+                radius = 1;
+                radius2 = radius / 2;
+                mZoomerTouchPaint.setStrokeWidth(mSize);
+            }
             mZoomerTouchPaint.setColor(0xaa000000);
-            drawCircle(canvas, toX(mTouchX), toY(mTouchY), mSize / 2, mZoomerTouchPaint);
+            drawCircle(canvas, toX(mTouchX), toY(mTouchY), radius, mZoomerTouchPaint);
             mZoomerTouchPaint.setColor(0xaaffffff);
-            drawCircle(canvas, toX(mTouchX), toY(mTouchY), mSize / 2 - unitSize / 4, mZoomerTouchPaint);
-
+            drawCircle(canvas, toX(mTouchX), toY(mTouchY), radius2, mZoomerTouchPaint);
             canvas.restore();
 
             // 画放大器的边框
             drawCircle(canvas, mZoomerRadius, mZoomerRadius, mZoomerRadius, mZooomerPaint);
-            canvas.restore();
+
+            canvas.restore(); // ***
 
             // overview
             canvas.save();
@@ -888,6 +893,7 @@ public class DoodleView extends View implements IDoodle {
 
     /**
      * 设置是否开启全图预览功能，开启后可以在放大镜功能下显示全图涂鸦
+     *
      * @param enableOverview
      */
     public void enableOverview(boolean enableOverview) {
@@ -896,6 +902,7 @@ public class DoodleView extends View implements IDoodle {
 
     /**
      * 是否开启全图预览功能
+     *
      * @return
      */
     public boolean isEnableOverview() {

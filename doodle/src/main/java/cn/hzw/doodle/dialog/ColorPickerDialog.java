@@ -7,8 +7,11 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -17,6 +20,7 @@ import cn.forward.androids.utils.Util;
 import cn.hzw.doodle.DoodleColor;
 import cn.hzw.doodle.R;
 import cn.hzw.doodle.core.IDoodle;
+import cn.hzw.doodle.util.DrawUtil;
 
 public class ColorPickerDialog extends Dialog {
     private final boolean debug = true;
@@ -46,8 +50,8 @@ public class ColorPickerDialog extends Dialog {
         int height = Util.dp2px(context, 220);
         int width = Util.dp2px(context, 180);
 
-        ViewGroup viewGroup = (ViewGroup) View.inflate(context, R.layout.doodle_color_selector_dialog, null);
-        final TextView sizeView = (TextView) viewGroup.findViewById(R.id.doodle_txtview_size);
+        final ViewGroup viewGroup = (ViewGroup) View.inflate(context, R.layout.doodle_color_selector_dialog, null);
+        final EditText sizeView = (EditText) viewGroup.findViewById(R.id.doodle_txtview_size);
         final SeekBar seekBar = viewGroup.findViewById(R.id.doodle_seekbar_size);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -57,6 +61,7 @@ public class ColorPickerDialog extends Dialog {
                     return;
                 }
                 sizeView.setText("" + progress);
+                sizeView.setSelection(sizeView.getText().toString().length());
             }
 
             @Override
@@ -92,6 +97,45 @@ public class ColorPickerDialog extends Dialog {
             shaderContainer.getChildAt(i).setOnClickListener(listener);
         }
 
+        sizeView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                try {
+                    int p = Integer.parseInt(s.toString());
+                    if (p <= 0) {
+                        p = 1;
+                    }
+                    if (p == seekBar.getProgress()) {
+                        return;
+                    }
+                    seekBar.setProgress(p);
+                    sizeView.setText("" + seekBar.getProgress());
+                    sizeView.setSelection(sizeView.getText().toString().length());
+                } catch (Exception e) {
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+        viewGroup.findViewById(R.id.doodle_txtview_reduce).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                seekBar.setProgress(Math.max(1, seekBar.getProgress() - 1));
+            }
+        });
+        viewGroup.findViewById(R.id.doodle_txtview_add).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                seekBar.setProgress(Math.min(seekBar.getMax(), seekBar.getProgress() + 1));
+            }
+        });
+
         viewGroup.findViewById(R.id.dialog_enter_btn_01).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -112,6 +156,9 @@ public class ColorPickerDialog extends Dialog {
 
         setContentView(viewGroup, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setCanceledOnTouchOutside(false);
+
+        DrawUtil.assistActivity(getWindow());
+
     }
 
     /**

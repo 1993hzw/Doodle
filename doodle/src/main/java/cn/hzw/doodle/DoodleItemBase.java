@@ -3,9 +3,13 @@ package cn.hzw.doodle;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleColor;
 import cn.hzw.doodle.core.IDoodleItem;
+import cn.hzw.doodle.core.IDoodleItemListener;
 import cn.hzw.doodle.core.IDoodlePen;
 import cn.hzw.doodle.core.IDoodleShape;
 
@@ -13,7 +17,7 @@ import cn.hzw.doodle.core.IDoodleShape;
  * Created on 29/06/2018.
  */
 
-public abstract class DoodleItemBase implements IDoodleItem {
+public abstract class DoodleItemBase implements IDoodleItem, IDoodleItemListener {
 
     public static final float MIN_SCALE = 0.01f;
     public static final float MAX_SCALE = 100f;
@@ -33,6 +37,8 @@ public abstract class DoodleItemBase implements IDoodleItem {
     private float mScale = 1;
 
     private boolean mHasAdded = false;
+
+    private List<IDoodleItemListener> mItemListeners = new ArrayList<>();
 
     public DoodleItemBase(IDoodle doodle) {
         this(doodle, null);
@@ -66,6 +72,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     @Override
     public void setPivotX(float pivotX) {
         mPivotX = pivotX;
+        onPropertyChanged(PROPERTY_PIVOT_X);
     }
 
     @Override
@@ -76,6 +83,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     @Override
     public void setPivotY(float pivotY) {
         mPivotY = pivotY;
+        onPropertyChanged(PROPERTY_PIVOT_Y);
     }
 
     @Override
@@ -86,6 +94,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     @Override
     public void setItemRotate(float textRotate) {
         mItemRotate = textRotate;
+        onPropertyChanged(PROPERTY_ROTATE);
         refresh();
     }
 
@@ -115,9 +124,13 @@ public abstract class DoodleItemBase implements IDoodleItem {
         mLocation.x = x;
         mLocation.y = y;
 
+        onPropertyChanged(PROPERTY_LOCATION);
+
         if (changePivot) {
             mPivotX = mPivotX + diffX;
             mPivotY = mPivotY + diffY;
+            onPropertyChanged(PROPERTY_PIVOT_X);
+            onPropertyChanged(PROPERTY_PIVOT_Y);
         }
 
         refresh();
@@ -158,6 +171,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     @Override
     public void setSize(float size) {
         mSize = size;
+        onPropertyChanged(PROPERTY_SIZE);
         refresh();
     }
 
@@ -169,6 +183,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
     @Override
     public void setColor(IDoodleColor color) {
         mColor = color;
+        onPropertyChanged(PROPERTY_COLOR);
         refresh();
     }
 
@@ -240,6 +255,7 @@ public abstract class DoodleItemBase implements IDoodleItem {
             scale = mMaxScale;
         }
         mScale = scale;
+        onPropertyChanged(PROPERTY_SCALE);
         refresh();
     }
 
@@ -274,6 +290,26 @@ public abstract class DoodleItemBase implements IDoodleItem {
 
     public float getMaxScale() {
         return mMaxScale;
+    }
+
+    @Override
+    public void addItemListener(IDoodleItemListener listener) {
+        if (listener == null || mItemListeners.contains(listener)) {
+            return;
+        }
+        mItemListeners.add(listener);
+    }
+
+    @Override
+    public void removeItemListener(IDoodleItemListener listener) {
+        mItemListeners.remove(listener);
+    }
+
+    @Override
+    public void onPropertyChanged(int property) {
+        for (int i = 0; i < mItemListeners.size(); i++) {
+            mItemListeners.get(i).onPropertyChanged(property);
+        }
     }
 
     /**

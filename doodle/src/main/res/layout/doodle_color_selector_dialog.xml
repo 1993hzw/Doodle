@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#cc000000">
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:background="#cc000000">
 
     <LinearLayout
         android:id="@+id/doodle_color_selector_container"
@@ -26,7 +26,7 @@
                 android:background="#ffffff"
                 android:padding="1dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/doodle_shader1" />
+                android:src="@drawable/doodle_shader1"/>
 
             <ImageView
                 android:layout_width="30dp"
@@ -35,7 +35,7 @@
                 android:background="#ffffff"
                 android:padding="1dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/doodle_shader2" />
+                android:src="@drawable/doodle_shader2"/>
 
             <ImageView
                 android:layout_width="30dp"
@@ -44,7 +44,7 @@
                 android:background="#ffffff"
                 android:padding="1dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/doodle_shader3" />
+                android:src="@drawable/doodle_shader3"/>
 
             <ImageView
                 android:layout_width="30dp"
@@ -53,7 +53,7 @@
                 android:background="#ffffff"
                 android:padding="1dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/doodle_shader4" />
+                android:src="@drawable/doodle_shader4"/>
 
             <ImageView
                 android:layout_width="30dp"
@@ -62,35 +62,68 @@
                 android:background="#ffffff"
                 android:padding="1dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/doodle_shader5" />
+                android:src="@drawable/doodle_shader5"/>
         </LinearLayout>
 
-        <TextView
+        <EditText
             android:id="@+id/doodle_txtview_size"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="20dp"
+            android:background="@android:color/transparent"
+            android:gravity="center"
+            android:inputType="numberDecimal"
+            android:minWidth="150dp"
+            android:padding="5dp"
             android:text="999"
             android:textColor="#fff"
-            android:textSize="16dp" />
+            android:textSize="16dp"/>
 
-        <SeekBar
-            android:id="@+id/doodle_seekbar_size"
-            android:layout_width="260dp"
-            android:layout_height="33dp"
-            android:max="100"
-            android:maxHeight="33dp"
-            android:minHeight="33dp"
-            android:progressDrawable="@drawable/doodle_seekbar_bg"
-            android:thumb="@drawable/doodle_thumb_seekbarr"
-            android:thumbOffset="0dp" />
+        <LinearLayout
+            android:id="@+id/doodle_txtview_reduce"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
+            <TextView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center"
+                android:text="-"
+                android:textColor="#ffffff"
+                android:textSize="14dp"
+                />
+
+            <SeekBar
+                android:id="@+id/doodle_seekbar_size"
+                android:layout_width="260dp"
+                android:layout_height="33dp"
+                android:max="100"
+                android:maxHeight="33dp"
+                android:minHeight="33dp"
+                android:progressDrawable="@drawable/doodle_seekbar_bg"
+                android:thumb="@drawable/doodle_thumb_seekbarr"
+                android:thumbOffset="0dp"/>
+
+            <TextView
+                android:id="@+id/doodle_txtview_add"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center"
+                android:text="+"
+                android:textColor="#ffffff"
+                android:textSize="14dp"
+                />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        android:background="#88000000"
         android:orientation="horizontal">
 
         <cn.forward.androids.views.STextView
@@ -105,7 +138,7 @@
             android:textColor="#bebebe"
             android:textSize="20dp"
             app:injectListener="true"
-            app:stv_text_color_pressed="#88bebebe" />
+            app:stv_text_color_pressed="#88bebebe"/>
 
         <cn.forward.androids.views.STextView
             android:id="@+id/dialog_enter_btn_02"
@@ -119,6 +152,6 @@
             android:textColor="#11cfff"
             android:textSize="20dp"
             app:injectListener="true"
-            app:stv_text_color_pressed="#8811cfff" />
+            app:stv_text_color_pressed="#8811cfff"/>
     </LinearLayout>
 </FrameLayout>
