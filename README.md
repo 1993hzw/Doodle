@@ -252,4 +252,4 @@ If this project helps you a lot and you want to support the project's developmen
 
 ***如果这个项目对您有很大帮助，并且您想支持该项目的项目开发和维护，请扫描以下二维码进行捐赠。非常感谢您的支持！***
 
-![donate][https://raw.githubusercontent.com/1993hzw/common/master/payment.png]
+![donate](https://raw.githubusercontent.com/1993hzw/common/master/payment.png)
