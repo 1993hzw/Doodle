@@ -2,6 +2,7 @@ package cn.hzw.doodledemo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -76,6 +77,10 @@ public class MainActivity extends Activity {
                 params.mImagePath = list.get(0);
                 // 初始画笔大小
                 params.mPaintUnitSize = DoodleView.DEFAULT_SIZE;
+                // 画笔颜色
+                params.mPaintColor = Color.RED;
+                // 是否支持缩放item
+                params.mSupportScaleItem = true;
                 // 启动涂鸦页面
                 DoodleActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_DOODLE);
             }

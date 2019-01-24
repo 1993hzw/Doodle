@@ -73,6 +73,11 @@ public class DoodleParams implements Parcelable {
      */
     public int mPaintColor = Color.RED;
 
+    /**
+     * 是否支持缩放item
+     */
+    public boolean mSupportScaleItem = true;
+
     public static final Creator<DoodleParams> CREATOR = new Creator<DoodleParams>() {
         @Override
         public DoodleParams createFromParcel(Parcel in) {
@@ -89,6 +94,7 @@ public class DoodleParams implements Parcelable {
             params.mMinScale = in.readFloat();
             params.mMaxScale = in.readFloat();
             params.mPaintColor = in.readInt();
+            params.mSupportScaleItem = in.readInt() == 1;
 
             return params;
         }
@@ -113,6 +119,7 @@ public class DoodleParams implements Parcelable {
         dest.writeFloat(mMinScale);
         dest.writeFloat(mMaxScale);
         dest.writeInt(mPaintColor);
+        dest.writeInt(mSupportScaleItem ? 1 : 0);
 
     }
 
@@ -143,7 +150,7 @@ public class DoodleParams implements Parcelable {
         /**
          * @param activity
          * @param doodle
-         * @param dialogType   对话框类型
+         * @param dialogType 对话框类型
          * @return 返回true表示拦截
          */
         boolean onShow(Activity activity, IDoodle doodle, DialogType dialogType);

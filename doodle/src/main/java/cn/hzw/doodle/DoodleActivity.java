@@ -248,6 +248,7 @@ public class DoodleActivity extends Activity {
                     findViewById(R.id.btn_zoomer).setVisibility(View.GONE);
                 }
                 mDoodle.setZoomerScale(mDoodleParams.mZoomerScale);
+                mTouchGestureListener.setSupportScaleItem(mDoodleParams.mSupportScaleItem);
 
                 // 每个画笔的初始值
                 mPenSizeMap.put(DoodlePen.BRUSH, mDoodle.getSize());
@@ -328,7 +329,17 @@ public class DoodleActivity extends Activity {
                     createDoodleBitmap(null, x, y);
                 }
             }
-        });
+        }) {
+            @Override
+            public void setSupportScaleItem(boolean supportScaleItem) {
+                super.setSupportScaleItem(supportScaleItem);
+                if (supportScaleItem) {
+                    mItemScaleTextView.setVisibility(View.VISIBLE);
+                } else {
+                    mItemScaleTextView.setVisibility(View.GONE);
+                }
+            }
+        };
 
         IDoodleTouchDetector detector = new DoodleTouchDetector(getApplicationContext(), mTouchGestureListener);
         mDoodleView.setDefaultTouchDetector(detector);
@@ -425,6 +436,15 @@ public class DoodleActivity extends Activity {
         mSelectedEditContainer = findViewById(R.id.doodle_selectable_edit_container);
         mSelectedEditContainer.setVisibility(View.GONE);
         mItemScaleTextView = findViewById(R.id.item_scale);
+        mItemScaleTextView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (mTouchGestureListener.getSelectedItem() != null) {
+                    mTouchGestureListener.getSelectedItem().setScale(1);
+                }
+                return true;
+            }
+        });
 
         mSettingsPanel = findViewById(R.id.doodle_panel);
 

@@ -54,6 +54,8 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
     private IDoodleSelectableItem mSelectedItem; // 当前选中的item
     private ISelectionListener mSelectionListener;
 
+    private boolean mSupportScaleItem = true;
+
     public DoodleOnTouchGestureListener(DoodleView doodle, ISelectionListener listener) {
         mDoodle = doodle;
         mCopyLocation = DoodlePen.COPY.getCopyLocation();
@@ -303,7 +305,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
             final float dy = mTouchCentreY - mLastFocusY;
             // 移动图片
             if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-                if (mSelectedItem == null) {
+                if (mSelectedItem == null || !mSupportScaleItem) {
                     mDoodle.setDoodleTranslationX(mDoodle.getDoodleTranslationX() + dx + pendingX);
                     mDoodle.setDoodleTranslationY(mDoodle.getDoodleTranslationY() + dy + pendingY);
                 } else {
@@ -317,7 +319,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         }
 
         if (Math.abs(1 - detector.getScaleFactor()) > 0.005f) {
-            if (mSelectedItem == null) {
+            if (mSelectedItem == null || !mSupportScaleItem) {
                 // 缩放图片
                 float scale = mDoodle.getDoodleScale() * detector.getScaleFactor() * pendingScale;
                 mDoodle.setDoodleScale(scale, mDoodle.toX(mTouchCentreX), mDoodle.toY(mTouchCentreY));
@@ -496,6 +498,14 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
 
     public ISelectionListener getSelectionListener() {
         return mSelectionListener;
+    }
+
+    public void setSupportScaleItem(boolean supportScaleItem) {
+        mSupportScaleItem = supportScaleItem;
+    }
+
+    public boolean isSupportScaleItem() {
+        return mSupportScaleItem;
     }
 
     public interface ISelectionListener {
