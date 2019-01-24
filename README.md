@@ -16,9 +16,9 @@ Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Als
 
   * Brush and shape ***画笔及形状***
 
-    The brush can choose hand-painted, imitation, eraser, text, texture, and the imitation function is similar to that in PS, copying somewhere in the picture. Shapes can be selected from hand-drawn, arrows, lines, circles, rectangles, and so on. The background color of the brush can be selected as a color, or an image.
+    The brush can choose hand-painted, mosaic, imitation, eraser, text, texture, and the imitation function is similar to that in PS, copying somewhere in the picture. Shapes can be selected from hand-drawn, arrows, lines, circles, rectangles, and so on. The background color of the brush can be selected as a color, or an image.
 
-    ***画笔可以选择手绘、仿制、橡皮擦、文字、贴图，其中仿制功能跟PS中的类似，复制图片中的某处地方。形状可以选择手绘、箭头、直线、圆、矩形等。画笔的底色可以选择颜色，或者一张图片。***
+    ***画笔可以选择手绘、马赛克、仿制、橡皮擦、文字、贴图，其中仿制功能跟PS中的类似，复制图片中的某处地方。形状可以选择手绘、箭头、直线、圆、矩形等。画笔的底色可以选择颜色，或者一张图片。***
 
   * Undo ***撤销***
 
@@ -28,9 +28,9 @@ Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Als
 
   * Zoom, move, and rotate ***放缩、移动及旋转***
 
-    In the process of doodle, you can freely zoom, move and rotate the picture with gestures. Also, you can move and rotate the doodle.
+    In the process of doodle, you can freely zoom, move and rotate the picture with gestures. Also, you can move，rotate and scale the doodle item.
     
-    ***在涂鸦的过程中，可以自由地通过手势缩放、移动、旋转图片。可对涂鸦移动、旋转。***
+    ***在涂鸦的过程中，可以自由地通过手势缩放、移动、旋转图片。可对涂鸦移动、旋转、缩放等。***
 
   * Zoomer ***放大器***
 
@@ -51,7 +51,7 @@ allprojects {
 }
  
 dependencies {
-    compile 'com.github.1993hzw:Doodle:5.3'
+    compile 'com.github.1993hzw:Doodle:5.4'
 }
 ```
 
@@ -204,7 +204,7 @@ You can create a customized touch gesture detector like [DoodleTouchDetector](ht
 
 ***实现[IDoodleTouchDetector](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/core/IDoodleTouchDetector.java)接口用于创建自定义手势识别器，比如DoodleTouchDetector***
 
-*** [Others](https://github.com/1993hzw/Doodle/blob/master/extend.md)
+***[Others](https://github.com/1993hzw/Doodle/blob/master/extend.md)***
 
 # The developer 开发者
 
@@ -245,3 +245,11 @@ Q&A <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=d225a990b29a135d4a6
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
   ```
+
+# Donations 打赏
+
+If this project helps you a lot and you want to support the project's development and maintenance of this project, feel free to scan the following QR code for donation. Your donation is highly appreciated. Thank you!
+
+***如果这个项目对您有很大帮助，并且您想支持该项目的项目开发和维护，请扫描以下二维码进行捐赠。非常感谢您的支持！***
+
+![donate][https://raw.githubusercontent.com/1993hzw/common/master/payment.png]
