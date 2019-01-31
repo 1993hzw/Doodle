@@ -182,6 +182,9 @@ public interface IDoodle {
 
 ![structure](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/structure.png)
 
+### Doodle Coordinate 涂鸦坐标
+![coordinate](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/doodle_coordinate.png)
+
 # Extend 拓展
 
 You can create a customized item like [DoodlePath, DoodleText, DoodleBitmap](https://github.com/1993hzw/Doodle/tree/master/doodle/src/main/java/cn/hzw/doodle) which extend [DoodleItemBase](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleItemBase.java) or implement [IDoodleItem](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/core/IDoodleItem.java). 
