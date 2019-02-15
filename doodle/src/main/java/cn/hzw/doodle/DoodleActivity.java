@@ -312,7 +312,7 @@ public class DoodleActivity extends Activity {
                             mDoodle.setColor(mLastColor);
                             mLastColor = null;
                         }
-                        if (mSize != -1) {
+                        if (mSize != null) {
                             mDoodle.setSize(mSize);
                             mSize = null;
                         }
