@@ -837,9 +837,9 @@ public class DoodleActivity extends Activity {
                     mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
                 }
             } else if (pen == DoodlePen.COPY) {
-                mDoodle.setColor(null);
+
             } else if (pen == DoodlePen.ERASER) {
-                mDoodle.setColor(null);
+
             } else if (pen == DoodlePen.TEXT) {
                 Drawable colorBg = mBtnColor.getBackground();
                 if (colorBg instanceof ColorDrawable) {
@@ -892,16 +892,7 @@ public class DoodleActivity extends Activity {
         @Override
         public void setColor(IDoodleColor color) {
             IDoodlePen pen = getPen();
-
-            if (pen == DoodlePen.COPY || pen == DoodlePen.ERASER) {
-                if ((getColor() instanceof DoodleColor) && ((DoodleColor) getColor()).getBitmap() == mDoodle.getBitmap()) {
-                    // nothing
-                } else {
-                    super.setColor(new DoodleColor(mDoodle.getBitmap()));
-                }
-            } else {
-                super.setColor(color);
-            }
+            super.setColor(color);
 
             DoodleColor doodleColor = null;
             if (color instanceof DoodleColor) {

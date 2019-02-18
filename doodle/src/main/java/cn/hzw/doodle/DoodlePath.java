@@ -271,6 +271,7 @@ public class DoodlePath extends DoodleRotatableItemBase {
         if (getPen() == DoodlePen.MOSAIC) {
             setLocation(getLocation().x, getLocation().y, false);
         }
+        adjustPath(false);
     }
 
     @Override

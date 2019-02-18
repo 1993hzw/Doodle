@@ -47,8 +47,6 @@ public class DoodleView extends View implements IDoodle {
     private IDoodleListener mDoodleListener;
 
     private Bitmap mBitmap; // 当前涂鸦的原图（旋转后）
-    private Bitmap mDoodleBitmap; // 绘制涂鸦的图片
-    private Canvas mBitmapCanvas;
 
     private float mCenterScale; // 图片适应屏幕时的缩放倍数
     private int mCenterHeight, mCenterWidth;// 图片适应屏幕时的大小（View窗口坐标系上的大小）
@@ -153,7 +151,6 @@ public class DoodleView extends View implements IDoodle {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        initCanvas();
         initDoodleBitmap();
         if (!mReady) {
             mDoodleListener.onReady(this);
@@ -298,7 +295,7 @@ public class DoodleView extends View implements IDoodle {
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        if (mBitmap.isRecycled() || mDoodleBitmap.isRecycled()) {
+        if (mBitmap.isRecycled()) {
             return;
         }
 
@@ -404,7 +401,7 @@ public class DoodleView extends View implements IDoodle {
             return;
         }
         // 绘制涂鸦后的图片
-        canvas.drawBitmap(mDoodleBitmap, 0, 0, null);
+        canvas.drawBitmap(mBitmap, 0, 0, null);
 
         boolean canvasClipped = false;
         canvas.save(); // 1
@@ -510,15 +507,6 @@ public class DoodleView extends View implements IDoodle {
 
     public final float toTransY(float touchY, float doodleY) {
         return -doodleY * getAllScale() + touchY - mCentreTranY - mRotateTranY;
-    }
-
-
-    private void initCanvas() {
-        if (mDoodleBitmap != null) {
-            mDoodleBitmap.recycle();
-        }
-        mDoodleBitmap = mBitmap.copy(mBitmap.getConfig(), true);
-        mBitmapCanvas = new Canvas(mDoodleBitmap);
     }
 
     /**
@@ -643,18 +631,18 @@ public class DoodleView extends View implements IDoodle {
      */
     @Override
     public void save() {
+        Bitmap savedBitmap = mBitmap.copy(mBitmap.getConfig(), true);
+        Canvas canvas = new Canvas(savedBitmap);
         for (IDoodleItem item : mItemStack) {
             if (item instanceof DoodleItemBase) {
-                item.draw(mBitmapCanvas);
+                item.draw(canvas);
             }
         }
-        mDoodleBitmap = ImageUtils.rotate(mDoodleBitmap, mDoodleRotateDegree, true);
+        savedBitmap = ImageUtils.rotate(savedBitmap, mDoodleRotateDegree, true);
 
-        mDoodleListener.onSaved(this, mDoodleBitmap, new Runnable() {
+        mDoodleListener.onSaved(this, savedBitmap, new Runnable() {
             @Override
             public void run() {
-                // 还原涂鸦图片
-                initCanvas();
                 refresh();
             }
         });
@@ -1012,7 +1000,7 @@ public class DoodleView extends View implements IDoodle {
 
     @Override
     public Bitmap getDoodleBitmap() {
-        return mDoodleBitmap;
+        return mBitmap;
     }
 
     public int getCenterWidth() {

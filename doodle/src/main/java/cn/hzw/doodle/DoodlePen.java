@@ -25,6 +25,15 @@ public enum DoodlePen implements IDoodlePen {
 
     @Override
     public void config(IDoodleItem item, Paint paint) {
+        if (this == DoodlePen.COPY || this == DoodlePen.ERASER) {
+            IDoodle doodle = item.getDoodle();
+            if ((item.getColor() instanceof DoodleColor)
+                    && ((DoodleColor) item.getColor()).getBitmap() == doodle.getBitmap()) {
+                // nothing
+            } else {
+                item.setColor(new DoodleColor(doodle.getBitmap()));
+            }
+        }
     }
 
     public CopyLocation getCopyLocation() {

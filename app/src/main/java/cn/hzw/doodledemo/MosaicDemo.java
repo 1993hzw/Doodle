@@ -54,6 +54,7 @@ public class MosaicDemo extends Activity {
         // step 3
         doodleView.setPen(new MosaicPen());
         doodleView.setShape(DoodleShape.HAND_WRITE);
+        // setColor
         findViewById(R.id.btn_mosaic_x3).performClick(); // see setMosaicLevel(View view)
 
         // step 4
