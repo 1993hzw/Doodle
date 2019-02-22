@@ -59,9 +59,9 @@ There are two ways to use the Doodle library:
 
 ***这里有两种方式使用Doodle涂鸦库***
 
-  * A. Launch DoodleActivity directly (the layout is like demo images above). 
+  * A. Launch DoodleActivity directly (the layout is like demo images above). If you need to customize more interactions, please use another method (Way B)．
   
-  ***使用写好的涂鸦界面，直接启动.启动的页面可参看上面的演示图片。***
+  ***使用写好的涂鸦界面，直接启动.启动的页面可参看上面的演示图片。如果需要自定义更多的交互方式，则请使用另一种方式(即B方式)。***
 ```java
 DoodleParams params = new DoodleParams(); // 涂鸦参数
 params.mImagePath = imagePath; // the file path of image
@@ -73,7 +73,7 @@ See [DoodleParams](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main
 
   * B. Recommend, use DoodleView and customize your layout. 
   
-  ***推荐的方法：使用DoodleView，自定义自己的交互界面.***
+  ***推荐的方法：使用DoodleView，便于拓展，灵活性高，自定义自己的交互界面.***
 ```java
 DoodleView mDoodle = mDoodleView = new DoodleView(this, bitmap, new IDoodleListener() {
             /*
