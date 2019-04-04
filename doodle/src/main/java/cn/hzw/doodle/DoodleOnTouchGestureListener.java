@@ -73,12 +73,14 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
             if (mSelectionListener != null) {
                 mSelectionListener.onSelectedItem(mDoodle, old, false);
             }
+            mDoodle.notifyItemFinishedDrawing(old);
         }
         if (mSelectedItem != null) {
             mSelectedItem.setSelected(true);
             if (mSelectionListener != null) {
                 mSelectionListener.onSelectedItem(mDoodle, mSelectedItem, true);
             }
+            mDoodle.markItemToOptimizeDrawing(mSelectedItem);
         }
 
     }
@@ -145,7 +147,11 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                     mCurrDoodlePath = DoodlePath.toShape(mDoodle,
                             mDoodle.toX(mTouchDownX), mDoodle.toY(mTouchDownY), mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
                 }
-                mDoodle.addItem(mCurrDoodlePath);
+                if (mDoodle.isOptimizeDrawing()) {
+                    mDoodle.markItemToOptimizeDrawing(mCurrDoodlePath);
+                } else {
+                    mDoodle.addItem(mCurrDoodlePath);
+                }
             }
         }
         mDoodle.refresh();
@@ -166,11 +172,13 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
             if (mDoodle.isEditMode()) {
                 limitBound(true);
             }
-        } else {
-            if (mCurrDoodlePath != null) {
-                mCurrDoodlePath = null;
-            }
         }
+
+        if (mCurrDoodlePath != null) {
+            mDoodle.notifyItemFinishedDrawing(mCurrDoodlePath);
+            mCurrDoodlePath = null;
+        }
+
         mDoodle.refresh();
     }
 

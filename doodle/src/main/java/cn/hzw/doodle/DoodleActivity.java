@@ -184,7 +184,13 @@ public class DoodleActivity extends Activity {
         setContentView(R.layout.doodle_layout);
         mFrameLayout = (FrameLayout) findViewById(R.id.doodle_container);
 
-        mDoodle = mDoodleView = new DoodleViewWrapper(this, bitmap, new IDoodleListener() {
+        /*
+        Whether or not to optimize drawing, it is suggested to open, which can optimize the drawing speed and performance.
+        Note: When item is selected for editing after opening, it will be drawn at the top level, and not at the corresponding level until editing is completed.
+        是否优化绘制，建议开启，可优化绘制速度和性能.
+        注意：开启后item被选中编辑时时会绘制在最上面一层，直到结束编辑后才绘制在相应层级
+         */
+        mDoodle = mDoodleView = new DoodleViewWrapper(this, bitmap, mDoodleParams.mOptimizeDrawing, new IDoodleListener() {
             @Override
             public void onSaved(IDoodle doodle, Bitmap bitmap, Runnable callback) { // 保存图片为jpg格式
                 File doodleFile = null;
@@ -614,7 +620,7 @@ public class DoodleActivity extends Activity {
         } else if (v.getId() == R.id.doodle_btn_finish) {
             mDoodle.save();
         } else if (v.getId() == R.id.doodle_btn_back) {
-            if (mDoodle.getAllItem() == null || mDoodle.getAllItem().size() == 0) {
+            if (mDoodle.getAllItem() == null || mDoodle.getItemCount() == 0) {
                 finish();
                 return;
             }
@@ -759,12 +765,8 @@ public class DoodleActivity extends Activity {
      */
     private class DoodleViewWrapper extends DoodleView {
 
-        public DoodleViewWrapper(Context context, Bitmap bitmap, IDoodleListener listener) {
-            super(context, bitmap, listener);
-        }
-
-        public DoodleViewWrapper(Context context, Bitmap bitmap, IDoodleListener listener, IDoodleTouchDetector defaultDetector) {
-            super(context, bitmap, listener, defaultDetector);
+        public DoodleViewWrapper(Context context, Bitmap bitmap, boolean optimizeDrawing, IDoodleListener listener, IDoodleTouchDetector defaultDetector) {
+            super(context, bitmap, optimizeDrawing, listener, defaultDetector);
         }
 
         private Map<IDoodlePen, Integer> mBtnPenIds = new HashMap<>();

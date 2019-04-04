@@ -1,5 +1,6 @@
 package cn.hzw.doodle;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,14 +10,15 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.os.AsyncTask;
 import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.Util;
@@ -44,9 +46,12 @@ public class DoodleView extends View implements IDoodle {
     public static final int ERROR_INIT = -1;
     public static final int ERROR_SAVE = -2;
 
+    private static final int FLAG_REFRESH_DOODLEE_BITMAP = 1 << 1;
+    private static final int FLAG_DRAW_TO_DOODLE_BITMAP = 1 << 2;
+
     private IDoodleListener mDoodleListener;
 
-    private Bitmap mBitmap; // 当前涂鸦的原图（旋转后）
+    private final Bitmap mBitmap; // 当前涂鸦的原图
 
     private float mCenterScale; // 图片适应屏幕时的缩放倍数
     private int mCenterHeight, mCenterWidth;// 图片适应屏幕时的大小（View窗口坐标系上的大小）
@@ -69,7 +74,7 @@ public class DoodleView extends View implements IDoodle {
     private boolean mReady = false;
 
     // 保存涂鸦操作，便于撤销
-    private CopyOnWriteArrayList<IDoodleItem> mItemStack = new CopyOnWriteArrayList<IDoodleItem>();
+    private List<IDoodleItem> mItemStack = new ArrayList<>();
 
     private IDoodlePen mPen;
     private IDoodleShape mShape;
@@ -97,18 +102,43 @@ public class DoodleView extends View implements IDoodle {
     private PointF mTempPoint = new PointF();
 
     private boolean mIsEditMode = false; //是否是编辑模式，可移动缩放涂鸦
+    private boolean mIsSaving = false;
+
+    /**
+    Whether or not to optimize drawing, it is suggested to open, which can optimize the drawing speed and performance.
+    Note: When item is selected for editing after opening, it will be drawn at the top level, and not at the corresponding level until editing is completed.
+    是否优化绘制，建议开启，可优化绘制速度和性能.
+    注意：开启后item被选中编辑时时会绘制在最上面一层，直到结束编辑后才绘制在相应层级
+     **/
+    private final boolean mOptimizeDrawing; // 涂鸦及时绘制在图片上，优化性能
+    private List<IDoodleItem> mItemStackOnViewCanvas = new ArrayList<>(); // 这些item绘制在View的画布上，而不是在图片Bitmap.比如正在制作或选中的item
+    private List<IDoodleItem> mPendingItemsDrawToBitmap = new ArrayList<>();
+    private Bitmap mDoodleBitmap;
+    private int mFlags = 0;
+    private Canvas mDoodleBitmapCanvas;
 
     public DoodleView(Context context, Bitmap bitmap, IDoodleListener listener) {
-        this(context, bitmap, listener, null);
+        this(context, bitmap, false, listener, null);
+    }
+
+    public DoodleView(Context context, Bitmap bitmap, IDoodleListener listener, IDoodleTouchDetector defaultDetector) {
+        this(context, bitmap, true, listener, defaultDetector);
     }
 
     /**
+     * 如果开启
+     *
      * @param context
      * @param bitmap
+     * @param optimizeDrawing 是否优化绘制，开启后涂鸦会及时绘制在图片上，以此优化绘制速度和性能.
+     *                        如果开启了优化绘制，当绘制或编辑某个item时需要调用 {@link #markItemToOptimizeDrawing(IDoodleItem)}，无需再调用{@link #addItem(IDoodleItem)}.
+     *                        另外结束时需要调用对应的 {@link #notifyItemFinishedDrawing(IDoodleItem)}。
+     *                        {@link #mOptimizeDrawing}
+     *
      * @param listener
      * @param defaultDetector 默认手势识别器
      */
-    public DoodleView(Context context, Bitmap bitmap, IDoodleListener listener, IDoodleTouchDetector defaultDetector) {
+    public DoodleView(Context context, Bitmap bitmap, boolean optimizeDrawing, IDoodleListener listener, IDoodleTouchDetector defaultDetector) {
         super(context);
 
         // 关闭硬件加速，某些绘图操作不支持硬件加速
@@ -122,6 +152,8 @@ public class DoodleView extends View implements IDoodle {
         if (mBitmap == null) {
             throw new RuntimeException("Bitmap is null!!!");
         }
+
+        mOptimizeDrawing = optimizeDrawing;
 
         mScale = 1f;
         mColor = new DoodleColor(Color.RED);
@@ -151,7 +183,7 @@ public class DoodleView extends View implements IDoodle {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        initDoodleBitmap();
+        init();
         if (!mReady) {
             mDoodleListener.onReady(this);
             mReady = true;
@@ -191,7 +223,7 @@ public class DoodleView extends View implements IDoodle {
         super.setOnTouchListener(l);
     }
 
-    private void initDoodleBitmap() {// 不用resize preview
+    private void init() {// 不用resize preview
         int w = mBitmap.getWidth();
         int h = mBitmap.getHeight();
         float nw = w * 1f / getWidth();
@@ -223,7 +255,21 @@ public class DoodleView extends View implements IDoodle {
         mTransX = mTransY = 0;
         mScale = 1;
 
+        initDoodleBitmap();
+
         refresh();
+    }
+
+    private void initDoodleBitmap() {
+        if (!mOptimizeDrawing) {
+            return;
+        }
+
+        if (mDoodleBitmap != null) {
+            mDoodleBitmap.recycle();
+        }
+        mDoodleBitmap = mBitmap.copy(mBitmap.getConfig(), true);
+        mDoodleBitmapCanvas = new Canvas(mDoodleBitmap);
     }
 
     /**
@@ -387,7 +433,29 @@ public class DoodleView extends View implements IDoodle {
 
     }
 
+    private boolean hasFlag(int flag) {
+        return (mFlags & flag) != 0;
+    }
+
+    private void addFlag(int flag) {
+        mFlags = mFlags | flag;
+    }
+
+    private void clearFlag(int flag) {
+        mFlags = mFlags & ~flag;
+    }
+
     private void doDraw(Canvas canvas) {
+        if (hasFlag(FLAG_REFRESH_DOODLEE_BITMAP)) {
+            clearFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+            clearFlag(FLAG_DRAW_TO_DOODLE_BITMAP);
+            refreshDoodleBitmap(false);
+        } else if (hasFlag(FLAG_DRAW_TO_DOODLE_BITMAP)) {
+            clearFlag(FLAG_DRAW_TO_DOODLE_BITMAP);
+            drawToDoodleBitmap(mPendingItemsDrawToBitmap);
+            mPendingItemsDrawToBitmap.clear();
+        }
+
         float left = getAllTranX();
         float top = getAllTranY();
 
@@ -400,16 +468,24 @@ public class DoodleView extends View implements IDoodle {
             canvas.drawBitmap(mBitmap, 0, 0, null);
             return;
         }
-        // 绘制涂鸦后的图片
-        canvas.drawBitmap(mBitmap, 0, 0, null);
 
+        Bitmap bitmap = mOptimizeDrawing ? mDoodleBitmap : mBitmap;
+
+        // 绘制涂鸦后的图片
+        canvas.drawBitmap(bitmap, 0, 0, null);
+
+
+        int saveCount = canvas.save(); // 1
+        List<IDoodleItem> items = mItemStack;
+        if (mOptimizeDrawing) {
+            items = mItemStackOnViewCanvas;
+        }
         boolean canvasClipped = false;
-        canvas.save(); // 1
         if (!mIsDrawableOutside) { // 裁剪绘制区域为图片区域
             canvasClipped = true;
-            canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
+            canvas.clipRect(0, 0, bitmap.getWidth(), bitmap.getHeight());
         }
-        for (IDoodleItem item : mItemStack) {
+        for (IDoodleItem item : items) {
             if (!item.isNeedClipOutside()) { // 1.不需要裁剪
                 if (canvasClipped) {
                     canvas.restore();
@@ -419,7 +495,7 @@ public class DoodleView extends View implements IDoodle {
 
                 if (canvasClipped) { // 2.恢复裁剪
                     canvas.save();
-                    canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
+                    canvas.clipRect(0, 0, bitmap.getWidth(), bitmap.getHeight());
                 }
             } else {
                 item.draw(canvas);
@@ -427,7 +503,7 @@ public class DoodleView extends View implements IDoodle {
         }
 
         // draw at the top
-        for (IDoodleItem item : mItemStack) {
+        for (IDoodleItem item : items) {
             if (!item.isNeedClipOutside()) { // 1.不需要裁剪
                 if (canvasClipped) {
                     canvas.restore();
@@ -436,14 +512,13 @@ public class DoodleView extends View implements IDoodle {
 
                 if (canvasClipped) { // 2.恢复裁剪
                     canvas.save();
-                    canvas.clipRect(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
+                    canvas.clipRect(0, 0, bitmap.getWidth(), bitmap.getHeight());
                 }
             } else {
                 item.drawAtTheTop(canvas);
             }
         }
-
-        canvas.restore();
+        canvas.restoreToCount(saveCount);
 
         if (mPen != null) {
             mPen.drawHelpers(canvas, this);
@@ -561,6 +636,35 @@ public class DoodleView extends View implements IDoodle {
         return mDefaultTouchDetector;
     }
 
+    private void drawToDoodleBitmap(List<IDoodleItem> items) {
+        if (!mOptimizeDrawing) {
+            return;
+        }
+
+        for (IDoodleItem item : items) {
+            item.draw(mDoodleBitmapCanvas);
+        }
+    }
+
+    private void refreshDoodleBitmap(boolean drawAll) {
+        if (!mOptimizeDrawing) {
+            return;
+        }
+
+        initDoodleBitmap();
+        List<IDoodleItem> items = null;
+        if (drawAll) {
+            items = mItemStack;
+        } else {
+            items = new ArrayList<>(mItemStack);
+            items.removeAll(mItemStackOnViewCanvas);
+        }
+        for (IDoodleItem item : items) {
+            item.draw(mDoodleBitmapCanvas);
+        }
+    }
+
+
     // ========================= api ================================
 
     @Override
@@ -626,26 +730,104 @@ public class DoodleView extends View implements IDoodle {
         refresh();
     }
 
+    public boolean isOptimizeDrawing() {
+        return mOptimizeDrawing;
+    }
+
+    /**
+     * 标志item绘制在View的画布上，而不是在图片Bitmap. 比如正在制作或选中的item. 结束绘制时应调用 {@link #notifyItemFinishedDrawing(IDoodleItem)}
+     * 仅在开启优化绘制（mOptimizeDrawing=true）时生效
+     *
+     * @param item
+     */
+    public void markItemToOptimizeDrawing(IDoodleItem item) {
+        if (!mOptimizeDrawing) {
+            return;
+        }
+
+        if (mItemStackOnViewCanvas.contains(item)) {
+            throw new RuntimeException("The item has been added");
+        }
+
+        mItemStackOnViewCanvas.add(item);
+
+        if (mItemStack.contains(item)) {
+            addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+        }
+
+        refresh();
+    }
+
+    /**
+     * 把item从View画布中移除并绘制在涂鸦图片上. 对应 {@link #notifyItemFinishedDrawing(IDoodleItem)}
+     *
+     * @param item
+     */
+    public void notifyItemFinishedDrawing(IDoodleItem item) {
+        if (!mOptimizeDrawing) {
+            return;
+        }
+
+        if (mItemStackOnViewCanvas.remove(item)) {
+            if (mItemStack.contains(item)) {
+                addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+            } else {
+                addItem(item);
+                mPendingItemsDrawToBitmap.add(item);
+                addFlag(FLAG_DRAW_TO_DOODLE_BITMAP);
+            }
+        }
+
+        refresh();
+    }
+
     /**
      * 保存, 回调DoodleListener.onSaved()的线程和调用save()的线程相同
      */
+    @SuppressLint("StaticFieldLeak")
     @Override
     public void save() {
-        Bitmap savedBitmap = mBitmap.copy(mBitmap.getConfig(), true);
-        Canvas canvas = new Canvas(savedBitmap);
-        for (IDoodleItem item : mItemStack) {
-            if (item instanceof DoodleItemBase) {
-                item.draw(canvas);
-            }
+        if (mIsSaving) {
+            return;
         }
-        savedBitmap = ImageUtils.rotate(savedBitmap, mDoodleRotateDegree, true);
 
-        mDoodleListener.onSaved(this, savedBitmap, new Runnable() {
+        mIsSaving = true;
+
+        new AsyncTask<Void, Void, Bitmap>() {
+
+            @SuppressLint("WrongThread")
             @Override
-            public void run() {
-                refresh();
+            protected Bitmap doInBackground(Void... voids) {
+                Bitmap savedBitmap = null;
+
+                if (mOptimizeDrawing) {
+                    refreshDoodleBitmap(true);
+                    savedBitmap = mDoodleBitmap;
+                } else {
+                    savedBitmap = mBitmap.copy(mBitmap.getConfig(), true);
+                    Canvas canvas = new Canvas(savedBitmap);
+                    for (IDoodleItem item : mItemStack) {
+                        item.draw(canvas);
+                    }
+                }
+
+                savedBitmap = ImageUtils.rotate(savedBitmap, mDoodleRotateDegree, true);
+                return savedBitmap;
             }
-        });
+
+            @Override
+            protected void onPostExecute(Bitmap bitmap) {
+                mDoodleListener.onSaved(DoodleView.this, bitmap, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mOptimizeDrawing) {
+                            refreshDoodleBitmap(false);
+                        }
+                        refresh();
+                    }
+                });
+            }
+        }.execute();
     }
 
     /**
@@ -658,6 +840,9 @@ public class DoodleView extends View implements IDoodle {
             item.onRemove();
         }
         mItemStack.clear();
+
+        addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+
         refresh();
     }
 
@@ -919,6 +1104,9 @@ public class DoodleView extends View implements IDoodle {
 
         mItemStack.remove(item);
         mItemStack.add(item);
+
+        addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+
         refresh();
     }
 
@@ -930,6 +1118,9 @@ public class DoodleView extends View implements IDoodle {
 
         mItemStack.remove(item);
         mItemStack.add(0, item);
+
+        addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+
         refresh();
     }
 
@@ -975,6 +1166,9 @@ public class DoodleView extends View implements IDoodle {
         mItemStack.add(item);
         item.onAdd();
 
+        mPendingItemsDrawToBitmap.add(item);
+        addFlag(FLAG_DRAW_TO_DOODLE_BITMAP);
+
         refresh();
     }
 
@@ -985,12 +1179,19 @@ public class DoodleView extends View implements IDoodle {
         }
         doodleItem.onRemove();
 
+        addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+
         refresh();
     }
 
     @Override
+    public int getItemCount() {
+        return mItemStack.size();
+    }
+
+    @Override
     public List<IDoodleItem> getAllItem() {
-        return mItemStack;
+        return new ArrayList<>(mItemStack);
     }
 
     @Override

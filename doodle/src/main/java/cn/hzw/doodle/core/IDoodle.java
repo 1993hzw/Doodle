@@ -176,6 +176,13 @@ public interface IDoodle {
     public void removeItem(IDoodleItem doodleItem);
 
     /**
+     * total item count
+     *
+     * @return
+     */
+    public int getItemCount();
+
+    /**
      * 获取所有的涂鸦
      *
      * @return

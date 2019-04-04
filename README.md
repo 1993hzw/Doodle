@@ -6,6 +6,8 @@ Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Als
 
 ***Android图片涂鸦，具有撤消、缩放、移动、添加文字，贴图等功能。还是一个功能强大，可自定义和可扩展的涂鸦框架、多功能画板。***
 
+
+
 ![01.gif](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/01.gif)
 
 ![01](https://raw.githubusercontent.com/1993hzw/common/master/Doodle/01.png)
@@ -60,7 +62,7 @@ There are two ways to use the Doodle library:
 ***这里有两种方式使用Doodle涂鸦库***
 
   * A. Launch DoodleActivity directly (the layout is like demo images above). If you need to customize more interactions, please use another method (Way B)．
-  
+
   ***使用写好的涂鸦界面，直接启动.启动的页面可参看上面的演示图片。如果需要自定义更多的交互方式，则请使用另一种方式(即B方式)。***
 ```java
 DoodleParams params = new DoodleParams(); // 涂鸦参数
@@ -72,10 +74,17 @@ See [DoodleParams](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main
 ***查看[DoodleParams](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleParams.java)获取更多涂鸦参数信息。***
 
   * B. Recommend, use DoodleView and customize your layout. 
-  
-  ***推荐的方法：使用DoodleView，便于拓展，灵活性高，自定义自己的交互界面.***
+    mDoodle
+    ***推荐的方法：使用DoodleView，便于拓展，灵活性高，自定义自己的交互界面.***
 ```java
-DoodleView mDoodle = mDoodleView = new DoodleView(this, bitmap, new IDoodleListener() {
+/*
+Whether or not to optimize drawing, it is suggested to open, which can optimize the drawing speed and performance.
+Note: When item is selected for editing after opening, it will be drawn at the top level, and not at the corresponding level until editing is completed.
+是否优化绘制，建议开启，可优化绘制速度和性能.
+注意：开启后item被选中编辑时时会绘制在最上面一层，直到结束编辑后才绘制在相应层级
+ */
+boolean optimizeDrawing = true;
+DoodleView mDoodleView = new DoodleView(this, bitmap, optimizeDrawing, new IDoodleListener() {
             /*
             called when save the doodled iamge. 
             保存涂鸦图像时调用
@@ -113,12 +122,12 @@ mTouchGestureListener = new DoodleOnTouchGestureListener(mDoodleView, new Doodle
     public void onCreateSelectableItem(IDoodle doodle, float x, float y) {
         //do something
         /*
-if (mDoodle.getPen() == DoodlePen.TEXT) {
-        IDoodleSelectableItem item = new DoodleText(mDoodle, "hello", 20 * mDoodle.getUnitSize(), new DoodleColor(Color.RED), x, y);
-        mDoodle.addItem(item);
-} else if (mDoodle.getPen() == DoodlePen.BITMAP) {
-        IDoodleSelectableItem item = new DoodleBitmap(mDoodle, bitmap, 80 * mDoodle.getUnitSize(), x, y);
-        mDoodle.addItem(item);
+if (mDoodleView.getPen() == DoodlePen.TEXT) {
+        IDoodleSelectableItem item = new DoodleText(mDoodleView, "hello", 20 * mDoodleView.getUnitSize(), new DoodleColor(Color.RED), x, y);
+        mDoodleView.addItem(item);
+} else if (mDoodleView.getPen() == DoodlePen.BITMAP) {
+        IDoodleSelectableItem item = new DoodleBitmap(mDoodleView, bitmap, 80 * mDoodle.getUnitSize(), x, y);
+        mDoodleView.addItem(item);
 }
         */
     }

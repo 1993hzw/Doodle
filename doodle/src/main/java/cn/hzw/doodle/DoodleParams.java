@@ -78,6 +78,14 @@ public class DoodleParams implements Parcelable {
      */
     public boolean mSupportScaleItem = true;
 
+    /**
+     *
+     * 是否优化绘制，开启后涂鸦会及时绘制在图片上，以此优化绘制速度和性能.
+     *
+     * {@link DoodleView#mOptimizeDrawing}
+     */
+    public boolean mOptimizeDrawing = true;
+
     public static final Creator<DoodleParams> CREATOR = new Creator<DoodleParams>() {
         @Override
         public DoodleParams createFromParcel(Parcel in) {
@@ -95,6 +103,7 @@ public class DoodleParams implements Parcelable {
             params.mMaxScale = in.readFloat();
             params.mPaintColor = in.readInt();
             params.mSupportScaleItem = in.readInt() == 1;
+            params.mOptimizeDrawing = in.readInt() == 1;
 
             return params;
         }
@@ -120,6 +129,7 @@ public class DoodleParams implements Parcelable {
         dest.writeFloat(mMaxScale);
         dest.writeInt(mPaintColor);
         dest.writeInt(mSupportScaleItem ? 1 : 0);
+        dest.writeInt(mOptimizeDrawing ? 1 : 0);
 
     }
 
