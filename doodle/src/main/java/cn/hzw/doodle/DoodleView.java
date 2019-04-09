@@ -381,6 +381,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
             clearFlag(FLAG_DRAW_PENDINGS_TO_BACKGROUND);
             clearFlag(FLAG_REFRESH_BACKGROUND);
             refreshDoodleBitmap(false);
+            mPendingItemsDrawToBitmap.clear();
             mBackgroundView.invalidate();
         } else if (hasFlag(FLAG_DRAW_PENDINGS_TO_BACKGROUND)) {
             LogUtil.d(TAG, "FLAG_DRAW_PENDINGS_TO_BACKGROUND");
@@ -751,8 +752,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
                 addFlag(FLAG_RESET_BACKGROUND);
             } else {
                 addItem(item);
-                mPendingItemsDrawToBitmap.add(item);
-                addFlag(FLAG_DRAW_PENDINGS_TO_BACKGROUND);
             }
         }
 
@@ -818,6 +817,8 @@ public class DoodleView extends FrameLayout implements IDoodle {
             item.onRemove();
         }
         mItemStack.clear();
+        mItemStackOnViewCanvas.clear();
+        mPendingItemsDrawToBitmap.clear();
 
         addFlag(FLAG_RESET_BACKGROUND);
 
@@ -1145,6 +1146,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         if (mItemStack.contains(item)) {
             throw new RuntimeException("the item has been added");
         }
+
         mItemStack.add(item);
         item.onAdd();
 
@@ -1159,6 +1161,9 @@ public class DoodleView extends FrameLayout implements IDoodle {
         if (!mItemStack.remove(doodleItem)) {
             return;
         }
+
+        mItemStackOnViewCanvas.remove(doodleItem);
+        mPendingItemsDrawToBitmap.remove(doodleItem);
         doodleItem.onRemove();
 
         addFlag(FLAG_RESET_BACKGROUND);
