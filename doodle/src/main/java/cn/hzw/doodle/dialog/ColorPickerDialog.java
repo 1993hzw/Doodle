@@ -52,7 +52,7 @@ public class ColorPickerDialog extends Dialog {
 
         final ViewGroup viewGroup = (ViewGroup) View.inflate(context, R.layout.doodle_color_selector_dialog, null);
         final EditText sizeView = (EditText) viewGroup.findViewById(R.id.doodle_txtview_size);
-        final SeekBar seekBar = viewGroup.findViewById(R.id.doodle_seekbar_size);
+        final SeekBar seekBar = (SeekBar) viewGroup.findViewById(R.id.doodle_seekbar_size);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {

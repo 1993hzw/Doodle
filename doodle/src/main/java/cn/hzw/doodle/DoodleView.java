@@ -1,3 +1,28 @@
+/*
+  MIT License
+
+  Copyright (c) 2018 huangziwei
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+ *
+ */
+
 package cn.hzw.doodle;
 
 import android.annotation.SuppressLint;
@@ -14,6 +39,8 @@ import android.os.AsyncTask;
 import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 
 import cn.forward.androids.utils.ImageUtils;
+import cn.forward.androids.utils.LogUtil;
 import cn.forward.androids.utils.Util;
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleColor;
@@ -37,8 +65,9 @@ import static cn.hzw.doodle.util.DrawUtil.rotatePoint;
  * 涂鸦框架
  * Created by huangziwei on 2016/9/3.
  */
-public class DoodleView extends View implements IDoodle {
+public class DoodleView extends FrameLayout implements IDoodle {
 
+    public static final String TAG = "DoodleView";
     public final static float MAX_SCALE = 5f; // 最大缩放倍数
     public final static float MIN_SCALE = 0.25f; // 最小缩放倍数
     public final static int DEFAULT_SIZE = 6; // 默认画笔大小
@@ -46,8 +75,9 @@ public class DoodleView extends View implements IDoodle {
     public static final int ERROR_INIT = -1;
     public static final int ERROR_SAVE = -2;
 
-    private static final int FLAG_REFRESH_DOODLEE_BITMAP = 1 << 1;
-    private static final int FLAG_DRAW_TO_DOODLE_BITMAP = 1 << 2;
+    private static final int FLAG_RESET_BACKGROUND = 1 << 1;
+    private static final int FLAG_DRAW_PENDINGS_TO_BACKGROUND = 1 << 2;
+    private static final int FLAG_REFRESH_BACKGROUND = 1 << 3;
 
     private IDoodleListener mDoodleListener;
 
@@ -97,7 +127,7 @@ public class DoodleView extends View implements IDoodle {
     private IDoodleTouchDetector mDefaultTouchDetector;
     private Map<IDoodlePen, IDoodleTouchDetector> mTouchDetectorMap = new HashMap<>();
 
-    private DoodleViewInner mInner;
+    private ForegroundView mForegroundView;
     private RectF mDoodleBound = new RectF();
     private PointF mTempPoint = new PointF();
 
@@ -105,17 +135,18 @@ public class DoodleView extends View implements IDoodle {
     private boolean mIsSaving = false;
 
     /**
-    Whether or not to optimize drawing, it is suggested to open, which can optimize the drawing speed and performance.
-    Note: When item is selected for editing after opening, it will be drawn at the top level, and not at the corresponding level until editing is completed.
-    是否优化绘制，建议开启，可优化绘制速度和性能.
-    注意：开启后item被选中编辑时时会绘制在最上面一层，直到结束编辑后才绘制在相应层级
+     * Whether or not to optimize drawing, it is suggested to open, which can optimize the drawing speed and performance.
+     * Note: When item is selected for editing after opening, it will be drawn at the top level, and not at the corresponding level until editing is completed.
+     * 是否优化绘制，建议开启，可优化绘制速度和性能.
+     * 注意：开启后item被选中编辑时时会绘制在最上面一层，直到结束编辑后才绘制在相应层级
      **/
     private final boolean mOptimizeDrawing; // 涂鸦及时绘制在图片上，优化性能
-    private List<IDoodleItem> mItemStackOnViewCanvas = new ArrayList<>(); // 这些item绘制在View的画布上，而不是在图片Bitmap.比如正在制作或选中的item
+    private List<IDoodleItem> mItemStackOnViewCanvas = new ArrayList<>(); // 这些item绘制在View的画布上，而不是在图片Bitmap.比如正在创建或选中的item
     private List<IDoodleItem> mPendingItemsDrawToBitmap = new ArrayList<>();
     private Bitmap mDoodleBitmap;
     private int mFlags = 0;
     private Canvas mDoodleBitmapCanvas;
+    private BackgroundView mBackgroundView;
 
     public DoodleView(Context context, Bitmap bitmap, IDoodleListener listener) {
         this(context, bitmap, false, listener, null);
@@ -134,15 +165,11 @@ public class DoodleView extends View implements IDoodle {
      *                        如果开启了优化绘制，当绘制或编辑某个item时需要调用 {@link #markItemToOptimizeDrawing(IDoodleItem)}，无需再调用{@link #addItem(IDoodleItem)}.
      *                        另外结束时需要调用对应的 {@link #notifyItemFinishedDrawing(IDoodleItem)}。
      *                        {@link #mOptimizeDrawing}
-     *
      * @param listener
      * @param defaultDetector 默认手势识别器
      */
     public DoodleView(Context context, Bitmap bitmap, boolean optimizeDrawing, IDoodleListener listener, IDoodleTouchDetector defaultDetector) {
         super(context);
-
-        // 关闭硬件加速，某些绘图操作不支持硬件加速
-        setLayerType(LAYER_TYPE_SOFTWARE, null);
 
         mBitmap = bitmap;
         mDoodleListener = listener;
@@ -177,7 +204,10 @@ public class DoodleView extends View implements IDoodle {
 
         mDefaultTouchDetector = defaultDetector;
 
-        mInner = new DoodleViewInner();
+        mForegroundView = new ForegroundView(context);
+        mBackgroundView = new BackgroundView(context);
+        addView(mBackgroundView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        addView(mForegroundView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
     @Override
@@ -205,13 +235,13 @@ public class DoodleView extends View implements IDoodle {
 
         // 把事件转发给innerView，避免在区域外不可点击
         MotionEvent transformedEvent = MotionEvent.obtain(event);
-//        final float offsetX = mInner.getScrollX() - mInner.getLeft();
-//        final float offsetY = mInner.getScrollY() - mInner.getTop();
+//        final float offsetX = mForegroundView.getScrollX() - mForegroundView.getLeft();
+//        final float offsetY = mForegroundView.getScrollY() - mForegroundView.getTop();
 //        transformedEvent.offsetLocation(offsetX, offsetY);
         mTouchEventMatrix.reset();
         mTouchEventMatrix.setRotate(-mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
         transformedEvent.transform(mTouchEventMatrix);
-        boolean handled = mInner.onTouchEvent(transformedEvent);
+        boolean handled = mForegroundView.onTouchEvent(transformedEvent);
         transformedEvent.recycle();
 
         return handled;
@@ -257,7 +287,7 @@ public class DoodleView extends View implements IDoodle {
 
         initDoodleBitmap();
 
-        refresh();
+        refreshWithBackground();
     }
 
     private void initDoodleBitmap() {
@@ -345,11 +375,30 @@ public class DoodleView extends View implements IDoodle {
             return;
         }
 
-        // draw inner
-        canvas.save();
+        if (hasFlag(FLAG_RESET_BACKGROUND)) {
+            LogUtil.d(TAG, "FLAG_RESET_BACKGROUND");
+            clearFlag(FLAG_RESET_BACKGROUND);
+            clearFlag(FLAG_DRAW_PENDINGS_TO_BACKGROUND);
+            clearFlag(FLAG_REFRESH_BACKGROUND);
+            refreshDoodleBitmap(false);
+            mBackgroundView.invalidate();
+        } else if (hasFlag(FLAG_DRAW_PENDINGS_TO_BACKGROUND)) {
+            LogUtil.d(TAG, "FLAG_DRAW_PENDINGS_TO_BACKGROUND");
+            clearFlag(FLAG_DRAW_PENDINGS_TO_BACKGROUND);
+            clearFlag(FLAG_REFRESH_BACKGROUND);
+            drawToDoodleBitmap(mPendingItemsDrawToBitmap);
+            mPendingItemsDrawToBitmap.clear();
+            mBackgroundView.invalidate();
+        } else if (hasFlag(FLAG_REFRESH_BACKGROUND)) {
+            LogUtil.d(TAG, "FLAG_REFRESH_BACKGROUND");
+            clearFlag(FLAG_REFRESH_BACKGROUND);
+            mBackgroundView.invalidate();
+        }
+
+        int count = canvas.save();
         canvas.rotate(mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
-        mInner.onDraw(canvas);
-        canvas.restore();
+        super.dispatchDraw(canvas);
+        canvas.restoreToCount(count);
 
         /*// test
         mPaint.setStyle(Paint.Style.STROKE);
@@ -357,7 +406,8 @@ public class DoodleView extends View implements IDoodle {
         mPaint.setStrokeWidth(20);
         canvas.drawRect(getDoodleBound(), mPaint);*/
 
-        if (mIsScrollingDoodle && mEnableZoomer && mZoomerScale > 0) { //启用放大镜
+        if (mIsScrollingDoodle
+                && mEnableZoomer && mZoomerScale > 0) { //启用放大镜
             canvas.save(); // ***
 
             float unitSize = getUnitSize();
@@ -376,7 +426,7 @@ public class DoodleView extends View implements IDoodle {
             canvas.translate(-mTouchX + mZoomerRadius / scale, -mTouchY + mZoomerRadius / scale);
             // draw inner
             canvas.rotate(mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
-            mInner.onDraw(canvas);
+            super.dispatchDraw(canvas);
             // 触摸点
             float left = getAllTranX();
             float top = getAllTranY();
@@ -418,7 +468,7 @@ public class DoodleView extends View implements IDoodle {
             float tempTransY = mTransY;
             mScale = 1;
             mTransX = mTransY = 0;
-            mInner.onDraw(canvas);
+            super.dispatchDraw(canvas);
             mScale = tempScale;
             mTransX = tempTransX;
             mTransY = tempTransY;
@@ -443,89 +493,6 @@ public class DoodleView extends View implements IDoodle {
 
     private void clearFlag(int flag) {
         mFlags = mFlags & ~flag;
-    }
-
-    private void doDraw(Canvas canvas) {
-        if (hasFlag(FLAG_REFRESH_DOODLEE_BITMAP)) {
-            clearFlag(FLAG_REFRESH_DOODLEE_BITMAP);
-            clearFlag(FLAG_DRAW_TO_DOODLE_BITMAP);
-            refreshDoodleBitmap(false);
-        } else if (hasFlag(FLAG_DRAW_TO_DOODLE_BITMAP)) {
-            clearFlag(FLAG_DRAW_TO_DOODLE_BITMAP);
-            drawToDoodleBitmap(mPendingItemsDrawToBitmap);
-            mPendingItemsDrawToBitmap.clear();
-        }
-
-        float left = getAllTranX();
-        float top = getAllTranY();
-
-        // 画布和图片共用一个坐标系，只需要处理屏幕坐标系到图片（画布）坐标系的映射关系
-        canvas.translate(left, top); // 偏移画布
-        float scale = getAllScale();
-        canvas.scale(scale, scale); // 缩放画布
-
-        if (isJustDrawOriginal) { // 只绘制原图
-            canvas.drawBitmap(mBitmap, 0, 0, null);
-            return;
-        }
-
-        Bitmap bitmap = mOptimizeDrawing ? mDoodleBitmap : mBitmap;
-
-        // 绘制涂鸦后的图片
-        canvas.drawBitmap(bitmap, 0, 0, null);
-
-
-        int saveCount = canvas.save(); // 1
-        List<IDoodleItem> items = mItemStack;
-        if (mOptimizeDrawing) {
-            items = mItemStackOnViewCanvas;
-        }
-        boolean canvasClipped = false;
-        if (!mIsDrawableOutside) { // 裁剪绘制区域为图片区域
-            canvasClipped = true;
-            canvas.clipRect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        }
-        for (IDoodleItem item : items) {
-            if (!item.isNeedClipOutside()) { // 1.不需要裁剪
-                if (canvasClipped) {
-                    canvas.restore();
-                }
-
-                item.draw(canvas);
-
-                if (canvasClipped) { // 2.恢复裁剪
-                    canvas.save();
-                    canvas.clipRect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-                }
-            } else {
-                item.draw(canvas);
-            }
-        }
-
-        // draw at the top
-        for (IDoodleItem item : items) {
-            if (!item.isNeedClipOutside()) { // 1.不需要裁剪
-                if (canvasClipped) {
-                    canvas.restore();
-                }
-                item.drawAtTheTop(canvas);
-
-                if (canvasClipped) { // 2.恢复裁剪
-                    canvas.save();
-                    canvas.clipRect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-                }
-            } else {
-                item.drawAtTheTop(canvas);
-            }
-        }
-        canvas.restoreToCount(saveCount);
-
-        if (mPen != null) {
-            mPen.drawHelpers(canvas, this);
-        }
-        if (mShape != null) {
-            mShape.drawHelpers(canvas, this);
-        }
     }
 
     public float getAllScale() {
@@ -664,15 +631,26 @@ public class DoodleView extends View implements IDoodle {
         }
     }
 
+    private void refreshWithBackground() {
+        addFlag(FLAG_REFRESH_BACKGROUND);
+        refresh();
+    }
 
     // ========================= api ================================
 
     @Override
+    public void invalidate() {
+        refresh();
+    }
+
+    @Override
     public void refresh() {
         if (Looper.myLooper() == Looper.getMainLooper()) {
-            invalidate();
+            super.invalidate();
+            mForegroundView.invalidate();
         } else {
-            postInvalidate();
+            super.postInvalidate();
+            mForegroundView.postInvalidate();
         }
     }
 
@@ -727,7 +705,7 @@ public class DoodleView extends View implements IDoodle {
         mRotateTranX = tx;
         mRotateTranY = ty;
 
-        refresh();
+        refreshWithBackground();
     }
 
     public boolean isOptimizeDrawing() {
@@ -735,7 +713,7 @@ public class DoodleView extends View implements IDoodle {
     }
 
     /**
-     * 标志item绘制在View的画布上，而不是在图片Bitmap. 比如正在制作或选中的item. 结束绘制时应调用 {@link #notifyItemFinishedDrawing(IDoodleItem)}
+     * 标志item绘制在View的画布上，而不是在图片Bitmap. 比如正创建或选中的item. 结束绘制时应调用 {@link #notifyItemFinishedDrawing(IDoodleItem)}
      * 仅在开启优化绘制（mOptimizeDrawing=true）时生效
      *
      * @param item
@@ -752,7 +730,7 @@ public class DoodleView extends View implements IDoodle {
         mItemStackOnViewCanvas.add(item);
 
         if (mItemStack.contains(item)) {
-            addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+            addFlag(FLAG_RESET_BACKGROUND);
         }
 
         refresh();
@@ -770,11 +748,11 @@ public class DoodleView extends View implements IDoodle {
 
         if (mItemStackOnViewCanvas.remove(item)) {
             if (mItemStack.contains(item)) {
-                addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+                addFlag(FLAG_RESET_BACKGROUND);
             } else {
                 addItem(item);
                 mPendingItemsDrawToBitmap.add(item);
-                addFlag(FLAG_DRAW_TO_DOODLE_BITMAP);
+                addFlag(FLAG_DRAW_PENDINGS_TO_BACKGROUND);
             }
         }
 
@@ -841,7 +819,7 @@ public class DoodleView extends View implements IDoodle {
         }
         mItemStack.clear();
 
-        addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+        addFlag(FLAG_RESET_BACKGROUND);
 
         refresh();
     }
@@ -873,7 +851,7 @@ public class DoodleView extends View implements IDoodle {
     @Override
     public void setShowOriginal(boolean justDrawOriginal) {
         isJustDrawOriginal = justDrawOriginal;
-        refresh();
+        refreshWithBackground();
     }
 
     @Override
@@ -921,6 +899,7 @@ public class DoodleView extends View implements IDoodle {
         mTransX = toTransX(touchX, pivotX);
         mTransY = toTransY(touchY, pivotY);
 
+        addFlag(FLAG_REFRESH_BACKGROUND);
         refresh();
     }
 
@@ -972,7 +951,7 @@ public class DoodleView extends View implements IDoodle {
     public void setDoodleTranslation(float transX, float transY) {
         mTransX = transX;
         mTransY = transY;
-        refresh();
+        refreshWithBackground();
     }
 
     /**
@@ -983,7 +962,7 @@ public class DoodleView extends View implements IDoodle {
     @Override
     public void setDoodleTranslationX(float transX) {
         this.mTransX = transX;
-        refresh();
+        refreshWithBackground();
     }
 
     @Override
@@ -994,7 +973,7 @@ public class DoodleView extends View implements IDoodle {
     @Override
     public void setDoodleTranslationY(float transY) {
         this.mTransY = transY;
-        refresh();
+        refreshWithBackground();
     }
 
     @Override
@@ -1091,6 +1070,9 @@ public class DoodleView extends View implements IDoodle {
         return mIsScrollingDoodle;
     }
 
+    /**
+     * @param scrollingDoodle 是否正在滚动，即是否发生滑动事件。用于放大镜的显示，放大镜只在滑动时显示
+     */
     public void setScrollingDoodle(boolean scrollingDoodle) {
         mIsScrollingDoodle = scrollingDoodle;
         refresh();
@@ -1105,7 +1087,7 @@ public class DoodleView extends View implements IDoodle {
         mItemStack.remove(item);
         mItemStack.add(item);
 
-        addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+        addFlag(FLAG_RESET_BACKGROUND);
 
         refresh();
     }
@@ -1119,7 +1101,7 @@ public class DoodleView extends View implements IDoodle {
         mItemStack.remove(item);
         mItemStack.add(0, item);
 
-        addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+        addFlag(FLAG_RESET_BACKGROUND);
 
         refresh();
     }
@@ -1167,7 +1149,7 @@ public class DoodleView extends View implements IDoodle {
         item.onAdd();
 
         mPendingItemsDrawToBitmap.add(item);
-        addFlag(FLAG_DRAW_TO_DOODLE_BITMAP);
+        addFlag(FLAG_DRAW_PENDINGS_TO_BACKGROUND);
 
         refresh();
     }
@@ -1179,7 +1161,7 @@ public class DoodleView extends View implements IDoodle {
         }
         doodleItem.onRemove();
 
-        addFlag(FLAG_REFRESH_DOODLEE_BITMAP);
+        addFlag(FLAG_RESET_BACKGROUND);
 
         refresh();
     }
@@ -1250,7 +1232,46 @@ public class DoodleView extends View implements IDoodle {
         refresh();
     }
 
-    private class DoodleViewInner {
+    // 背景图层，只在背景发生变化时绘制， 用于绘制原始图片或在优化绘制时的非编辑状态的item
+    private class BackgroundView extends View {
+
+        public BackgroundView(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            LogUtil.d(TAG, "BackgroundView>>onDraw");
+            float left = getAllTranX();
+            float top = getAllTranY();
+
+            // 画布和图片共用一个坐标系，只需要处理屏幕坐标系到图片（画布）坐标系的映射关系
+            canvas.translate(left, top); // 偏移画布
+            float scale = getAllScale();
+            canvas.scale(scale, scale); // 缩放画布
+
+            if (isJustDrawOriginal) { // 只绘制原图
+                canvas.drawBitmap(mBitmap, 0, 0, null);
+                return;
+            }
+
+            Bitmap bitmap = mOptimizeDrawing ? mDoodleBitmap : mBitmap;
+
+            // 绘制涂鸦后的图片
+            canvas.drawBitmap(bitmap, 0, 0, null);
+        }
+
+    }
+
+    // 前景图层，每次刷新都会绘制，用于绘制正在创建或选中的item
+    private class ForegroundView extends View {
+        public ForegroundView(Context context) {
+            super(context);
+
+            // 关闭硬件加速，某些绘图操作不支持硬件加速
+            setLayerType(LAYER_TYPE_SOFTWARE, null);
+        }
+
         public boolean onTouchEvent(MotionEvent event) {
             // 綁定的识别器
             IDoodleTouchDetector detector = mTouchDetectorMap.get(mPen);
@@ -1265,9 +1286,77 @@ public class DoodleView extends View implements IDoodle {
         }
 
         protected void onDraw(Canvas canvas) {
-            canvas.save();
+            int count = canvas.save();
             doDraw(canvas);
-            canvas.restore();
+            canvas.restoreToCount(count);
+        }
+
+        private void doDraw(Canvas canvas) {
+            if (isJustDrawOriginal) { // 只绘制原图
+                return;
+            }
+
+            float left = getAllTranX();
+            float top = getAllTranY();
+
+            // 画布和图片共用一个坐标系，只需要处理屏幕坐标系到图片（画布）坐标系的映射关系
+            canvas.translate(left, top); // 偏移画布
+            float scale = getAllScale();
+            canvas.scale(scale, scale); // 缩放画布
+
+            Bitmap bitmap = mOptimizeDrawing ? mDoodleBitmap : mBitmap;
+
+            int saveCount = canvas.save(); // 1
+            List<IDoodleItem> items = mItemStack;
+            if (mOptimizeDrawing) {
+                items = mItemStackOnViewCanvas;
+            }
+            boolean canvasClipped = false;
+            if (!mIsDrawableOutside) { // 裁剪绘制区域为图片区域
+                canvasClipped = true;
+                canvas.clipRect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+            }
+            for (IDoodleItem item : items) {
+                if (!item.isNeedClipOutside()) { // 1.不需要裁剪
+                    if (canvasClipped) {
+                        canvas.restore();
+                    }
+
+                    item.draw(canvas);
+
+                    if (canvasClipped) { // 2.恢复裁剪
+                        canvas.save();
+                        canvas.clipRect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+                    }
+                } else {
+                    item.draw(canvas);
+                }
+            }
+
+            // draw at the top
+            for (IDoodleItem item : items) {
+                if (!item.isNeedClipOutside()) { // 1.不需要裁剪
+                    if (canvasClipped) {
+                        canvas.restore();
+                    }
+                    item.drawAtTheTop(canvas);
+
+                    if (canvasClipped) { // 2.恢复裁剪
+                        canvas.save();
+                        canvas.clipRect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+                    }
+                } else {
+                    item.drawAtTheTop(canvas);
+                }
+            }
+            canvas.restoreToCount(saveCount);
+
+            if (mPen != null) {
+                mPen.drawHelpers(canvas, DoodleView.this);
+            }
+            if (mShape != null) {
+                mShape.drawHelpers(canvas, DoodleView.this);
+            }
         }
     }
 }

@@ -16,17 +16,17 @@ public class DoodleGuideActivity extends Activity {
         setContentView(R.layout.activity_guide);
 
         // 初级涂鸦
-        ViewGroup simpleContainer = findViewById(R.id.container_simple_doodle);
+        ViewGroup simpleContainer = (ViewGroup) findViewById(R.id.container_simple_doodle);
         SimpleDoodleView simpleDoodleView = new SimpleDoodleView(this);
         simpleContainer.addView(simpleDoodleView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         // 中级涂鸦
-        ViewGroup middleContainer = findViewById(R.id.container_middle_doodle);
+        ViewGroup middleContainer = (ViewGroup) findViewById(R.id.container_middle_doodle);
         MiddleDoodleView middleDoodleView = new MiddleDoodleView(this);
         middleContainer.addView(middleDoodleView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         // 高级级涂鸦
-        ViewGroup advancedContainer = findViewById(R.id.container_advanced_doodle);
+        ViewGroup advancedContainer = (ViewGroup) findViewById(R.id.container_advanced_doodle);
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.thelittleprince2);
         AdvancedDoodleView advancedDoodleView = new AdvancedDoodleView(this, bitmap);
         advancedContainer.addView(advancedDoodleView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));

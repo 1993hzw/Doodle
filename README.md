@@ -143,7 +143,27 @@ mDoodleView.setPen(DoodlePen.TEXT);
 mDoodleView.setShape(DoodleShape.HAND_WRITE);
 mDoodleView.setColor(new DoodleColor(Color.RED));
 
+
 ```
+When turning off optimized drawing, you only need to call `addItem(IDoodleItem)` when you create it. When you start optimizing drawing, the created or selected item needs to call `markItemToOptimizeDrawing(IDoodleItem)`, and you should call `notifyItemFinishedDrawing(IDoodleItem)` when you finish drawing. So this is generally used in code:
+***当关闭优化绘制时,只需要在创建时调用`addItem(IDoodleItem)`;而当开启优化绘制时，创建或选中的item需要调用`markItemToOptimizeDrawing(IDoodleItem)`,结束绘制时应调用`notifyItemFinishedDrawing(IDoodleItem)`。因此在代码中一般这样使用：***
+```
+// begin drawing
+if (mDoodle.isOptimizeDrawing()) {
+   mDoodle.markItemToOptimizeDrawing(item);
+} else {
+   mDoodle.addItem(item);
+}
+
+...
+
+// finish drawing
+if (mDoodle.isOptimizeDrawing()) {
+   mDoodle.notifyItemFinishedDrawing(item);
+}
+```
+
+
 Then, add the DoodleView to your layout. Now you can start doodling freely.
 
  ***把DoodleView添加到布局中，然后开始涂鸦。***

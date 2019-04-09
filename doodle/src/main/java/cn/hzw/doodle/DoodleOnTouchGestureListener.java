@@ -175,7 +175,9 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
         }
 
         if (mCurrDoodlePath != null) {
-            mDoodle.notifyItemFinishedDrawing(mCurrDoodlePath);
+            if (mDoodle.isOptimizeDrawing()) {
+                mDoodle.notifyItemFinishedDrawing(mCurrDoodlePath);
+            }
             mCurrDoodlePath = null;
         }
 

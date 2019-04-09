@@ -58,7 +58,7 @@ public class MosaicDemo extends Activity {
         findViewById(R.id.btn_mosaic_x3).performClick(); // see setMosaicLevel(View view)
 
         // step 4
-        ViewGroup container = findViewById(R.id.doodle_container);
+        ViewGroup container = (ViewGroup) findViewById(R.id.doodle_container);
         container.addView(doodleView);
     }
 

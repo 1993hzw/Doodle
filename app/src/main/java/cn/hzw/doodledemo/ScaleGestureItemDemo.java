@@ -91,7 +91,7 @@ public class ScaleGestureItemDemo extends Activity {
         doodleView.setColor(new DoodleColor(Color.RED));
 
         // step 4
-        ViewGroup container = findViewById(R.id.doodle_container);
+        ViewGroup container = (ViewGroup) findViewById(R.id.doodle_container);
         container.addView(doodleView);
     }
 

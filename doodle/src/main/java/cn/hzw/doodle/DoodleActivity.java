@@ -169,6 +169,7 @@ public class DoodleActivity extends Activity {
             this.finish();
             return;
         }
+
         LogUtil.d("TAG", mImagePath);
         if (mDoodleParams.mIsFullScreen) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -441,7 +442,7 @@ public class DoodleActivity extends Activity {
         });
         mSelectedEditContainer = findViewById(R.id.doodle_selectable_edit_container);
         mSelectedEditContainer.setVisibility(View.GONE);
-        mItemScaleTextView = findViewById(R.id.item_scale);
+        mItemScaleTextView = (TextView) findViewById(R.id.item_scale);
         mItemScaleTextView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -465,7 +466,7 @@ public class DoodleActivity extends Activity {
 
         mBtnColor = DoodleActivity.this.findViewById(R.id.btn_set_color);
         mColorContainer = DoodleActivity.this.findViewById(R.id.btn_set_color_container);
-        mEditSizeSeekBar = findViewById(R.id.doodle_seekbar_size);
+        mEditSizeSeekBar = (SeekBar) findViewById(R.id.doodle_seekbar_size);
         mEditSizeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
