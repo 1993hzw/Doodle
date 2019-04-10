@@ -33,7 +33,7 @@ public abstract class DoodleRotatableItemBase extends DoodleSelectableItemBase {
         if (isSelected()) {
 
             // 反向缩放画布，使视觉上选中边框不随图片缩放而变化
-            canvas.save();
+            int count = canvas.save();
             canvas.scale(1 / getDoodle().getDoodleScale(), 1 / getDoodle().getDoodleScale(), getPivotX() - getLocation().x, getPivotY() - getLocation().y);
             mRectTemp.set(getBounds());
             DrawUtil.scaleRect(mRectTemp, getDoodle().getDoodleScale(), getPivotX() - getLocation().x, getPivotY() - getLocation().y);
@@ -99,7 +99,7 @@ public abstract class DoodleRotatableItemBase extends DoodleSelectableItemBase {
             mPaint.setColor(0xffffffff);
             canvas.drawCircle(getPivotX() - getLocation().x, getPivotY() - getLocation().y, unit, mPaint);
 
-            canvas.restore();
+            canvas.restoreToCount(count);
         }
     }
 

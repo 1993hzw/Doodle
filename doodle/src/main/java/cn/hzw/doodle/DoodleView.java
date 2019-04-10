@@ -812,13 +812,14 @@ public class DoodleView extends FrameLayout implements IDoodle {
      */
     @Override
     public void clear() {
+        mItemStack.clear();
+        mItemStackOnViewCanvas.clear();
+        mPendingItemsDrawToBitmap.clear();
+
         for (int i = 0; i < mItemStack.size(); i++) {
             IDoodleItem item = mItemStack.remove(i);
             item.onRemove();
         }
-        mItemStack.clear();
-        mItemStackOnViewCanvas.clear();
-        mPendingItemsDrawToBitmap.clear();
 
         addFlag(FLAG_RESET_BACKGROUND);
 

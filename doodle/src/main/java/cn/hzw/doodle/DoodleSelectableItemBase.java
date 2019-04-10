@@ -95,14 +95,14 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
 
     @Override
     public void drawAtTheTop(Canvas canvas) {
-        canvas.save();
+        int count = canvas.save();
         PointF location = getLocation(); // 获取旋转后的起始坐标
         canvas.translate(location.x, location.y); // 把坐标系平移到item矩形范围
         canvas.rotate(getItemRotate(), getPivotX() - getLocation().x, getPivotY() - getLocation().y); // 旋转坐标系
 
         doDrawAtTheTop(canvas);
 
-        canvas.restore();
+        canvas.restoreToCount(count);
     }
 
     public void doDrawAtTheTop(Canvas canvas) {
