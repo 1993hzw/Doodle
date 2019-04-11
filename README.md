@@ -53,7 +53,7 @@ allprojects {
 }
  
 dependencies {
-    compile 'com.github.1993hzw:Doodle:5.4.0.2'
+    compile 'com.github.1993hzw:Doodle:5.5'
 }
 ```
 
