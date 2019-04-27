@@ -153,7 +153,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
     }
 
     public DoodleView(Context context, Bitmap bitmap, IDoodleListener listener, IDoodleTouchDetector defaultDetector) {
-        this(context, bitmap, true, listener, defaultDetector);
+        this(context, bitmap, false, listener, defaultDetector);
     }
 
     /**

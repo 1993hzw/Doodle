@@ -61,7 +61,7 @@ There are two ways to use the Doodle library:
 
 ***这里有两种方式使用Doodle涂鸦库***
 
-  * A. Launch DoodleActivity directly (the layout is like demo images above). If you need to customize more interactions, please use another method (Way B)．
+###  A. Launch DoodleActivity directly (the layout is like demo images above). If you need to customize more interactions, please use another method (Way B)．
 
   ***使用写好的涂鸦界面，直接启动.启动的页面可参看上面的演示图片。如果需要自定义更多的交互方式，则请使用另一种方式(即B方式)。***
 ```java
@@ -73,9 +73,10 @@ See [DoodleParams](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main
 
 ***查看[DoodleParams](https://github.com/1993hzw/Doodle/blob/master/doodle/src/main/java/cn/hzw/doodle/DoodleParams.java)获取更多涂鸦参数信息。***
 
-  * B. Recommend, use DoodleView and customize your layout. 
-    mDoodle
-    ***推荐的方法：使用DoodleView，便于拓展，灵活性高，自定义自己的交互界面.***
+###  B. Recommend, use DoodleView and customize your layout. 
+
+***推荐的方法：使用DoodleView，便于拓展，灵活性高，自定义自己的交互界面.***
+
 ```java
 /*
 Whether or not to optimize drawing, it is suggested to open, which can optimize the drawing speed and performance.
@@ -149,7 +150,7 @@ When turning off optimized drawing, you only need to call `addItem(IDoodleItem)`
 
 ***当关闭优化绘制时,只需要在创建时调用`addItem(IDoodleItem)`;而当开启优化绘制时，创建或选中的item需要调用`markItemToOptimizeDrawing(IDoodleItem)`,结束绘制时应调用`notifyItemFinishedDrawing(IDoodleItem)`。因此在代码中一般这样使用：***
 ```java
-// begin drawing
+// when you are creating a item or selecting a item to edit
 if (mDoodle.isOptimizeDrawing()) {
    mDoodle.markItemToOptimizeDrawing(item);
 } else {
@@ -158,7 +159,7 @@ if (mDoodle.isOptimizeDrawing()) {
 
 ...
 
-// finish drawing
+// finish creating or editting
 if (mDoodle.isOptimizeDrawing()) {
    mDoodle.notifyItemFinishedDrawing(item);
 }
