@@ -44,7 +44,7 @@ Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Als
 
 #### Gradle 
 
-```
+```gradle
 allprojects {
     repositories {
         ...
