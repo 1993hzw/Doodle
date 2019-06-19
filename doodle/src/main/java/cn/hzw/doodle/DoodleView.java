@@ -170,8 +170,13 @@ public class DoodleView extends FrameLayout implements IDoodle {
      */
     public DoodleView(Context context, Bitmap bitmap, boolean optimizeDrawing, IDoodleListener listener, IDoodleTouchDetector defaultDetector) {
         super(context);
+        setClipChildren(false);
 
         mBitmap = bitmap;
+        if (mBitmap.getConfig() != Bitmap.Config.RGB_565) {
+            // 如果位图包含透明度，则可能会导致橡皮擦无法对透明部分进行擦除
+            LogUtil.w(TAG, "the bitmap may contain alpha, which will cause eraser don't work well.");
+        }
         mDoodleListener = listener;
         if (mDoodleListener == null) {
             throw new RuntimeException("IDoodleListener is null!!!");
