@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import cn.forward.androids.base.InjectionLayoutInflater;
 import cn.forward.androids.utils.StatusBarUtil;
 import cn.hzw.doodle.R;
 import cn.hzw.doodle.imagepicker.ImageSelectorView;
@@ -45,26 +44,8 @@ public class DialogController {
         dialog.setCanceledOnTouchOutside(true);
 
         final Dialog finalDialog = dialog;
-        View.OnClickListener onClickListener = new View.OnClickListener() {
-            public void onClick(View v) {
-                if (v.getId() == R.id.dialog_bg) {
-                    finalDialog.dismiss();
-                } else if (v.getId() == R.id.dialog_enter_btn_02) {
-                    finalDialog.dismiss();
-                    if (enterClick != null) {
-                        enterClick.onClick(v);
-                    }
-                } else if (v.getId() == R.id.dialog_enter_btn_01) {
-                    finalDialog.dismiss();
-                    if (cancelClick != null) {
-                        cancelClick.onClick(v);
-                    }
-                }
-            }
-        };
 
-        View view = InjectionLayoutInflater.from(activity).inflate(R.layout.doodle_dialog, null,
-                InjectionLayoutInflater.getViewOnClickListenerInjector(onClickListener));
+        View view = View.inflate(activity, R.layout.doodle_dialog, null);
         dialog.setContentView(view);
 
         if (TextUtils.isEmpty(title)) {
@@ -95,6 +76,27 @@ public class DialogController {
             TextView textView = (TextView) dialog.findViewById(R.id.dialog_enter_btn_02);
             textView.setText(btn02);
         }
+
+        View.OnClickListener onClickListener = new View.OnClickListener() {
+            public void onClick(View v) {
+                if (v.getId() == R.id.dialog_bg) {
+                    finalDialog.dismiss();
+                } else if (v.getId() == R.id.dialog_enter_btn_02) {
+                    finalDialog.dismiss();
+                    if (enterClick != null) {
+                        enterClick.onClick(v);
+                    }
+                } else if (v.getId() == R.id.dialog_enter_btn_01) {
+                    finalDialog.dismiss();
+                    if (cancelClick != null) {
+                        cancelClick.onClick(v);
+                    }
+                }
+            }
+        };
+        view.findViewById(R.id.dialog_bg).setOnClickListener(onClickListener);
+        view.findViewById(R.id.dialog_enter_btn_01).setOnClickListener(onClickListener);
+        view.findViewById(R.id.dialog_enter_btn_02).setOnClickListener(onClickListener);
 
         return dialog;
     }

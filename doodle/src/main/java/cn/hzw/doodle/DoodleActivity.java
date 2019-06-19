@@ -627,17 +627,18 @@ public class DoodleActivity extends Activity {
             }
             if (!(DoodleParams.getDialogInterceptor() != null
                     && DoodleParams.getDialogInterceptor().onShow(DoodleActivity.this, mDoodle, DoodleParams.DialogType.SAVE))) {
-                DialogController.showEnterCancelDialog(DoodleActivity.this, getString(R.string.doodle_saving_picture), null, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        mDoodle.save();
-                    }
-                }, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        finish();
-                    }
-                });
+                DialogController.showMsgDialog(DoodleActivity.this, getString(R.string.doodle_saving_picture), null, getString(R.string.doodle_cancel),
+                        getString(R.string.doodle_save), new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                mDoodle.save();
+                            }
+                        }, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                finish();
+                            }
+                        });
             }
         } else if (v.getId() == R.id.doodle_btn_rotate) {
             // 旋转图片

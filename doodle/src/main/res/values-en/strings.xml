@@ -3,9 +3,10 @@
 
     <string name="doodle_clear_screen">Clear</string>
     <string name="doodle_cant_undo_after_clearing">Are you sure to clear all?</string>
-    <string name="doodle_saving_picture">Save before exit?</string>
+    <string name="doodle_saving_picture">Save all before exiting</string>
     <string name="doodle_enter">Enter</string>
     <string name="doodle_cancel">Cancel</string>
+    <string name="doodle_save">Save</string>
 
     <string name="doodle_edit">Edit</string>
     <string name="doodle_remove">Delete</string>

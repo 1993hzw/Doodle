@@ -137,7 +137,6 @@
             android:text="@string/doodle_cancel"
             android:textColor="#bebebe"
             android:textSize="20dp"
-            app:injectListener="true"
             app:stv_text_color_pressed="#88bebebe"/>
 
         <cn.forward.androids.views.STextView
@@ -151,7 +150,6 @@
             android:text="@string/doodle_enter"
             android:textColor="#11cfff"
             android:textSize="20dp"
-            app:injectListener="true"
             app:stv_text_color_pressed="#8811cfff"/>
     </LinearLayout>
 </FrameLayout>
