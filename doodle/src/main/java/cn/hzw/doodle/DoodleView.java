@@ -402,7 +402,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
         }
 
         int count = canvas.save();
-        canvas.rotate(mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
         super.dispatchDraw(canvas);
         canvas.restoreToCount(count);
 
@@ -431,7 +430,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
             canvas.scale(scale, scale);
             canvas.translate(-mTouchX + mZoomerRadius / scale, -mTouchY + mZoomerRadius / scale);
             // draw inner
-            canvas.rotate(mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
             super.dispatchDraw(canvas);
             // 触摸点
             float left = getAllTranX();
@@ -468,7 +466,6 @@ public class DoodleView extends FrameLayout implements IDoodle {
             canvas.clipRect(-strokeWidth, -strokeWidth, getWidth() + strokeWidth, getHeight() + strokeWidth);
             canvas.drawColor(0x88888888);
             canvas.save();
-            canvas.rotate(mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
             float tempScale = mScale;
             float tempTransX = mTransX;
             float tempTransY = mTransY;
@@ -1252,7 +1249,16 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
         @Override
         protected void onDraw(Canvas canvas) {
-            LogUtil.d(TAG, "BackgroundView>>onDraw");
+            if (LogUtil.sIsLog) {
+                LogUtil.d(TAG, "BackgroundView>>onDraw");
+            }
+            int count = canvas.save();
+            canvas.rotate(mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
+            doDraw(canvas);
+            canvas.restoreToCount(count);
+        }
+
+        private void doDraw(Canvas canvas) {
             float left = getAllTranX();
             float top = getAllTranY();
 
@@ -1298,6 +1304,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
         protected void onDraw(Canvas canvas) {
             int count = canvas.save();
+            canvas.rotate(mDoodleRotateDegree, getWidth() / 2, getHeight() / 2);
             doDraw(canvas);
             canvas.restoreToCount(count);
         }
