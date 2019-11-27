@@ -265,7 +265,7 @@ public class DoodleActivity extends Activity {
                 mPenSizeMap.put(DoodlePen.TEXT, DEFAULT_TEXT_SIZE * mDoodle.getUnitSize());
                 mPenSizeMap.put(DoodlePen.BITMAP, DEFAULT_BITMAP_SIZE * mDoodle.getUnitSize());
             }
-        }, null);
+        });
 
         mTouchGestureListener = new DoodleOnTouchGestureListener(mDoodleView, new DoodleOnTouchGestureListener.ISelectionListener() {
             // save states before being selected
@@ -767,8 +767,8 @@ public class DoodleActivity extends Activity {
      */
     private class DoodleViewWrapper extends DoodleView {
 
-        public DoodleViewWrapper(Context context, Bitmap bitmap, boolean optimizeDrawing, IDoodleListener listener, IDoodleTouchDetector defaultDetector) {
-            super(context, bitmap, optimizeDrawing, listener, defaultDetector);
+        public DoodleViewWrapper(Context context, Bitmap bitmap, boolean optimizeDrawing, IDoodleListener listener) {
+            super(context, bitmap, optimizeDrawing, listener);
         }
 
         private Map<IDoodlePen, Integer> mBtnPenIds = new HashMap<>();
