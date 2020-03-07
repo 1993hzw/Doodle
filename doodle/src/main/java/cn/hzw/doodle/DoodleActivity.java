@@ -37,6 +37,7 @@ import cn.forward.androids.utils.StatusBarUtil;
 import cn.forward.androids.utils.Util;
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleColor;
+import cn.hzw.doodle.core.IDoodleItem;
 import cn.hzw.doodle.core.IDoodleItemListener;
 import cn.hzw.doodle.core.IDoodlePen;
 import cn.hzw.doodle.core.IDoodleSelectableItem;
@@ -123,6 +124,7 @@ public class DoodleActivity extends Activity {
     private View mBtnUndo;
     private View mMosaicMenu;
     private View mEditBtn;
+    private View mRedoBtn;
 
     private AlphaAnimation mViewShowAnimation, mViewHideAnimation; // view隐藏和显示时用到的渐变动画
 
@@ -463,6 +465,7 @@ public class DoodleActivity extends Activity {
         mSizeContainer = findViewById(R.id.size_container);
         mMosaicMenu = findViewById(R.id.mosaic_menu);
         mEditBtn = findViewById(R.id.doodle_selectable_edit);
+        mRedoBtn = findViewById(R.id.btn_redo);
 
         mBtnColor = DoodleActivity.this.findViewById(R.id.btn_set_color);
         mColorContainer = DoodleActivity.this.findViewById(R.id.btn_set_color_container);
@@ -724,6 +727,10 @@ public class DoodleActivity extends Activity {
             if (mTouchGestureListener.getSelectedItem() != null) {
                 mTouchGestureListener.getSelectedItem().setColor(mDoodle.getColor().copy());
             }
+        } else if (v.getId() == R.id.btn_redo) {
+            if (!mDoodle.redo(1)) {
+                mRedoBtn.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -943,13 +950,30 @@ public class DoodleActivity extends Activity {
         @Override
         public boolean undo() {
             mTouchGestureListener.setSelectedItem(null);
-            return super.undo();
+            boolean res = super.undo();
+            if (getRedoItemCount() > 0) {
+                mRedoBtn.setVisibility(VISIBLE);
+            } else {
+                mRedoBtn.setVisibility(GONE);
+            }
+            return res;
         }
 
         @Override
         public void clear() {
             super.clear();
             mTouchGestureListener.setSelectedItem(null);
+            mRedoBtn.setVisibility(GONE);
+        }
+
+        @Override
+        public void addItem(IDoodleItem item) {
+            super.addItem(item);
+            if (getRedoItemCount() > 0) {
+                mRedoBtn.setVisibility(VISIBLE);
+            } else {
+                mRedoBtn.setVisibility(GONE);
+            }
         }
 
         View mBtnEditMode = DoodleActivity.this.findViewById(R.id.doodle_btn_brush_edit);

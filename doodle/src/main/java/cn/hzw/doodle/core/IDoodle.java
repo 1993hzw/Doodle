@@ -177,17 +177,32 @@ public interface IDoodle {
 
     /**
      * total item count
+     * exclude redo items
      *
      * @return
      */
     public int getItemCount();
 
     /**
-     * 获取所有的涂鸦
-     *
+     * 获取所有的涂鸦(不包括重做)
+     *  exclude redo items
      * @return
      */
     public List<IDoodleItem> getAllItem();
+
+    /**
+     * total redo item count
+     *
+     * @return
+     */
+    public int getRedoItemCount();
+
+    /**
+     * 获取所有重做的涂鸦
+     *
+     * @return
+     */
+    public List<IDoodleItem> getAllRedoItem();
 
     /**
      * 设置放大镜倍数
@@ -266,6 +281,14 @@ public interface IDoodle {
      * @return
      */
     public boolean undo(int step);
+
+    /**
+     * 指定重做的步数
+     *
+     * @param step
+     * @return
+     */
+    public boolean redo(int step);
 
     /**
      * 获取当前显示的图片(无涂鸦)

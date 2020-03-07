@@ -43,6 +43,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +106,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
     // 保存涂鸦操作，便于撤销
     private List<IDoodleItem> mItemStack = new ArrayList<>();
+    private List<IDoodleItem> mRedoItemStack = new ArrayList<>();
 
     private IDoodlePen mPen;
     private IDoodleShape mShape;
@@ -818,12 +820,14 @@ public class DoodleView extends FrameLayout implements IDoodle {
      */
     @Override
     public void clear() {
+        List<IDoodleItem> temp = new ArrayList<>(mItemStack);
         mItemStack.clear();
+        mRedoItemStack.clear();
         mItemStackOnViewCanvas.clear();
         mPendingItemsDrawToBitmap.clear();
 
-        for (int i = 0; i < mItemStack.size(); i++) {
-            IDoodleItem item = mItemStack.remove(i);
+        for (int i = temp.size() - 1; i >= 0; i--) {
+            IDoodleItem item = temp.get(i);
             item.onRemove();
         }
 
@@ -836,11 +840,26 @@ public class DoodleView extends FrameLayout implements IDoodle {
     public boolean undo(int step) {
         if (mItemStack.size() > 0) {
             step = Math.min(mItemStack.size(), step);
-            IDoodleItem item = mItemStack.get(mItemStack.size() - step);
-            removeItem(item);
+            List<IDoodleItem> list = new ArrayList<IDoodleItem>(mItemStack.subList(mItemStack.size() - step, mItemStack.size()));
+            for (IDoodleItem item : list) {
+                removeItem(item);
+                mRedoItemStack.add(0, item);
+            }
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean redo(int step) {
+        if (mRedoItemStack.isEmpty()) {
+            return false;
+        }
+
+        for (int i = 0; i < step && !mRedoItemStack.isEmpty(); i++) {
+            addItemInner(mRedoItemStack.remove(0));
+        }
+        return true;
     }
 
     /**
@@ -1143,6 +1162,11 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
     @Override
     public void addItem(IDoodleItem item) {
+        addItemInner(item);
+        mRedoItemStack.clear();
+    }
+
+    private void addItemInner(IDoodleItem item){
         if (item == null) {
             throw new RuntimeException("item is null");
         }
@@ -1186,6 +1210,16 @@ public class DoodleView extends FrameLayout implements IDoodle {
     @Override
     public List<IDoodleItem> getAllItem() {
         return new ArrayList<>(mItemStack);
+    }
+
+    @Override
+    public int getRedoItemCount() {
+        return mRedoItemStack.size();
+    }
+
+    @Override
+    public List<IDoodleItem> getAllRedoItem() {
+        return new ArrayList<>(mRedoItemStack);
     }
 
     @Override
