@@ -22,9 +22,9 @@ Image doodle for Android. You can undo, zoom, move, add text, textures, etc. Als
 
     ***画笔可以选择手绘、马赛克、仿制、橡皮擦、文字、贴图，其中仿制功能跟PS中的类似，复制图片中的某处地方。形状可以选择手绘、箭头、直线、圆、矩形等。画笔的底色可以选择颜色，或者一张图片。***
 
-  * Undo ***撤销***
+  * Undo/Redo ***撤销/重做***
 
-    Each step of the doodle operation can be undone.
+    Each step of the doodle operation can be undone or redone.
     
     ***每一步的涂鸦操作都可以撤销。***
 
@@ -53,7 +53,7 @@ allprojects {
 }
  
 dependencies {
-    compile 'com.github.1993hzw:Doodle:5.5.2'
+    compile 'com.github.1993hzw:Doodle:5.5.3'
 }
 ```
 
