@@ -25,6 +25,7 @@ public class DoodleText extends DoodleRotatableItemBase {
         mText = text;
         setSize(size);
         setColor(color);
+        setLocation(x, y);
     }
 
     public String getText() {

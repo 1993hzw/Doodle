@@ -25,6 +25,7 @@ public class DoodleBitmap extends DoodleRotatableItemBase {
         setPivotY(y);
         this.mBitmap = bitmap;
         setSize(size);
+        setLocation(x, y);
     }
 
     public void setBitmap(Bitmap bitmap) {

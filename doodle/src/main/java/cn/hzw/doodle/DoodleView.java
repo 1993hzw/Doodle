@@ -43,7 +43,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -805,6 +804,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
                 mDoodleListener.onSaved(DoodleView.this, bitmap, new Runnable() {
                     @Override
                     public void run() {
+                        mIsSaving = false;
                         if (mOptimizeDrawing) {
                             refreshDoodleBitmap(false);
                         }
@@ -1166,7 +1166,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
         mRedoItemStack.clear();
     }
 
-    private void addItemInner(IDoodleItem item){
+    private void addItemInner(IDoodleItem item) {
         if (item == null) {
             throw new RuntimeException("item is null");
         }
