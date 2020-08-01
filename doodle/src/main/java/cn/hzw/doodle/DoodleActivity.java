@@ -231,6 +231,7 @@ public class DoodleActivity extends Activity {
                     onError(DoodleView.ERROR_SAVE, e.getMessage());
                 } finally {
                     Util.closeQuietly(outputStream);
+                    callback.run();
                 }
             }
 
