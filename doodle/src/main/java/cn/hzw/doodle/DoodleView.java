@@ -1229,7 +1229,7 @@ public class DoodleView extends FrameLayout implements IDoodle {
 
     @Override
     public Bitmap getDoodleBitmap() {
-        return mBitmap;
+        return mDoodleBitmap;
     }
 
     public int getCenterWidth() {
