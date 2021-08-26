@@ -128,6 +128,7 @@ public class DoodlePath extends DoodleRotatableItemBase {
         mPaint.setStrokeWidth(getSize());
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
+        mPaint.setDither(true);
         mPaint.setAntiAlias(true);
 
         getPen().config(this, mPaint);
