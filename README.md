@@ -3,7 +3,7 @@
 如果大伙要做自己的涂鸦库，我这边有几个建议可以帮您省掉不少工作：
 1. 用Bitmap作为画布，有个重要原因是便于橡皮擦功能的实现（目前doodle库没有这样做，导致透明图片擦除异常），同时也是为了其他更复杂的功能做铺垫
 2. 使用Matrix对象进行所有的变换操作，不要再愚昧地自己计算换算公式了（目前doodle就这样自己换算。。。。）
-3. 使用Gson实现数据序列化存储（目前doodle库完成没有包含这块，而且已它的设计想要再添加数据存储，会非常非常地困难。。）
+3. 使用Gson实现数据序列化存储（目前doodle库完成没有包含这块，而且以它的设计想要再添加数据存储，会非常非常地困难。。）
 
 希望未来有时间能继续贡献更大全面的全新涂鸦库！感谢您的支持！
 
@@ -252,6 +252,11 @@ You can create a customized touch gesture detector like [DoodleTouchDetector](ht
 # The developer 开发者
 
 hzw19933@gmail.com
+
+154330138@qq.com
+
+Q&A <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=d225a990b29a135d4a601be7a198f04572f1dbd96ccd5be944ff2ef87dda5c11"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="Doodle-涂鸦交流群" title="Doodle-涂鸦交流群"></a>  6762102
+
 
 ***欢迎大家访问[我的博客](https://blog.csdn.net/u012964944)，以便获取更多关于Doodle的文章哦.***
 
