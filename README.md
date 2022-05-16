@@ -1,3 +1,5 @@
+（该项目已经停止维护很久了，由于代码设计的问题有很多功能不方便拓展，因此仅供学习参考，建议大家了解其中原理后自行搭建自己的涂鸦库）
+
 # Doodle
 
 [![](https://jitpack.io/v/1993hzw/Doodle.svg)](https://jitpack.io/#1993hzw/Doodle)
@@ -243,10 +245,6 @@ You can create a customized touch gesture detector like [DoodleTouchDetector](ht
 # The developer 开发者
 
 hzw19933@gmail.com
-
-154330138@qq.com
-
-Q&A <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=d225a990b29a135d4a601be7a198f04572f1dbd96ccd5be944ff2ef87dda5c11"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="Doodle-涂鸦交流群" title="Doodle-涂鸦交流群"></a>  6762102
 
 ***欢迎大家访问[我的博客](https://blog.csdn.net/u012964944)，以便获取更多关于Doodle的文章哦.***
 
